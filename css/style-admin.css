@@ -1,0 +1,114 @@
+
+/* =Admin
+-------------------------------------------------------------- */
+nav {
+	display:block;
+}
+#Willpower-filter table.wp-list-table {
+	width: auto;
+}
+#Blood-filter table.wp-list-table {
+	width: auto;
+}
+#generation_form table.wp-list-table {
+	width: auto;
+}
+#player-filter table.wp-list-table {
+	width: auto;
+}
+.gvadmin_content{
+	clear:both;
+}
+
+.defaultgen {
+	background:silver;
+	border: 1px solid darkgrey;
+}
+
+.gvadmin_nav{
+	clear: both;
+	display: block;
+	float: left;
+	width: 100%;
+	border-bottom: 1px solid grey;
+	margin-bottom: 10px;
+	padding-bottom: 0px;
+}
+.gvadmin_nav ul {
+	list-style: none;
+	z-index:1;
+	font-size: 1.2em;
+	margin: 0;
+	padding: 0;
+}
+.gvadmin_nav li {
+	float: left;
+	position: relative;
+	margin: 0;
+}
+.gvadmin_nav a {
+	display: block;
+	text-decoration: none;
+	font-weight:bold;
+	padding: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	
+	border-left: 1px dotted grey;
+	border-right: 1px dotted grey;
+	border-top: 1px dotted grey;
+	
+}
+
+.gvadmin_nav li:hover > a,.gvadmin_nav ul ul :hover > a,.gvadmin_nav a:focus {
+	background: -moz-linear-gradient(45deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 48%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,rgba(0,0,0,0.65)), color-stop(48%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* IE10+ */
+	background: linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+	border-top-right-radius: 0px;}
+.gvadmin_nav  li:hover > a,.gvadmin_nav a:focus,.gvadmin_nav a.shown {
+	background: -moz-linear-gradient(45deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 48%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,rgba(0,0,0,0.65)), color-stop(48%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* IE10+ */
+	background: linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+.gvadmin_nav  ul ul :hover > ul,.gvadmin_nav ul li:hover > ul {	display: block;}
+.gvadmin_nav .current-menu-item > a,.gvadmin_nav .current-menu-ancestor > a,.gvadmin_nav .current_page_item > a,.gvadmin_nav .current_page_ancestor > a {
+	background: -moz-linear-gradient(45deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 48%, rgba(0,0,0,0) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left bottom, right top, color-stop(0%,rgba(0,0,0,0.65)), color-stop(48%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* IE10+ */
+	background: linear-gradient(45deg, rgba(0,0,0,0.65) 0%,rgba(0,0,0,0) 48%,rgba(0,0,0,0) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;}
+
+/* =Feeding Map
+-------------------------------------------------------------- */
+#map-canvas { height: 100% }
+#map-canvas img {max-width: none;}
+table.feedingmapkey {width:auto;}
+.feedingmapkey td {border:1px solid darkgrey;}
+
+/* =Templates
+-------------------------------------------------------------- */
+#new-template {
+	margin-left: 30px;
+}
+div.datatables_detail {
+}
+.datatables_detail td {
+	vertical-align: top;
+}
+tr.template_option_row > td {
+	border-bottom: 1px dotted grey;
+}

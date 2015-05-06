@@ -1,0 +1,106 @@
+NAME,DESCRIPTION,LEVEL,DISCIPLINE_ID,DICE_POOL,DIFFICULTY,COST,SOURCE_BOOK_ID,PAGE_NUMBER,VISIBLE
+Bind the Accusing Tongue,Target cannot speak ill of the caster,1,5,Intelligence + Occult,4,0,1,230,Y
+Blood Rush,Create sensation of drinking blood,1,5,Intelligence + Occult,4,0,1,230,Y
+Communicate with Kindred Sire,Speak telepathically with your sire,1,5,Intelligence + Occult,4,0,1,230,Y
+Defense of the Sacred Haven,Sunlight reflects off windows or magically fails to pass thr,1,5,Intelligence + Occult,4,0,1,230,Y
+Deflection of Wooden Doom,Protection from being staked,1,5,Intelligence + Occult,4,0,1,231,Y
+Devil's Touch,Curse a mortal,1,5,Intelligence + Occult,4,0,1,231,Y
+Domino of Life,Simulate a human characteristic,1,5,Intelligence + Occult,4,0,1,231,Y
+Engaging the Vessel of Transference,Swaps the blood of someone holding it with the blood in the ,1,5,Intelligence + Occult,4,0,1,231,Y
+Illuminate the Trail of Prey,Path of the subject's passing will glow,1,5,Intelligence + Occult,4,0,1,231,Y
+Incantation of the Shepherd,Locate all members of your herd,1,5,Intelligence + Occult,4,0,1,232,Y
+Purity of Flesh,Clean your body of all foreign matter,1,5,Intelligence + Occult,4,0,1,232,Y
+Wake with Evening's Freshness,This ritual allows a Tremere to awaken at any sign of danger,1,5,Intelligence + Occult,4,0,1,232,Y
+Widow's Spite,Cause the target discomfort,1,5,Intelligence + Occult,4,0,1,232,Y
+Bloodwalk,Trace lineage and bloodbonds,2,5,Intelligence + Occult,5,0,1,232,Y
+Burning Blade,Enchant a melee weapon,2,5,Intelligence + Occult,5,0,1,232,Y
+Donning the Mask of Shadows,Subject becomes translucent,2,5,Intelligence + Occult,5,0,1,233,Y
+Eyes of the Night Hawk,See and hear through the senses of a bird,2,5,Intelligence + Occult,5,0,1,233,Y
+Machine Blitz,Machines go haywire,2,5,Intelligence + Occult,5,0,1,233,Y
+Principle Focus of Vitae Infusion,Embed blood within an object for later,2,5,Intelligence + Occult,5,0,1,234,Y
+Recure of the Homeland,Heal aggravated wounds,2,5,Intelligence + Occult,5,0,1,234,Y
+Ward Versus Ghouls,Protection from ghouls,2,5,Intelligence + Occult,5,0,1,234,Y
+Warding Circle Versus Ghouls,A circle of protection from ghouls,2,5,Intelligence + Occult,5,0,1,234,Y
+Clinging of the Insect,Cling to walls or ceilings,3,5,Intelligence + Occult,6,0,1,235,Y
+Flesh of Fiery Touch,Inflict burns on anyone who touches you,3,5,Intelligence + Occult,6,0,1,235,Y
+Incorporeal Passage,Pass through walls,3,5,Intelligence + Occult,6,0,1,236,Y
+Mirror of Second Sight,See the supernatural,3,5,Intelligence + Occult,6,0,1,236,Y
+Pavis of Foul Presence,Reverse the effects of Presence,3,5,Intelligence + Occult,6,0,1,236,Y
+Sanguine Assistant,Conjure a servant,3,5,Intelligence + Occult,6,0,1,236,Y
+Shaft of Belated Quiescence,Tip breaks off to stake someone,3,5,Intelligence + Occult,6,0,1,237,Y
+Ward Versus Lupines,Protection from werewolves,3,5,Intelligence + Occult,6,0,1,237,Y
+Bone of Lies,Lies turn the bone black,4,5,Intelligence + Occult,7,0,1,237,Y
+Firewalker,Resistance to fire,4,5,Intelligence + Occult,7,0,1,238,Y
+Heart of Stone,Turn heart to solid rock,4,5,Intelligence + Occult,7,0,1,238,Y
+Splinter Servant,Animated stake,4,5,Intelligence + Occult,7,0,1,238,Y
+Ward Versus Kindred,Protection from vampires,4,5,Intelligence + Occult,7,0,1,239,Y
+Blood Contract,An agreement in blood,5,5,Intelligence + Occult,8,0,1,239,Y
+Enchant Talisman,Enchant an item to amplify will and might,5,5,Intelligence + Occult,8,0,1,239,Y
+Escape to a True Friend,Teleport to another person,5,5,Intelligence + Occult,8,0,1,239,Y
+Paper Flesh,Turn the target to a brittle husk,5,5,Intelligence + Occult,8,0,1,240,Y
+Ward Versus Spirits,Protection from spirits,5,5,Intelligence + Occult,8,0,1,240,Y
+Call of the Hungry Dead,Hear conversation from across the Shroud,1,11,Intelligence + Occult,4,0,1,177,Y
+Eldritch Beacon,Glow green in the shadowlands,1,11,Intelligence + Occult,4,0,1,177,Y
+Insight,See the last thing witnessed by a corpse,1,11,Intelligence + Occult,4,0,1,177,Y
+Knowing stone,Mark someone's spirit to see their location,1,11,Intelligence + Occult,4,0,1,177,Y
+Minestra di Morte,Find out if someone is a wraith or spectre,1,11,Intelligence + Occult,4,0,1,177,Y
+Ritual of the Smoking Mirror,See as ghosts do,1,11,Intelligence + Occult,4,0,1,178,Y
+Eyes of the Grave,Target experiences visions of their death,2,11,Intelligence + Occult,5,0,1,179,Y
+Occhio d'Uomo Morto,Permanent Shroudsight ability,2,11,Intelligence + Occult,5,0,1,179,Y
+Puppet,Prepare a subject for posession,2,11,Intelligence + Occult,5,0,1,179,Y
+The Hand of Glory,Anesthetise a home's residents,2,11,Intelligence + Occult,5,0,1,179,Y
+The Ritual of Pochtli,Allows joint use of Necromancy,2,11,Intelligence + Occult,5,0,1,180,Y
+Two Centimes,Send a mortal soul to the underworld to communicate,2,11,Intelligence + Occult,5,0,1,180,Y
+Blood Dance,Allows ghost to communicate with a relative,3,11,Intelligence + Occult,6,0,1,180,Y
+Din of the Damned,Sounds of the underworld are heard in the physical,3,11,Intelligence + Occult,6,0,1,180,Y
+Divine Sign,"Predict action of the target, or acts like a fetter on a ghost",3,11,Intelligence + Occult,6,0,1,180,Y
+Nightmare Drums,Send ghosts to haunt the dreams of an enemy,3,11,Intelligence + Occult,6,0,1,180,Y
+Ritual of the Unearthed Fetter,Attune to a fetter to find it,3,11,Intelligence + Occult,6,0,1,181,Y
+Tempesta Scudo,Defense against ghosts,3,11,Intelligence + Occult,6,0,1,181,Y
+Baleful Doll,Voodoo doll,4,11,Intelligence + Occult,7,0,1,181,Y
+Bastone Diabolico,Make a weapon to hurt ghosts. Does Agg to vampires.,4,11,Intelligence + Occult,7,0,1,181,Y
+Cadaver's Touch,Make a mortal into the walking dead,4,11,Intelligence + Occult,7,0,1,182,Y
+Peek Past the Shroud,Gain Shroudsight for hours,4,11,Intelligence + Occult,7,0,1,182,Y
+Ritual of Xipe Totec,Wear someone elses skin to pretend to be them,4,11,Intelligence + Occult,7,0,1,182,Y
+Chill of Oblivion,Treat agg damage from fire/heat as lethal,5,11,Intelligence + Occult,8,0,1,183,Y
+Dead Man's Hand,Victim decomposes,5,11,Intelligence + Occult,8,0,1,183,Y
+Esilio,Rip open a portal to the Underworld,5,11,Intelligence + Occult,8,0,1,183,Y
+Grasp the Ghostly,Bring an underworld object into the real world,5,11,Intelligence + Occult,8,0,1,184,Y
+Brand,Create a permanent tattoo on a kindred,1,5,Intelligence + Occult,4,0,4,23,Y
+Chime of unseen spirits,Give warning when a spirit or ghost is nearby,1,5,Intelligence + Occult,4,0,4,23,Y
+Sigil of Authority,Creates a permanent sigil showing the authority of the office held,1,5,Intelligence + Occult,4,0,4,24,Y
+Eyes of Babel,Temporarily learn a spoken language,2,5,Intelligence + Occult,5,0,4,24,Y
+Preserve,Mystically preserve an item from the ravages of time and use,2,5,Intelligence + Occult,5,0,4,23,Y
+Seal Egress,Mystically seal a room against intrusion or escape,2,5,Intelligence + Occult,5,0,4,25,Y
+Amulet of Mnemosyne,Create an amulet which stores a secret from the user,3,5,Intelligence + Occult,6,0,4,25,Y
+Dantes Urban Legend,Creates an urban legend within the community to protect an area,3,5,Intelligence + Occult,6,0,4,26,Y
+Translocation of the Vesel,Mystically transport an item to you,3,5,Intelligence + Occult,6,0,4,27,Y
+Preservation of the Sanguine Heart,Stops blood bonding and vaulderie (and mark of the betrayer),4,5,Intelligence + Occult,7,0,4,27,Y
+Summon the Blood Imp,Creates a Blood Imp Homonculi,4,5,Intelligence + Occult,7,0,4,27,Y
+Vigil of the Stone Guardian,Create a Gargoyle door ward,4,5,Intelligence + Occult,7,0,4,29,Y
+Mirror Prison,Create a prison or room accessed by a mirror,5,5,Intelligence + Occult,8,0,4,29,Y
+Sanctuary,Stops entry to those not invited and protects against disciplines,5,5,Intelligence + Occult,8,0,4,29,Y
+Way of the Wendigo,Eat flesh and gain Willpower and heal wounds quickly,5,5,Intelligence + Occult,8,0,4,30,Y
+Word of Insight,Re-roll 1 failed roll relating to your queried future,1,11,Intelligence + Occult,4,0,4,93,Y
+Draining the Well of Life,Feed wraiths while you feed off mortals,2,11,Intelligence + Occult,5,0,4,93,Y
+Weight of Shadows,Control natural shadows,1,32,Wits + Occult,4,0,4,38,Y
+Feed the Darkness,Feed though Arms of the Abyss,2,32,Wits + Occult,5,0,4,38,Y
+Abyssal Threads,Attach a thread of darkness,3,32,Wits + Occult,6,0,4,38,Y
+Maw of Ahriman,Abyss Mysticism - Mouth becomes a portal to the abyss,4,32,Wits + Occult,7,0,4,38,Y
+Ahriman\'s Wight,Shadow health levels,5,32,Wits + Occult,8,0,4,38,Y
+Rite of Reclaimation,Transport your blood to the Mountain on your death,1,19,Intelligence + Occult,4,0,4,76,Y
+Blade of Smoke and Shadow,"Prepare a dagger that hurts demons, ghosts and spirits",2,19,Intelligence + Occult,5,0,4,77,Y
+Bound by Oath,Improve group initiative against a single target,3,19,Intelligence + Occult,6,0,4,77,Y
+Curtain of Will,See Tremere Ritual: Defense of the Sacred Haven,1,19,Intelligence + Occult,4,0,1,440,Y
+Black Sunrise,See Tremere Ritual: Wake with Evening's Freshness,1,19,Intelligence + Occult,4,0,1,440,Y
+Speak with Sire,As per Communicate with Kindred Sire,1,19,Intelligence + Occult,4,0,1,440,Y
+Turn the Impaling Shaft,As per Deflection of Wooden Doom,1,19,Intelligence + Occult,4,0,1,440,Y
+Ward Versus Ghouls,Protection from ghouls,2,19,Intelligence + Occult,5,0,1,440,Y
+Draught of the Pebble,As per Principle Focus of Vitae Infusion,2,19,Intelligence + Occult,5,0,1,440,Y
+Passage of the Ghul,As per Incorporeal Passage,3,19,Intelligence + Occult,6,0,1,440,Y
+Stain of Guilt,As per Bone of Lies,4,19,Intelligence + Occult,7,0,1,440,Y
+The Word of the Dark God,A corpse whispers the name of those Set wants corrupted,1,33,Intelligence + Occult,4,0,4,83,Y
+To Lace with Hidden Nectar,Make kindred very drunk on Typhon's Brew,2,33,Intelligence + Occult,5,0,4,84,Y
+Typhon's Brew,Create Vitae-laced beer that Kindred can drink,1,33,Intelligence + Occult,4,0,4,84,Y
+Rings Like Chains,Be aware of what drugs a target is taking,3,33,Intelligence + Occult,6,0,4,84,Y
+Blood and Bane,Sabbat/Al-Aziz only: cause someone spirit to deteriorate,3,19,Intelligence + Occult,6,0,4,37,Y

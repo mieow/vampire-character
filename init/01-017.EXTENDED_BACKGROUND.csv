@@ -1,0 +1,5 @@
+ORDERING,GROUPING,TITLE,BACKGROUND_QUESTION,VISIBLE,REQD_AT_CHARGEN
+1,Clan Flaw,Clan Flaw,Explain your Clan Flaw,Y,Y
+2,Travel,Travel To/From Court,Explain your method of transport to and from court,N,N
+3,Feeding,Feeding Habits,Explain your usual method of hunting and feeding,N,N
+4,History,Character History,Give a summary of your character history,Y,Y

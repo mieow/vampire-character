@@ -1,0 +1,34 @@
+ID,NAME,DESCRIPTION,SOURCE_BOOK_ID,PAGE_NUMBER,VISIBLE
+1,Auspex,Supernatural senses,1,134,Y
+2,Celerity,Supernatural speed and dexterity,1,142,Y
+3,Potence,Supernatural strength,1,192,Y
+4,Presence,Presence,1,193,Y
+5,Thaumaturgy,Blood magic,1,212,Y
+6,Animalism,Power over wild creatures,1,128,Y
+7,Chimerstry,Illusions,1,144,Y
+8,Dementation,Spreading insanity,1,147,Y
+9,Dominate,Enforcing your will,1,151,Y
+10,Fortitude,Supernatural stamina,1,158,Y
+11,Necromancy,Magic over the dead,1,159,Y
+12,Obfuscate,Hiding in shadows,1,184,Y
+13,Obtenebration,Control the shadows,1,188,Y
+14,Protean,Shapeshifting,1,199,Y
+15,Quietus,Powers of assassination,1,203,Y
+16,Serpentis,Snake power,1,209,Y
+17,Vicissitude,Fleshcrafting,1,241,Y
+18,Thanatosis,Death and decay,1,410,Y
+19,Assamite Sorcery,Assamite version of Thaumaturgy,1,440,Y
+20,Bardo,Attainment of a state of mystical unconsciousness,1,442,Y
+21,Daimoinon,The black arts of the Baali,1,444,Y
+22,Flight,Gargoyle discipline of flight,1,447,Y
+23,Koldunic Sorcery,The magic of the Tzimisce,1,448,Y
+24,Melpominee,Power through the voice,1,453,Y
+25,Mytherceria,Fae-like powers,1,455,Y
+26,Obeah,Healing power,1,457,Y
+27,Sanguinus,"Combine, lend and coordinate powers",1,463,Y
+28,Spiritus,Spiritual connection to the world,1,466,Y
+29,Temporis,Power over time,1,467,Y
+30,Valeren,Third eye,1,474,Y
+31,Visceratika,Affinity for stone,1,475,Y
+32,Abyss Mysticism,Version of Obtenebration with rituals,4,37,Y
+33,Settite Sorcery,Settite magics,4,36,Y

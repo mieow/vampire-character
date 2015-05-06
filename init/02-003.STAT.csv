@@ -1,0 +1,16 @@
+NAME,DESCRIPTION,GROUPING,ORDERING,COST_MODEL_ID,SPECIALISATION_AT
+Strength,How strong your character is,Physical,1,1,4
+Dexterity,How agile and coordinated your character is,Physical,2,1,4
+Stamina,How much punishment your character can take,Physical,3,1,4
+Appearance,How good looking your character is,Social,6,1,4
+Charisma,The strength of personality of your character,Social,4,1,4
+Manipulation,How good your character is at manipulating others,Social,5,1,4
+Intelligence,How smart your character is,Mental,8,1,4
+Wits,How quick thinking your character is,Mental,9,1,4
+Perception,How much your character notices,Mental,7,1,4
+Self Control,How well you keep yourself in check,Virtue,11,6,0
+Courage,How brave you are,Virtue,12,6,0
+Conscience,How caring you are,Virtue,10,6,0
+Conviction,The strength of your convictions,Virtue,10,6,0
+Instinct,How well you ride the beast,Virtue,11,6,0
+Willpower,How strong your force of will is,Willpower,13,6,0

@@ -1,0 +1,14 @@
+NAME,DESCRIPTION,STAT1_ID,STAT2_ID,SOURCE_BOOK_ID,PAGE_NUMBER,VISIBLE,COST_MODEL_ID
+Humanity,The main path humans and young vampires follow,10,12,1,311,Y,10
+The Path of Honorable Accord,Find direction through a personal code of conduct,12,10,1,326,Y,10
+The Path of Blood,Assamite clan path,13,10,1,316,Y,10
+The Path of the Bones,Seek the knowledge of precisely what death is,13,10,1,318,Y,10
+The Path of Caine,Become more like Caine,13,14,1,320,Y,10
+The Path of Cathari,Temptation and Hedonism,13,14,1,323,Y,10
+The Path of the Feral Heart,Be a true hunter,13,14,1,324,Y,10
+The Path of Lilith,Only through pain are we elevated,13,14,1,329,Y,10
+The Path of Metamorphosis,Embrace change,13,14,1,331,Y,10
+The Path of Night,Dwell in darkness,13,14,1,332,Y,10
+The Path of Paradox,Ravnos clan path,13,10,1,335,Y,10
+Power and the Inner Voice,Power and control,13,14,1,336,Y,10
+The Path of Typhon,Serve Set to the best of your ability,13,10,1,338,Y,10

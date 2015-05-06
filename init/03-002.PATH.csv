@@ -1,0 +1,22 @@
+NAME,DESCRIPTION,DISCIPLINE_ID,COST_MODEL_ID,SOURCE_BOOK_ID,PAGE_NUMBER,VISIBLE
+Lure of Flames,Conjure forth mystical flames,5,5,1,218,Y
+Elemental Mastery,Control and communion with inanimate objects,5,5,1,214,Y
+Hands of Destruction,Sabbat path with rumours of demonoic origin,5,5,1,217,Y
+Neptune's Might,Manipulate water,5,5,1,218,Y
+Path of Conjuring,Invoke objects out of thin air,5,5,1,220,Y
+Path of Corruption,Influence the psyches of individuals,5,5,1,221,Y
+The Path of Mars,Effect war and violence,5,5,1,224,Y
+Path of Technomancy,Control of electronic devices,5,5,1,224,Y
+Father's Vengeance,Based on teachings of the book of Nod,5,5,1,226,Y
+Thaumaturgical Countermagic,Resist the effects of Thaumaturgy,5,5,1,228,Y
+Weather Control,Command over the weather,5,5,1,228,Y
+Movement of the Mind,Telekinesis,5,5,1,220,Y
+Path of Blood,Default Thaumaturgy Path,5,5,1,213,Y
+The Sepulchre Path,"Witness, summon, and command the spirits of the dead",11,5,1,160,Y
+The Ash Path,The lands of the dead,11,5,1,163,Y
+The Bone Path,Corpses and the methods by which dead souls can be restored to the living world,11,5,1,164,Y
+The Cenotaph Path,Discovering or forging links between the living world and the Shadowlands,11,5,1,166,Y
+The Corpse in the Monster,Enhances the necromantic understanding of the unliving form,11,5,1,168,Y
+The Grave's Decay,Observation of the working of time on all things mortal,11,5,1,171,Y
+Path of the Four Humors,This antiquated path was primarily considered the knowledge of the Lamia bloodline,11,5,1,173,Y
+Vitreous Path,Control and influence the energies pertaining to death,11,5,1,174,Y

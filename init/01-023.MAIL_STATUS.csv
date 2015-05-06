@@ -1,0 +1,4 @@
+NAME,DESCRIPTION
+Sent,Email sent successfully
+Error,Email send failed
+Queue,Email queued for sending

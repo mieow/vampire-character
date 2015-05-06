@@ -1,0 +1,11 @@
+ID,NAME,PARENT_ID,DESCRIPTION,ORDERING
+1,Talents,0,What you intuitively know,1
+2,Skills,0,"Learned through training, apprenticeships or other instruction",2
+3,Knowledges,0,The application of the mind rather than the body,3
+4,Hobby Talents,1,Mainly self-taught and usually more active than intellectual,4
+5,Professional Skills,2,Mainly taught and primarily active in application,5
+6,Expert Knowledges,3,Anything primarily intellectual or mental in nature and must be studied,6
+7,Secondary Talents,1,A specialised talent,7
+8,Secondary Skills,2,A specialised skill,8
+9,Secondary Knowledges,3,A specialised knowledge,9
+10,Other Traits,3,A specialised ability not covered by any other heading,10
