@@ -5,7 +5,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 
 global $vtm_character_version;
 global $vtm_character_db_version;
-$vtm_character_version = "2.0"; 
+$vtm_character_version = "2.2"; 
 $vtm_character_db_version = "51"; 
 
 function vtm_update_db_check() {
@@ -15,8 +15,8 @@ function vtm_update_db_check() {
     if (get_option( 'vtm_character_db_version' ) != $vtm_character_db_version ||
 		get_option( 'vtm_character_version' ) != $vtm_character_version) {
 		
-		echo "<p>Updating from " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
-		echo " to  $vtm_character_version.$vtm_character_db_version</p>";
+		//echo "<p>Updating from " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
+		//echo " to  $vtm_character_version.$vtm_character_db_version</p>";
 		
         $errors = vtm_character_update('before');
         vtm_character_install();

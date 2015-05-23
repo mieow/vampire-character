@@ -3,7 +3,7 @@
         Plugin URI: http://plugin.gvlarp.com
         Description: Management of Characters and Players for Vampire:the Masquerade
         Author: Jane Houston
-        Version: 2.1
+        Version: 2.2
         Author URI: http://www.mieow.co.uk
     */
 
