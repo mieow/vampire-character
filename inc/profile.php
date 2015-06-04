@@ -145,6 +145,8 @@ function vtm_get_profile_content() {
 			}
 			$mycharacter->newsletter = $_POST['vtm_news_optin'];
 		}
+	} else {
+		$displayName = $mycharacter->name;
 	}
 	
 	if ($showAll) {
@@ -242,6 +244,28 @@ function vtm_get_profile_content() {
 		$output .= "</td></tr>";
 	}
 	
+	// Public addresses
+	$addr2display = array();
+	if (count($mycharacter->addresses) > 0) {
+		foreach ($mycharacter->addresses as $address) {
+			if ($address->VISIBLE == 'Y' || vtm_isST() || $currentCharacter == $character ) {
+				$addr2display[] = $address;
+			}
+		}
+	}
+	if (count($addr2display) > 0) {
+		$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Addresses:</td>
+			<td class=\"gvcol_2 gvcol_val\">";
+		foreach ($addr2display as $address) {
+			$output .= "<strong>" . vtm_formatOutput($address->NAME) . 
+				"</strong>: " . vtm_formatOutput($address->PM_CODE);
+			if ($address->VISIBLE == 'N') {
+				$output .= " (private)";
+			}
+			$output .= "<br />";
+		}
+		$output .= "</td></tr>";
+	}
 	
 	$output .= "</table></td><td class=\"gvcol_2 gvcol_img\">\n";
 	// Portrait

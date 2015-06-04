@@ -21,10 +21,11 @@ function vtm_character_config() {
 			<ul>
 				<li><?php echo vtm_get_tablink('general',   'General'); ?></li>
 				<li><?php echo vtm_get_tablink('pagelinks', 'Page Links'); ?></li>
-				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('maps', 'Map Options'); ?></li>
+				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo vtm_get_tablink('maps', 'Map Options'); ?></li>
 				<li><?php echo vtm_get_tablink('chargen',   'Character Generation'); ?></li>
 				<li><?php echo vtm_get_tablink('skinning',  'Skinning'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo vtm_get_tablink('email', 'Email Options'); ?></li>
+				<li><?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo vtm_get_tablink('pm', 'Messaging'); ?></li>
 				<li><?php echo vtm_get_tablink('features',  'Features'); ?></li>
 			</ul>
 		</div>
@@ -54,6 +55,9 @@ function vtm_character_config() {
 				break;
 			case 'email':
 				vtm_render_config_email();
+				break;
+			case 'pm':
+				vtm_render_config_pm();
 				break;
 			default:
 				vtm_render_config_general();
@@ -877,8 +881,42 @@ function vtm_render_config_features() {
 			<td><input type="checkbox" name="vtm_feature_news" value="1" <?php checked( '1', get_option( 'vtm_feature_news', '0' ) ); ?> /></td>
 			<td>Email out news and Experience Point totals to active character accounts</td>
 		</tr>
+		<tr>
+			<td><label>Private Messaging: </label></td>
+			<td><input type="checkbox" name="vtm_feature_pm" value="1" <?php checked( '1', get_option( 'vtm_feature_pm', '0' ) ); ?> /></td>
+			<td>Enable inter-character private communication</td>
+		</tr>
 		</table>
 		<?php submit_button("Save Changes", "primary", "save_features_button"); ?>
+		</form>
+		
+	<?php 
+}
+
+function vtm_render_config_pm() {	
+	global $wpdb;
+	
+		?>
+		<h3>Private Messaging Options</h3>
+		<form method="post" action="options.php">
+		<?php
+		settings_fields( 'vtm_pm_options_group' );
+		do_settings_sections('vtm_pm_options_group');
+		?>
+
+		<table>
+		<tr>
+			<td><label>Enable In-Character postoffice: </label></td>
+			<td><input type="checkbox" name="vtm_pm_ic_postoffice_enabled" value="1" <?php checked( '1', get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) ); ?> /></td>
+			<td>Allow messages to be posted to all active characters.</td>
+		</tr>
+		<tr>
+			<td><label>In-Character postoffice location: </label></td>
+			<td><input type="text" name="vtm_pm_ic_postoffice_location" value="<?php echo get_option( 'vtm_pm_ic_postoffice_location' ); ?>" /></td>
+			<td>For example, in a Camarilla game, characters might be able to leave messages at an Elysium.</td>
+		</tr>
+		</table>
+		<?php submit_button("Save Changes", "primary", "save_pm_button"); ?>
 		</form>
 		
 	<?php 

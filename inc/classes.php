@@ -49,6 +49,7 @@ class vtmclass_character {
 	var $newsletter;
 	var $backgrounds_done;
 	var $backgrounds_total;
+	var $addresses;
 	
 	function load ($characterID){
 		global $wpdb;
@@ -829,6 +830,20 @@ class vtmclass_character {
 		$sql = $wpdb->prepare($sql, $characterID);
 		$this->backgrounds_done += $wpdb->get_var($sql);
 
+		//ADDRESSES
+		$sql = "SELECT pma.NAME as NAME,
+					pmt.NAME as PM_TYPE,
+					pma.PM_CODE as PM_CODE,
+					pma.DESCRIPTION as DESCRIPTION,
+					pma.VISIBLE as VISIBLE
+				FROM
+					" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS pma,
+					" . VTM_TABLE_PREFIX . "PM_TYPE as pmt
+				WHERE
+					pma.CHARACTER_ID = %s
+					AND pma.PM_TYPE_ID = pmt.ID ";
+		$sql =  $wpdb->prepare($sql, $characterID);
+		$this->addresses = $wpdb->get_results($sql);
 		
 	}
 	function getAttributes($group = "") {

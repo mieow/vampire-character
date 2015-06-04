@@ -2645,7 +2645,7 @@ function vtm_save_backgrounds() {
 					);
 				} //else {
 					//echo "<li>No need to update $key</li>\n";
-				//}
+				//
 			} else {
 				//echo "<li>Added $key at $value</li>\n";
 				// insert
@@ -2664,8 +2664,10 @@ function vtm_save_backgrounds() {
 			//echo "<li>Deleted $id</li>\n";
 			// Delete
 			$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND
-					WHERE CHARACTER_ID = %s AND BACKGROUND_ID = %s";
-			$wpdb->get_results($wpdb->prepare($sql,$vtmglobal['characterID'],$saved[$id]->chartableid));
+					WHERE ID = %s";
+			$sql = $wpdb->prepare($sql,$saved[$id]->chartableid);
+			//echo "<p>SQL: $sql</p>";
+			$wpdb->get_results($sql);
 		}
 	}
 

@@ -82,12 +82,19 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_features_group', 'vtm_feature_reports' );
 	register_setting( 'vtm_features_group', 'vtm_feature_email' );
 	register_setting( 'vtm_features_group', 'vtm_feature_news' );
+	register_setting( 'vtm_features_group', 'vtm_feature_pm' );
 	
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_mustbeloggedin' );
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_showsecondaries' );
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_emailtag' ); 			// depreciated
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_name' ); 	// depreciated
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_address' ); 	// depreciated
+	
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_mobile_prefix' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_landline_prefix' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_postcode_prefix' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_location' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_enabled' );
 	
 	register_setting( 'vtm_email_options_group', 'vtm_emailtag' );
 	register_setting( 'vtm_email_options_group', 'vtm_email_debug' );

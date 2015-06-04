@@ -1,12 +1,14 @@
 <?php
 
+// NO TABS IN TABLE DECLARATIONS
+
 register_activation_hook(__FILE__, "vtm_character_install");
 register_activation_hook( __FILE__, 'vtm_character_install_data' );
 
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.2"; 
-$vtm_character_db_version = "51"; 
+$vtm_character_db_version = "60b"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -15,8 +17,8 @@ function vtm_update_db_check() {
     if (get_option( 'vtm_character_db_version' ) != $vtm_character_db_version ||
 		get_option( 'vtm_character_version' ) != $vtm_character_version) {
 		
-		//echo "<p>Updating from " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
-		//echo " to  $vtm_character_version.$vtm_character_db_version</p>";
+		echo "<p>Updating from " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
+		echo " to  $vtm_character_version.$vtm_character_db_version</p>";
 		
         $errors = vtm_character_update('before');
         vtm_character_install();
@@ -218,17 +220,17 @@ function vtm_character_install() {
 					ORDERING              SMALLINT(4)   NOT NULL,
 					GROUPING              VARCHAR(90)   NOT NULL,
 					TITLE                 VARCHAR(90)   NOT NULL,
-					BACKGROUND_QUESTION   TEXT   		NOT NULL,
-					VISIBLE				  VARCHAR(1)    NOT NULL,
-					REQD_AT_CHARGEN		  VARCHAR(1)    NOT NULL,
+					BACKGROUND_QUESTION   TEXT           NOT NULL,
+					VISIBLE               VARCHAR(1)    NOT NULL,
+					REQD_AT_CHARGEN       VARCHAR(1)    NOT NULL,
 					PRIMARY KEY  (ID)
 					) ENGINE=INNODB;";
 		dbDelta($sql);
 		
 		$current_table_name = $table_prefix . "PROFILE_DISPLAY";
 		$sql = "CREATE TABLE " . $current_table_name . " (
-					ID			MEDIUMINT(9)	NOT NULL  AUTO_INCREMENT,
-					NAME		TEXT			NOT NULL,
+					ID          MEDIUMINT(9)	NOT NULL  AUTO_INCREMENT,
+					NAME        TEXT			NOT NULL,
 					PRIMARY KEY  (ID)
 					) ENGINE=INNODB;";
 		dbDelta($sql);
@@ -247,7 +249,7 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
 					NAME            VARCHAR(60)		NOT NULL,
-					DESCRIPTION     TINYTEXT      	NOT NULL,
+					DESCRIPTION     TINYTEXT          NOT NULL,
 					VISIBLE         VARCHAR(1)		NOT NULL,
 					PRIMARY KEY  (ID)
 					) ENGINE=INNODB;";
@@ -257,7 +259,7 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
 					NAME            VARCHAR(60)		NOT NULL,
-					DESCRIPTION     TINYTEXT      	NOT NULL,
+					DESCRIPTION     TINYTEXT          NOT NULL,
 					PRIMARY KEY  (ID)
 					) ENGINE=INNODB;";
 		dbDelta($sql);
@@ -267,7 +269,7 @@ function vtm_character_install() {
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
 					NAME            VARCHAR(60)		NOT NULL,
 					PARENT_ID       MEDIUMINT(9)	NOT NULL,
-					DESCRIPTION     TINYTEXT      	NOT NULL,
+					DESCRIPTION     TINYTEXT          NOT NULL,
 					ORDERING        SMALLINT(4)     NOT NULL,
 					PRIMARY KEY  (ID)
 					) ENGINE=INNODB;";
@@ -277,7 +279,17 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
 					NAME            VARCHAR(60)		NOT NULL,
-					DESCRIPTION     TINYTEXT      	NOT NULL,
+					DESCRIPTION     TINYTEXT          NOT NULL,
+					PRIMARY KEY  (ID)
+					) ENGINE=INNODB;";
+		dbDelta($sql);
+
+		$current_table_name = $table_prefix . "PM_TYPE";
+		$sql = "CREATE TABLE " . $current_table_name . " (
+					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
+					NAME            VARCHAR(60)		NOT NULL,
+					DESCRIPTION     TINYTEXT        NOT NULL,
+					ISANONYMOUS     VARCHAR(1)      NOT NULL,
 					PRIMARY KEY  (ID)
 					) ENGINE=INNODB;";
 		dbDelta($sql);
@@ -288,8 +300,8 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
 					NAME            VARCHAR(60)		NOT NULL,
-					VALUE    		TINYTEXT      	NOT NULL,
-					TEMPLATE_ID		MEDIUMINT(9)	NOT NULL,
+					VALUE            TINYTEXT          NOT NULL,
+					TEMPLATE_ID     MEDIUMINT(9)	NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "template_constraint_1` FOREIGN KEY (TEMPLATE_ID)   REFERENCES " . $table_prefix . "CHARGEN_TEMPLATE(ID)
 					) ENGINE=INNODB;";
@@ -298,13 +310,13 @@ function vtm_character_install() {
 		$current_table_name = $table_prefix . "CHARGEN_TEMPLATE_DEFAULTS";
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
-					TEMPLATE_ID		MEDIUMINT(9)	NOT NULL,
+					TEMPLATE_ID     MEDIUMINT(9)	NOT NULL,
 					CHARTABLE       TINYTEXT        NOT NULL,
 					ITEMTABLE       TINYTEXT        NOT NULL,
 					ITEMTABLE_ID    MEDIUMINT(9)    NOT NULL,
 					SECTOR_ID       MEDIUMINT(9)    NOT NULL,
 					SPECIALISATION  VARCHAR(64)	    NOT NULL,
-					LEVEL  	        MEDIUMINT(9)    NOT NULL,
+					LEVEL           MEDIUMINT(9)    NOT NULL,
 					MULTIPLE        VARCHAR(1)		NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "template_default_constraint_1` FOREIGN KEY (TEMPLATE_ID)   REFERENCES " . $table_prefix . "CHARGEN_TEMPLATE(ID)
@@ -314,10 +326,10 @@ function vtm_character_install() {
 		$current_table_name = $table_prefix . "CHARGEN_TEMPLATE_MAXIMUM";
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)	NOT NULL   AUTO_INCREMENT,
-					TEMPLATE_ID		MEDIUMINT(9)	NOT NULL,
+					TEMPLATE_ID     MEDIUMINT(9)	NOT NULL,
 					ITEMTABLE       TINYTEXT        NOT NULL,
 					ITEMTABLE_ID    MEDIUMINT(9)    NOT NULL,
-					LEVEL  	        MEDIUMINT(9)    NOT NULL,
+					LEVEL           MEDIUMINT(9)    NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "template_max_constraint_1` FOREIGN KEY (TEMPLATE_ID)   REFERENCES " . $table_prefix . "CHARGEN_TEMPLATE(ID)
 					) ENGINE=INNODB;";
@@ -351,16 +363,16 @@ function vtm_character_install() {
 
 		$current_table_name = $table_prefix . "CLAN";
 		$sql = "CREATE TABLE " . $current_table_name . " (
-					ID           	MEDIUMINT(9)  NOT NULL AUTO_INCREMENT,
-					NAME         	VARCHAR(30)   NOT NULL,
-					DESCRIPTION  	TINYTEXT      NOT NULL,
-					ICON_LINK    	TINYTEXT      NOT NULL,
-					CLAN_PAGE_LINK	TINYTEXT      NOT NULL,
-					CLAN_FLAW    	TINYTEXT      NOT NULL,
+					ID               MEDIUMINT(9)  NOT NULL AUTO_INCREMENT,
+					NAME             VARCHAR(30)   NOT NULL,
+					DESCRIPTION      TINYTEXT      NOT NULL,
+					ICON_LINK        TINYTEXT      NOT NULL,
+					CLAN_PAGE_LINK   TINYTEXT      NOT NULL,
+					CLAN_FLAW        TINYTEXT      NOT NULL,
 					CLAN_COST_MODEL_ID      MEDIUMINT(9) NOT NULL,
 					NONCLAN_COST_MODEL_ID   MEDIUMINT(9) NOT NULL,
-					WORDPRESS_ROLE  TINYTEXT      NOT NULL,
-					VISIBLE      	VARCHAR(1)    NOT NULL,
+					WORDPRESS_ROLE   TINYTEXT      NOT NULL,
+					VISIBLE          VARCHAR(1)    NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "clan_constraint_1` FOREIGN KEY (CLAN_COST_MODEL_ID)    REFERENCES " . $table_prefix . "COST_MODEL(ID),
 					CONSTRAINT `" . $table_prefix . "clan_constraint_2` FOREIGN KEY (NONCLAN_COST_MODEL_ID) REFERENCES " . $table_prefix . "COST_MODEL(ID)
@@ -369,13 +381,13 @@ function vtm_character_install() {
 
 		$current_table_name = $table_prefix . "STAT";
 		$sql = "CREATE TABLE " . $current_table_name . " (
-					ID              	MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
-					NAME            	VARCHAR(16)   NOT NULL,
-					DESCRIPTION     	TINYTEXT      NOT NULL,
-					GROUPING        	VARCHAR(30)   NOT NULL,
-					ORDERING        	SMALLINT(3)   NOT NULL,
-					COST_MODEL_ID   	MEDIUMINT(9)  NOT NULL,
-					SPECIALISATION_AT	SMALLINT(2)	  NOT NULL,
+					ID                  MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
+					NAME                VARCHAR(16)   NOT NULL,
+					DESCRIPTION         TINYTEXT      NOT NULL,
+					GROUPING            VARCHAR(30)   NOT NULL,
+					ORDERING            SMALLINT(3)   NOT NULL,
+					COST_MODEL_ID       MEDIUMINT(9)  NOT NULL,
+					SPECIALISATION_AT   SMALLINT(2)	  NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "stat_constraint_1` FOREIGN KEY (COST_MODEL_ID) REFERENCES " . $table_prefix . "COST_MODEL(ID)
 					) ENGINE=INNODB;";
@@ -383,14 +395,14 @@ function vtm_character_install() {
 
 		$current_table_name = $table_prefix . "SKILL";
 		$sql = "CREATE TABLE " . $current_table_name . " (
-					ID              	MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
-					NAME            	VARCHAR(30)   NOT NULL,
-					DESCRIPTION     	TINYTEXT      NOT NULL,
-					COST_MODEL_ID   	MEDIUMINT(9)  NOT NULL,
-					SKILL_TYPE_ID   	MEDIUMINT(9)  NOT NULL,
-					MULTIPLE			VARCHAR(1)	  NOT NULL,
-					SPECIALISATION_AT	SMALLINT(2)	  NOT NULL,
-					VISIBLE         	VARCHAR(1)    NOT NULL,
+					ID                  MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
+					NAME                VARCHAR(30)   NOT NULL,
+					DESCRIPTION         TINYTEXT      NOT NULL,
+					COST_MODEL_ID       MEDIUMINT(9)  NOT NULL,
+					SKILL_TYPE_ID       MEDIUMINT(9)  NOT NULL,
+					MULTIPLE            VARCHAR(1)	  NOT NULL,
+					SPECIALISATION_AT   SMALLINT(2)	  NOT NULL,
+					VISIBLE             VARCHAR(1)    NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "skill_constraint_1` FOREIGN KEY (COST_MODEL_ID) REFERENCES " . $table_prefix . "COST_MODEL(ID),
 					CONSTRAINT `" . $table_prefix . "skill_constraint_2` FOREIGN KEY (SKILL_TYPE_ID) REFERENCES " . $table_prefix . "SKILL_TYPE(ID)
@@ -401,14 +413,14 @@ function vtm_character_install() {
 
 		$current_table_name = $table_prefix . "BACKGROUND";
 		$sql = "CREATE TABLE " . $current_table_name . " (
-					ID             		MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
-					NAME            	VARCHAR(30)   NOT NULL,
-					DESCRIPTION     	TINYTEXT      NOT NULL,
-					GROUPING        	VARCHAR(30)   NOT NULL,
-					COST_MODEL_ID   	MEDIUMINT(9)  NOT NULL,
-					HAS_SECTOR      	VARCHAR(1)    NOT NULL,
+					ID                  MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
+					NAME                VARCHAR(30)   NOT NULL,
+					DESCRIPTION         TINYTEXT      NOT NULL,
+					GROUPING            VARCHAR(30)   NOT NULL,
+					COST_MODEL_ID       MEDIUMINT(9)  NOT NULL,
+					HAS_SECTOR          VARCHAR(1)    NOT NULL,
 					HAS_SPECIALISATION  VARCHAR(1)    NOT NULL,
-					VISIBLE         	VARCHAR(1)    NOT NULL,
+					VISIBLE             VARCHAR(1)    NOT NULL,
 					BACKGROUND_QUESTION TEXT,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "background_constraint_1` FOREIGN KEY (COST_MODEL_ID) REFERENCES " . $table_prefix . "COST_MODEL(ID)
@@ -431,7 +443,7 @@ function vtm_character_install() {
 						PAGE_NUMBER         SMALLINT(4)   NOT NULL,
 						VISIBLE             VARCHAR(1)    NOT NULL,
 						BACKGROUND_QUESTION VARCHAR(255),
-						PROFILE_DISPLAY_ID	MEDIUMINT(9)  NOT NULL,
+						PROFILE_DISPLAY_ID  MEDIUMINT(9)  NOT NULL,
 						PRIMARY KEY  (ID),
 						CONSTRAINT `" . $table_prefix . "merit_constraint_1` FOREIGN KEY (SOURCE_BOOK_ID) REFERENCES " . $table_prefix . "SOURCE_BOOK(ID)
 						) ENGINE=INNODB;";			
@@ -472,7 +484,7 @@ function vtm_character_install() {
 					HOME_DOMAIN_ID             MEDIUMINT(9)   NOT NULL,
 					HOME_SECT_ID               MEDIUMINT(9)   NOT NULL,
 					DEFAULT_GENERATION_ID      MEDIUMINT(9)   NOT NULL,
-					ASSIGN_XP_BY_PLAYER	       VARCHAR(1)     NOT NULL,
+					ASSIGN_XP_BY_PLAYER        VARCHAR(1)     NOT NULL,
 					USE_NATURE_DEMEANOUR       VARCHAR(1)     NOT NULL,
 					DISPLAY_BACKGROUND_IN_PROFILE  MEDIUMINT(9)     NOT NULL,
 					PRIMARY KEY  (ID),
@@ -485,7 +497,7 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID              MEDIUMINT(9)  NOT NULL   AUTO_INCREMENT,
 					NAME            VARCHAR(60)   NOT NULL,
-					OWNER_ID  		MEDIUMINT(9)  NOT NULL,
+					OWNER_ID          MEDIUMINT(9)  NOT NULL,
 					DESCRIPTION     TINYTEXT      NOT NULL,
 					COORDINATES     LONGTEXT      NOT NULL,
 					VISIBLE         VARCHAR(1)    NOT NULL,
@@ -622,9 +634,9 @@ function vtm_character_install() {
 					SECT_ID                   MEDIUMINT(9)  NOT NULL,
 					NATURE_ID                 MEDIUMINT(9)  NOT NULL,
 					DEMEANOUR_ID              MEDIUMINT(9)  NOT NULL,
-					CHARGEN_STATUS_ID		  MEDIUMINT(9)  NOT NULL,
-					CONCEPT					  TINYTEXT		NOT NULL,
-					EMAIL					  VARCHAR(60)	NOT NULL,
+					CHARGEN_STATUS_ID         MEDIUMINT(9)  NOT NULL,
+					CONCEPT                   TINYTEXT		NOT NULL,
+					EMAIL                     VARCHAR(60)	NOT NULL,
 					LAST_UPDATED              DATE          NOT NULL,
 					GET_NEWSLETTER            VARCHAR(1)    NOT NULL,
 					VISIBLE                   VARCHAR(1)    NOT NULL,
@@ -696,7 +708,7 @@ function vtm_character_install() {
 					) ENGINE=INNODB;";
 		dbDelta($sql);
 
-		/* 	CHARTABLE 		= Character table to update or add new row to
+		/*     CHARTABLE         = Character table to update or add new row to
 			CHARTABLE_ID	= ID of row in character table to update (0 for new)
 			CHARTABLE_LEVEL = LEVEL of item to add/update character table to
 			SPECIALISATION  = COMMENT of item to add/update character table to
@@ -734,7 +746,7 @@ function vtm_character_install() {
 					CHARTABLE      TINYTEXT      NOT NULL,
 					CHARTABLE_ID   MEDIUMINT(9)  NOT NULL,
 					LEVEL_FROM     MEDIUMINT(9)  NOT NULL,
-					LEVEL_TO  	   MEDIUMINT(9)  NOT NULL,
+					LEVEL_TO         MEDIUMINT(9)  NOT NULL,
 					AMOUNT         SMALLINT(3)   NOT NULL,
 					ITEMTABLE      TINYTEXT      NOT NULL,
 					ITEMNAME       TINYTEXT      NOT NULL,
@@ -891,7 +903,7 @@ function vtm_character_install() {
 					CHARACTER_ID      MEDIUMINT(9)  NOT NULL,
 					BACKGROUND_ID     MEDIUMINT(9)  NOT NULL,
 					LEVEL             SMALLINT(3)   NOT NULL,
-					SECTOR_ID		  MEDIUMINT(9)  NOT NULL,
+					SECTOR_ID         MEDIUMINT(9)  NOT NULL,
 					COMMENT           VARCHAR(60),
 					APPROVED_DETAIL   TEXT,
 					PENDING_DETAIL    TEXT,
@@ -930,10 +942,10 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID                    MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
 					CHARACTER_ID          MEDIUMINT(9)  NOT NULL,
-					QUESTION_ID			  MEDIUMINT(9)  NOT NULL,
-					APPROVED_DETAIL       TEXT   		NOT NULL,
-					PENDING_DETAIL        TEXT   		NOT NULL,
-					DENIED_DETAIL         TEXT   		NOT NULL,
+					QUESTION_ID           MEDIUMINT(9)  NOT NULL,
+					APPROVED_DETAIL       TEXT           NOT NULL,
+					PENDING_DETAIL        TEXT           NOT NULL,
+					DENIED_DETAIL         TEXT           NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "char_ext_bg_constraint_1` FOREIGN KEY (CHARACTER_ID)  REFERENCES " . $table_prefix . "CHARACTER(ID),
 					CONSTRAINT `" . $table_prefix . "char_ext_bg_constraint_2` FOREIGN KEY (QUESTION_ID)  REFERENCES " . $table_prefix . "EXTENDED_BACKGROUND(ID)
@@ -944,12 +956,12 @@ function vtm_character_install() {
 		$sql = "CREATE TABLE " . $current_table_name . " (
 					ID                    MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
 					CHARACTER_ID          MEDIUMINT(9)  NOT NULL,
-					TEMPLATE_ID			  MEDIUMINT(9)  NOT NULL,
-					NOTE_TO_ST       	  TEXT   		NOT NULL,
-					NOTE_FROM_ST          TEXT   		NOT NULL,
+					TEMPLATE_ID           MEDIUMINT(9)  NOT NULL,
+					NOTE_TO_ST            TEXT           NOT NULL,
+					NOTE_FROM_ST          TEXT           NOT NULL,
 					WORDPRESS_ID          VARCHAR(32)	NOT NULL,
-					DATE_OF_APPROVAL	  DATE			NOT NULL,
-					EMAIL_CONFIRMED	  	  VARCHAR(1)	NOT NULL,
+					DATE_OF_APPROVAL      DATE			NOT NULL,
+					EMAIL_CONFIRMED       VARCHAR(1)	NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "char_gen_constraint_1` FOREIGN KEY (CHARACTER_ID)  REFERENCES " . $table_prefix . "CHARACTER(ID)
 					) ENGINE=INNODB;";
@@ -960,14 +972,41 @@ function vtm_character_install() {
 					ID                    MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
 					CHARACTER_ID          MEDIUMINT(9)  NOT NULL,
 					MAIL_STATUS_ID        MEDIUMINT(9)  NOT NULL,
-					WP_POST_ID        	  MEDIUMINT(9)  NOT NULL,
+					WP_POST_ID            MEDIUMINT(9)  NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "mail_status_constraint_1` FOREIGN KEY (CHARACTER_ID)  REFERENCES " . $table_prefix . "CHARACTER(ID),
 					CONSTRAINT `" . $table_prefix . "mail_status_constraint_2` FOREIGN KEY (MAIL_STATUS_ID)  REFERENCES " . $table_prefix . "MAIL_STATUS(ID)
 					) ENGINE=INNODB;";
 		dbDelta($sql);
 	
-	//}
+		$current_table_name = $table_prefix . "CHARACTER_PM_ADDRESS";
+		$sql = "CREATE TABLE " . $current_table_name . " (
+					ID                    MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
+					NAME                  VARCHAR(120)  NOT NULL,
+					CHARACTER_ID          MEDIUMINT(9)  NOT NULL,
+					PM_TYPE_ID            MEDIUMINT(9)  NOT NULL,
+					PM_CODE               VARCHAR(60)   NOT NULL,
+					DESCRIPTION           TINYTEXT      NOT NULL,
+					VISIBLE               VARCHAR(1)    NOT NULL,
+					ISDEFAULT             VARCHAR(1)    NOT NULL,
+					PRIMARY KEY  (ID),
+					CONSTRAINT `" . $table_prefix . "pm_address_constraint_1` FOREIGN KEY (CHARACTER_ID)  REFERENCES " . $table_prefix . "CHARACTER(ID),
+					CONSTRAINT `" . $table_prefix . "pm_address_constraint_2` FOREIGN KEY (PM_TYPE_ID)  REFERENCES " . $table_prefix . "PM_TYPE(ID)
+					) ENGINE=INNODB;";
+		dbDelta($sql);
+
+		$current_table_name = $table_prefix . "CHARACTER_PM_ADDRESSBOOK";
+		$sql = "CREATE TABLE " . $current_table_name . " (
+					ID                    MEDIUMINT(9)  NOT NULL  AUTO_INCREMENT,
+					CHARACTER_ID          MEDIUMINT(9)  NOT NULL,
+					PM_CODE               VARCHAR(60)   NOT NULL,
+					NAME                  VARCHAR(120)  NOT NULL,
+					DESCRIPTION           TINYTEXT      NOT NULL,
+					PRIMARY KEY  (ID),
+					CONSTRAINT `" . $table_prefix . "pm_addressbook_constraint_1` FOREIGN KEY (CHARACTER_ID)  REFERENCES " . $table_prefix . "CHARACTER(ID)
+					) ENGINE=INNODB;";
+		dbDelta($sql);
+		//}
 	
 }
 
@@ -1090,6 +1129,7 @@ function vtm_character_update($beforeafter) {
 		case "1.10": $errors += vtm_character_update_1_10($beforeafter);
 		case "1.11": $errors += vtm_character_update_1_11($beforeafter);
 		case "1.12": $errors += vtm_character_update_1_11($beforeafter);
+		case "2.1":  $errors += vtm_character_update_2_0($beforeafter);
 	}
 	
 	// Incremental database updates, during development
@@ -1100,6 +1140,8 @@ function vtm_character_update($beforeafter) {
 			case "1.11": $errors += vtm_character_update_1_10($beforeafter);
 			case "1.12": $errors += vtm_character_update_1_11($beforeafter);
 			case "2.0" : $errors += vtm_character_update_1_11($beforeafter);
+			case "2.1" : $errors += vtm_character_update_2_0($beforeafter);
+			case "2.2" : $errors += vtm_character_update_2_0($beforeafter);
 		}
 	
 	}
@@ -1526,6 +1568,21 @@ function vtm_character_update_1_11($beforeafter) {
 	}
 
 }
+
+function vtm_character_update_2_0($beforeafter) {
+	global $wpdb;
+	
+	if ( $beforeafter == 'before') {
+
+	} else {
+		$remove = array (
+			'PREFIX' => ''
+		);
+		vtm_remove_columns(VTM_TABLE_PREFIX . "PM_TYPE", $remove);
+		
+	}
+}
+
 add_action('activated_plugin','save_error');
 function save_error(){
     update_option('vtm_plugin_error',  ob_get_contents());

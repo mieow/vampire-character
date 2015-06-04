@@ -1013,4 +1013,190 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 	
 }
 
+function vtm_get_pm_addresses($characterID = 0) {
+	global $wpdb;
+	global $vtmglobal;
+	global $current_user;
+
+	if ($characterID == 0){
+		if (!isset($vtmglobal['characterID'])) {
+			get_currentuserinfo();
+			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
+		}
+		$characterID = $vtmglobal['characterID'];
+	}
+	
+	$sql = "SELECT *
+			FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+			WHERE CHARACTER_ID = %s
+			ORDER BY NAME";
+	$sql = $wpdb->prepare($sql, $characterID);
+	
+	return $wpdb->get_results($sql);
+}
+
+function vtm_get_pm_types() {
+	global $wpdb;
+
+	$sql = "SELECT ID, NAME, DESCRIPTION FROM " . VTM_TABLE_PREFIX . "PM_TYPE;";
+	
+	return $wpdb->get_results($sql);
+}
+
+function vtm_sanitize_pm_code($code) {
+	$code = strtoupper($code);
+	$code = preg_replace('/\s/','',$code); // remove whitespace
+	$code = preg_replace('/[^\w-]/','',$code); // non-alpha characters
+	
+	return $code;
+}
+
+function vtm_get_pm_addressbook($characterID = 0, 
+	$filter_address_type = 'all',
+	$filter_addressbook = 'all') {
+	global $wpdb;
+	global $vtmglobal;
+	global $current_user;
+	
+	if ($characterID == 0){
+		if (!isset($vtmglobal['characterID'])) {
+			get_currentuserinfo();
+			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
+		}
+		$characterID = $vtmglobal['characterID'];
+	}
+	
+	$sqlarray = array();
+	$sqlargs  = array();
+	$filtersql  = "";
+	$filterargs = "";
+	
+	if ( "all" !== $filter_address_type) {
+		$filtersql .= " AND pm.PM_TYPE_ID = %s";
+		$filterargs = $filter_address_type;
+	}
+	
+	// all visible addresses entered by characters
+	$public = "SELECT pm.NAME as NAME,
+			'Public' as ADDRESSBOOK,
+			pm.PM_TYPE_ID as PM_TYPE_ID,
+			pm.PM_CODE,
+			pm.DESCRIPTION,
+			pm.ID as tableID,
+			ch.NAME as charactername,
+			ch.ID as CHARACTER_ID
+		FROM
+			" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS pm,
+			" . VTM_TABLE_PREFIX . "CHARACTER ch,
+			" . VTM_TABLE_PREFIX . "PLAYER player,
+			" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
+			" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+		WHERE
+			pm.CHARACTER_ID = ch.ID
+			AND ch.PLAYER_ID = player.ID
+			AND player.PLAYER_STATUS_ID = pstatus.ID
+			AND cgstatus.ID = ch.CHARGEN_STATUS_ID
+			AND cgstatus.NAME = 'Approved'
+			AND ch.DELETED = 'N'
+			AND ch.VISIBLE = 'Y'
+			AND pstatus.NAME = 'Active'
+			AND pm.VISIBLE = 'Y' " . $filtersql;
+		
+	if ($filter_addressbook == 'all' ||
+		$filter_addressbook == 'public') {
+		array_push($sqlarray, $public);
+		if ($filtersql !== '') {
+			array_push($sqlargs, $filterargs);
+		}
+	}
+		
+	// all addressbook entries added by character
+	$addressbook = "SELECT ab.NAME as NAME,
+			'Private' as ADDRESSBOOK,
+			pm.PM_TYPE_ID as PM_TYPE_ID,
+			ab.PM_CODE,
+			ab.DESCRIPTION,
+			ab.ID as tableID,
+			ch.NAME as charactername,
+			ch.ID as CHARACTER_ID
+		FROM
+			" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK ab,
+			" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS pm,
+			" . VTM_TABLE_PREFIX . "CHARACTER ch,
+			" . VTM_TABLE_PREFIX . "PLAYER player,
+			" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
+			" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+		WHERE
+			pm.CHARACTER_ID = ch.ID
+			AND ch.PLAYER_ID = player.ID
+			AND player.PLAYER_STATUS_ID = pstatus.ID
+			AND cgstatus.ID = ch.CHARGEN_STATUS_ID
+			AND cgstatus.NAME = 'Approved'
+			AND ch.DELETED = 'N'
+			AND ch.VISIBLE = 'Y'
+			AND pstatus.NAME = 'Active'
+			AND ab.PM_CODE = pm.PM_CODE
+			AND ab.CHARACTER_ID = %s " . $filtersql;
+	if ($filter_addressbook == 'all' ||
+		$filter_addressbook == 'private') {
+		array_push($sqlarray, $addressbook);
+		array_push($sqlargs, $characterID, $filterargs);
+	}
+				
+	// all addresses from post office (if enabled) of visible/active/undeleted
+	if (get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == 1) {
+		$location = get_option( 'vtm_pm_ic_postoffice_location', 'Post Office' );
+		
+		$postoffice = "SELECT ch.NAME as NAME,
+				'Post Office' as ADDRESSBOOK,
+				0 as PM_TYPE_ID,
+				'' as PM_CODE,
+				'Addressed message left in a secure location' as DESCRIPTION,
+				ch.ID as tableID,
+				ch.NAME as charactername,
+				ch.ID as CHARACTER_ID
+			FROM 
+				" . VTM_TABLE_PREFIX . "CHARACTER ch,
+				" . VTM_TABLE_PREFIX . "PLAYER player,
+				" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
+				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+			WHERE
+				ch.PLAYER_ID = player.ID
+				AND player.PLAYER_STATUS_ID = pstatus.ID
+				AND cgstatus.ID = ch.CHARGEN_STATUS_ID
+				AND pstatus.NAME = 'Active'
+				AND ch.VISIBLE = 'Y'
+				AND ch.DELETED = 'N'
+				AND cgstatus.NAME = 'Approved'
+			";
+		if ( ($filter_address_type == 'all' || $filter_address_type == 0) &&
+			 ($filter_addressbook == 'all' || $filter_addressbook == 'postoffice') ) {
+			array_push($sqlarray, $postoffice);
+			if ($filtersql !== '') {
+				array_push($sqlargs, $filterargs);
+			}
+		}
+			
+	}
+	$sql = "(" . implode(") UNION (", $sqlarray) . ")";
+	$sql .= " ORDER BY NAME, tableID";
+		
+	//print_r($sqlargs);
+	
+	if (count($sqlargs) > 0) {
+		$sql  = $wpdb->prepare($sql, $sqlargs);
+	}
+	//echo "<p>SQL: $sql</p>";
+	$data = $wpdb->get_results($sql);
+	
+	if (count($data) > 0) {
+		$i = 1;
+		foreach ($data as $row) {
+			$row->ID = $i++;
+		}
+	}
+	
+	return $data;
+}
+
 ?>
