@@ -143,7 +143,7 @@ function vtm_register_character_menu() {
 	add_submenu_page( "character-plugin", "XP Approval",         "XP Approval",         "manage_options", "vtmcharacter-xp",     "vtm_character_experience" );  
 	add_submenu_page( "character-plugin", "Backgrounds",         "Backgrounds",         "manage_options", "vtmcharacter-bg",     "vtm_character_backgrounds" );  
 	add_submenu_page( "character-plugin", "Path Changes",        "Path Changes",        "manage_options", "vtmcharacter-paths",  "vtm_character_master_path" );  
-	if (get_option( 'vtm_feature_maps', '0' ) == 1)
+	if (get_option( 'vtm_feature_temp_stats', '0' ) == 1)
 		add_submenu_page( "character-plugin", "Stat Changes",        "Stat Changes",        "manage_options", "vtmcharacter-stats",  "vtm_character_temp_stats" );  
 	if (get_option( 'vtm_feature_reports', '0' ) == 1)
 		add_submenu_page( "character-plugin", "Reports",             "Reports",             "manage_options", "vtmcharacter-report", "vtm_character_reports" );  

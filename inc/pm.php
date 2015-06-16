@@ -10,14 +10,10 @@
 //	* remove anyone elses custom columns
 //	* Cannot edit sent messages
 //	* reply to message
-//	* View messages sent to you
-//	* Copy of message to storytellers
+//	* Cannot View other people's messages
 //	* Include previous messages in body of message
-//	* Meta box 
-//		- Validate that only ANONYMOUS codes have have no return address
-//		- Validate that non-anonymous must have same PM_TYPE (i.e. phone -> phone)
-//			- Anything can send to Post Office
 //	* Inbox link on widget
+	// // Ensure posts stay 'private' (but trashed ok) 
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -38,22 +34,22 @@ function vtm_PM_post_type() {
 		'not_found_in_trash'  => __( 'Not found in Trash', 'text_domain' ),
 	);
 	$args = array(
-		'label'               => __( 'vtmpm', 'text_domain' ),
+		'label'               => __( 'inbox', 'text_domain' ),
 		'description'         => __( 'Private Message', 'text_domain' ),
 		'labels'              => $labels,
 		'supports'            => array( ),
 		'taxonomies'          => array( ),
 		'hierarchical'        => false,
-		'public'              => false,
+		'public'              => true,
 		'show_ui'             => true,
 		'show_in_menu'        => true,
 		'show_in_nav_menus'   => true,
 		'show_in_admin_bar'   => true,
 		'menu_position'       => 6,
 		'can_export'          => true,
-		'has_archive'         => false,
+		'has_archive'         => true,
 		'exclude_from_search' => true,
-		'publicly_queryable'  => false,
+		'publicly_queryable'  => true,
 		'capability_type'     => 'post',
 		'delete_with_user'    => true,
 		// 'map_meta_cap'        => false,
@@ -81,63 +77,118 @@ function vtm_PM_post_type() {
             'edit_private_posts'     => 'read',
             'edit_published_posts'   => 'read'
         ),
+		//'rewrite' => array('slug' => 'vtmpmxxx'),
 	);
 	register_post_type( 'vtmpm', $args );
+	//flush_rewrite_rules();
 
 }
 
 
-// Hook into the 'init' action
 if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
+	// Hook the custom post type into the 'init' action
+	// --------------------------------------------
 	add_action( 'init', 'vtm_PM_post_type', 0 );
 	
-	// Change the columns for the edit CPT screen
+	// Add extra columns for the List Messages screen
+	// --------------------------------------------
 	function vtm_pm_change_columns( $cols ) {
 		$cols['vtmpmstatus']  =  __( 'Send Status', 'trans' );
 		$cols['vtmfrom']    =  __( 'From', 'trans' );
 		$cols['vtmto']      =  __( 'To', 'trans' );
-		$cols['vtmaddress'] =  __( 'Address', 'trans' );
+		//$cols['vtmaddress'] =  __( 'To Address', 'trans' );
+		//$cols['debug'] =  __( 'Debug', 'trans' );
+		$cols['title'] =  __( 'Title', 'trans' );
 	  return $cols;
 	}
 	add_filter( "manage_vtmpm_posts_columns", "vtm_pm_change_columns" );
 	
+	// Display extra columns on the List Messages screen
+	// --------------------------------------------
 	function vtm_pm_custom_columns( $column, $post_id ) {
+		global $current_user;
+		global $vtmglobal;
+
+		get_currentuserinfo();
+		if (!isset($vtmglobal['characterID'])) {
+			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
+		}
+		$characterID = $vtmglobal['characterID'];
+		
+		$tochid   = get_post_meta( $post_id, '_vtmpm_to_characterID', true );
+		$fromchid = get_post_meta( $post_id, '_vtmpm_from_characterID', true );
+		$authorid = get_post_field( 'post_author', $post_id );
+
+		$toch     = vtm_pm_getchfromid($tochid);
+		$fromch   = vtm_pm_getchfromid($fromchid);
+		$authorch = vtm_pm_getchfromauthid($authorid);
+		$tocode   = vtm_pm_getaddrfromcode(get_post_meta( $post_id, '_vtmpm_to_code', true ));
+		$fromcode = vtm_pm_getaddrfromcode(get_post_meta( $post_id, '_vtmpm_from_code', true ));
+				
 		switch ( $column ) {
 	    case "vtmpmstatus":
-			echo get_post_status( $post_id );
+			switch (get_post_status( $post_id )) {
+				case 'publish': $status = "ZDelivered"; break;
+				case 'trash':   $status = "Deleted"; break;
+				default: $status = "Drafted";
+			}
+			echo "$status";
 			break;
 	    case "vtmfrom":
-			echo "TBD";
+			// sent anonymously
+			if ($fromchid == 'anonymous') {
+				// STs get full information
+				if (vtm_isST()) {
+					echo "$authorch ($fromcode) Anonymous";
+				}
+				// if you sent it, you also get full information
+				elseif ($authorid == $current_user->ID) {
+					echo "$authorch (Anonymous)";
+				}
+				// Otherwise
+				else {
+					echo "$fromch ($fromcode)";
+				}
+			}
+			// not anonymous
+			else {
+				echo "$fromch ($fromcode)";
+			}
 			break;
 	    case "vtmto":
-			echo "TBD";
+			echo "$toch ($tocode)";
 			break;
-	    case "vtmaddress":
-			echo "TBD";
+	    // case "debug":
+			// echo get_post_field( 'post_author', $post_id );
+			// break;
+	    // case "vtmaddress":
+			// $code = get_post_meta( $post_id, '_vtmpm_to_code', true );
+			// echo vtm_pm_getaddrfromcode($code);
+			// break;
 			break;
 		}
 	}
 	add_action( "manage_posts_custom_column", "vtm_pm_custom_columns", 10, 2 );
 
 
-	// Meta box
+	
+	// Add the Meta box to the Edit Post page
+	// --------------------------------------------
 	function vtm_pm_metabox($post_type) {
-		//echo "<li>type: $post_type</li>";
-		//if ( in_array( $post_type, array( 'post', 'page' ) ) ) {
 			add_meta_box(
 				'vtm_pm_metabox',
 				'V:tM Messages',
 				'vtm_pm_metabox_callback',
 				'vtmpm',
-				//'advanced',
-				//'default'
 				'special',
 				'high'
 			);
-		//}
 	}
 	add_action( 'add_meta_boxes', 'vtm_pm_metabox' );
+	
+	// Move the Meta box to the top of the page
+	// --------------------------------------------
  	function vtm_pm_move_metabox() {
 			# Get the globals:
 			global $post, $wp_meta_boxes;
@@ -150,13 +201,15 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	}
 	add_action('edit_form_after_title', 'vtm_pm_move_metabox');
 
+	// Display the Meta Box
+	// --------------------------------------------
 	function vtm_pm_metabox_callback($post) {
 		global $vtmglobal;
 		wp_nonce_field( 'vtm_pm_metabox', 'vtm_pm_metabox_nonce' );
 		
 		$addressbook = vtm_get_pm_addressbook();
 		$myaddresses = vtm_get_pm_addresses();
-		
+
 		$tochid   = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
@@ -170,8 +223,15 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$to   = esc_attr($tochid . ":" . $tocode . ":" . $totype);
 		$from = esc_attr($fromchid . ":" . $fromcode . ":" . $fromtype);
 		
-		echo vtm_validate_vtmpm_metabox($tochid, $tocode, $totype,
-			$fromchid, $fromcode, $fromtype);
+		$status = get_post_meta( $post->ID, 'vtmpm_status', true );
+		echo "<p>Status: $status</p>";
+		//echo "<p>To: $to</p>";
+		//echo "<p>From: $from</p>";
+		
+		$notify = vtm_validate_vtmpm_metabox($post);
+		if (!empty($notify)) {
+			echo "<ul style='color:red;border:1px solid red'>$notify</ul>";
+		}
 				
 		echo "<p>";
 		echo "<label>To: </label><select name='vtm_pm_to'>";
@@ -213,7 +273,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		//print_r($addressbook);
 	}
 	
-	// Add addressbook page 
+	// Add the extra page/menu items
+	// --------------------------------------------
 	function vtmpm_submenus() {
 		add_submenu_page( 'edit.php?post_type=vtmpm', "Address Book", 
 			"Address Book", "read", 'vtmpm_addresses',
@@ -224,6 +285,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	}
 	add_action('admin_menu' , 'vtmpm_submenus'); 
 
+	// Display the address book
+	// --------------------------------------------
 	function vtmpm_render_address_book (){
 		global $current_user;
 		global $vtmglobal;
@@ -259,6 +322,9 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			echo "<p>You do not have a character associated with this Wordpress account.</p>";
 		}		
 	}
+
+	// Display the My Addresses page
+	// --------------------------------------------
 	function vtmpm_render_my_details (){
 		global $current_user;
 		global $vtmglobal;
@@ -296,61 +362,613 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 	}
 	
-	function vtm_pm_save_meta_box_data( $post_id ) {
-
-		//
-		// We need to verify this came from our screen and with proper authorization,
-		// because the save_post action can be triggered at other times.
-		//
-
-		// Check if our nonce is set.
-		if ( ! isset( $_POST['vtm_pm_metabox_nonce'] ) ) {
-			return;
-		}
-		// Verify that the nonce is valid.
-		if ( ! wp_verify_nonce( $_POST['vtm_pm_metabox_nonce'], 'vtm_pm_metabox' ) ) {
-			return;
-		}
-		// If this is an autosave, our form has not been submitted, so we don't want to do anything.
-		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
-			return;
-		}
-
-		// Check the user's permissions.
-		if ( isset( $_POST['post_type'] ) && 'page' == $_POST['post_type'] ) {
-			if ( ! current_user_can( 'edit_page', $post_id ) ) {
-				return;
-			}
-		} else {
-			if ( ! current_user_can( 'edit_post', $post_id ) ) {
-				return;
-			}
-		}
-
-		//OK, it's safe for us to save the data now. 
+	// Display the form for adding My Addresses
+	// --------------------------------------------
+	function vtm_render_pm_address_add_form($type, $addaction) {
+		global $vtmglobal;
+		global $wpdb;
 		
-		// Make sure that it is set.
-		if ( ! isset( $_POST['vtm_pm_to'] ) ) {
-			return;
-		}
+		$id   = isset($_REQUEST[$type]) ? $_REQUEST[$type] : '';
+		$characterID = $vtmglobal['characterID'];
+		
+		if ('fix-' . $type == $addaction) {
+			$name    = $_REQUEST[$type . "_name"];
+			$desc    = $_REQUEST[$type . "_desc"];
+			$visible = $_REQUEST[$type . '_visible'];
+			$code    = $_REQUEST[$type . '_code'];
+			$pm_type_id = $_REQUEST[$type . '_pmtype'];
+			$default = $_REQUEST[$type . '_default'];
+			
+			$nextaction = $_REQUEST['action'];
 
+		} elseif ('edit-' . $type == $addaction) {
+			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS WHERE ID = %s";
+			$sql = $wpdb->prepare($sql, $id);
+			$data =$wpdb->get_row($sql);
+			
+			$name       = $data->NAME;
+			$desc       = $data->DESCRIPTION;
+			$visible    = $data->VISIBLE;
+			$code       = $data->PM_CODE;
+			$pm_type_id = $data->PM_TYPE_ID;
+			$default    = $data->ISDEFAULT;
+			
+			$nextaction = "save";
+
+		} else {
+			$name = "";
+			$desc = "";
+			$code = "";
+			$visible= "N";
+			$pm_type_id = 1;
+			$default = 'N';
+			
+			$nextaction = "add";
+		}
+		
+		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+		$current_url = remove_query_arg( 'action', $current_url );
+		?>
+		<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
+			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
+			<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+			<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
+			<table>
+			<tr>
+				<td>Public Name:</td>
+				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+				<td>Type:</td>
+				<td>
+					<select name="<?php print $type; ?>_pmtype">
+						<?php
+							foreach (vtm_get_pm_types() as $pmtype) {
+								print "<option value='{$pmtype->ID}' ";
+								($pmtype->ID == $pm_type_id) ? print "selected" : print "";
+								echo ">" . vtm_formatOutput($pmtype->NAME) . "</option>";
+							}
+						?>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Code/Number:</td>
+				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=20 /></td>
+				<td>Show on public addressbook:</td>
+				<td>
+					<select name="<?php print $type; ?>_visible">
+						<option value="N" <?php selected($visible, "N"); ?>>No</option>
+						<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>Description:</td>
+				<td><textarea name="<?php print $type; ?>_desc"><?php print vtm_formatOutput($desc); ?></textarea></td> 
+				<td>Default for sending messages:</td>
+				<td>
+					<select name="<?php print $type; ?>_default">
+						<option value="N" <?php selected($default, "N"); ?>>No</option>
+						<option value="Y" <?php selected($default, "Y"); ?>>Yes</option>
+					</select>
+				</td>
+			</tr>
+			</table>
+			<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
+		</form>
+		<?php
+		
+	}
+	
+	// Display the form for adding to your addressbook
+	// --------------------------------------------
+	function vtm_render_pm_addressbook_add_form($type, $addaction) {
+		global $vtmglobal;
+		global $wpdb;
+		
+		$id   = isset($_REQUEST[$type]) ? $_REQUEST[$type] : '';
+		$characterID = $vtmglobal['characterID'];
+		
+		if ('fix-' . $type == $addaction) {
+			$name    = $_REQUEST[$type . "_name"];
+			$desc    = $_REQUEST[$type . "_desc"];
+			$code    = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
+			$tableID = $_REQUEST[$type . "_id"];
+			
+			$nextaction = $_REQUEST['action'];
+
+		} elseif ('edit-' . $type == $addaction) {
+			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK WHERE ID = %s";
+			$sql = $wpdb->prepare($sql, $id);
+			$data =$wpdb->get_row($sql);
+			
+			$name       = $data->NAME;
+			$desc       = $data->DESCRIPTION;
+			$code       = $data->PM_CODE;
+			$tableID 	= $data->ID;
+			
+			$nextaction = "save";
+
+		} else {
+			$name = "";
+			$desc = "";
+			$code = "";
+			$tableID = 0;
+			
+			$nextaction = "add";
+		}
+		
+		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+		$current_url = remove_query_arg( 'action', $current_url );
+		?>
+		<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
+			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
+			<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+			<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
+			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $tableID; ?>" />
+			<table>
+			<tr>
+				<td>Name:</td>
+				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+				<td>Code/Number:</td>
+				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=20 /></td>
+			</tr>
+			<tr>
+				<td>Description:</td>
+				<td colspan=3><textarea name="<?php print $type; ?>_desc"><?php print vtm_formatOutput($desc); ?></textarea></td> 
+			</tr>
+			</table>
+			<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
+		</form>
+		<?php
+		
+	}
+
+	// Validate My Addresses
+	// --------------------------------------------
+	function vtm_pm_address_input_validation($type) {
+		global $wpdb;
+		global $vtmglobal;
+		
+		$doaction = '';
+		
+		if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit')
+			$doaction = "edit-$type";
+
+		if (!empty($_REQUEST[$type . '_name'])){
+		
+			$doaction = $_REQUEST['action'] . "-" . $type;
+			
+			if (empty($_REQUEST[$type . '_desc']) || $_REQUEST[$type . '_desc'] == "") {
+				$doaction = "fix-$type";
+				echo "<p style='color:red'>ERROR: Description is missing</p>";
+			}
+			if (empty($_REQUEST[$type . '_code']) || $_REQUEST[$type . '_code'] == "") {
+				$doaction = "fix-$type";
+				echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode is missing</p>";
+			} else {
+				$code = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
+				
+				// CODE MUST BE UNIQUE
+				// Other character using it?
+				// Own character using it?
+				$sql = "SELECT COUNT(ID) 
+					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+					WHERE CHARACTER_ID != %s AND PM_CODE = %s";
+				$sql = $wpdb->prepare($sql, $vtmglobal['characterID'], $code);
+				if ($wpdb->get_var($sql) > 0) {
+					$doaction = "fix-$type";
+					echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode already in use by another character</p>";
+				}
+				
+				if ($_REQUEST['action'] == 'add') {
+					$sql = "SELECT COUNT(ID) 
+						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+						WHERE CHARACTER_ID = %s AND PM_CODE = %s";
+					$sql = $wpdb->prepare($sql, $vtmglobal['characterID'], $code);
+					if ($wpdb->get_var($sql) > 0) {
+						$doaction = "fix-$type";
+						echo "<p style='color:red'>ERROR: You have already used Phone number/postcode/zipcode already</p>";
+					}
+				}
+				
+			}
+				
+		}
+		
+		return $doaction;
+
+	}
+
+	// Validate Addressbook entry
+	// --------------------------------------------
+	function vtm_pm_addressbook_input_validation($type) {
+		global $wpdb;
+		global $vtmglobal;
+		
+		$doaction = '';
+		
+		if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit')
+			$doaction = "edit-$type";
+
+		if (!empty($_REQUEST[$type . '_name'])){
+		
+			$doaction = $_REQUEST['action'] . "-" . $type;
+			
+			if (empty($_REQUEST[$type . '_desc']) || $_REQUEST[$type . '_desc'] == "") {
+				$doaction = "fix-$type";
+				echo "<p style='color:red'>ERROR: Description is missing</p>";
+			}
+			if (empty($_REQUEST[$type . '_code']) || $_REQUEST[$type . '_code'] == "") {
+				$doaction = "fix-$type";
+				echo "<p style='color:red'>ERROR: Code is missing</p>";
+			} else {
+				$code = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
+				// Can we match the code up?
+				$sql = "SELECT COUNT(ID) 
+					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+					WHERE PM_CODE = %s";
+				$sql = $wpdb->prepare($sql, $code);
+				if ($wpdb->get_var($sql) == 0) {
+					$doaction = "fix-$type";
+					echo "<p style='color:red'>ERROR: That code does not exist</p>";
+				}
+				else {
+					// Is it already visible?
+					$sql = "SELECT COUNT(ID) 
+						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+						WHERE PM_CODE = %s AND VISIBLE = 'Y'";
+					$sql = $wpdb->prepare($sql, $code);
+					if ($wpdb->get_var($sql) > 0) {
+						$doaction = "fix-$type";
+						echo "<p style='color:red'>ERROR: That code is a public address and already listed</p>";
+					}
+					
+					// Is it one of your own?
+					$sql = "SELECT COUNT(ID) 
+						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+						WHERE PM_CODE = %s AND CHARACTER_ID = %s";
+					$sql = $wpdb->prepare($sql, $code, $vtmglobal['characterID']);
+					if ($wpdb->get_var($sql) > 0) {
+						$doaction = "fix-$type";
+						echo "<p style='color:red'>ERROR: That is one of your own codes</p>";
+					}
+				}
+				
+				
+			}
+		}
+		
+		return $doaction;
+
+	}
+
+	// Report issues on post meta data
+	// --------------------------------------------
+	function vtm_validate_vtmpm_metabox($post) {
+		global $wpdb;
+
+		$tochid   = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
+		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
+		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
+		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
+		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
+		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
+		
+		$tocode   = $totype == 0   ? 'postoffice' : $tocode;
+		$fromcode = $fromtype == 0 ? 'postoffice' : $fromcode;
+		
+		$to   = esc_attr($tochid . ":" . $tocode . ":" . $totype);
+		$from = esc_attr($fromchid . ":" . $fromcode . ":" . $fromtype);
+			
+		$output = "";
+		
+		// anytype/one can sent TO the postoffice 
+		if ($totype == 0) {
+			$output = "";
+		}
+		// sending anonymously?
+		elseif ($fromtype == 0) {
+			// Yes
+			$allow = $wpdb->get_var($wpdb->prepare(
+				"SELECT ISANONYMOUS FROM " . VTM_TABLE_PREFIX . "PM_TYPE
+				WHERE ID = %s", $totype));
+			
+			if ($allow == 'N') {
+			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totype));
+			$to_ana = strtoupper(substr($to, 0, 1)) == 'A' ? 'an' : 'a';
+				$output .= "<li>You cannot send to $to_ana $to anonymously</li>";
+			}
+		} 
+		// No - to and from must be same type/method 
+		elseif ($fromtype != $totype) {
+			$from = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $fromtype));
+			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totype));
+			
+			$from_ana = strtoupper(substr($from, 0, 1)) == 'A' ? 'an' : 'a';
+			$to_ana = strtoupper(substr($to, 0, 1)) == 'A' ? 'an' : 'a';
+			
+			$output .= "<li>You cannot send a message from $from_ana $from to $to_ana $to</li>";
+		}
+		
+		return $output;
+	}
+
+	// Save meta data and check the post status transition
+	// Restore to Draft any posts with fails on publish_post/publish_vtmpm
+	// --------------------------------------------
+	function vtm_pm_check_post_transition( $new_status, $old_status, $post ) {
 		// Sanitize user input.
-		$to   = explode(":",sanitize_text_field( $_POST['vtm_pm_to'] ));
-		$from = explode(":",sanitize_text_field( $_POST['vtm_pm_from'] ));
+		if (isset($_POST['vtm_pm_to'])) {
+			$to   = explode(":",sanitize_text_field( $_POST['vtm_pm_to'] ));
+			$from = explode(":",sanitize_text_field( $_POST['vtm_pm_from'] ));
+		} else {
+			$to = array(0,0,0);
+			$from = array(0,0,0);
+		}
 		
 		// Update the meta field in the database.
-		update_post_meta( $post_id, '_vtmpm_to_characterID', $to[0] );
-		update_post_meta( $post_id, '_vtmpm_to_code', $to[1] );
-		update_post_meta( $post_id, '_vtmpm_to_type', $to[2] );
-		update_post_meta( $post_id, '_vtmpm_from_characterID', $from[0] );
-		update_post_meta( $post_id, '_vtmpm_from_code', $from[1] );
-		update_post_meta( $post_id, '_vtmpm_from_type', $from[2] );
-		
-	}	
-	add_action( 'save_post', 'vtm_pm_save_meta_box_data' );
+		update_post_meta( $post->ID, '_vtmpm_to_characterID', $to[0] );
+		update_post_meta( $post->ID, '_vtmpm_to_code', $to[1] );
+		update_post_meta( $post->ID, '_vtmpm_to_type', $to[2] );
+		update_post_meta( $post->ID, '_vtmpm_from_characterID', $from[0] );
+		update_post_meta( $post->ID, '_vtmpm_from_code', $from[1] );
+		update_post_meta( $post->ID, '_vtmpm_from_type', $from[2] );
+
+		if ( $new_status == 'publish' ) {
+
+			$notify = vtm_validate_vtmpm_metabox($post);
+			
+			if (!empty($notify)) {
+				$msg = "Publish failed";
+				vtm_change_post_status($post->ID, 'draft');
+			} else {
+				$msg = "Message sent";
+			}
+
+		} 
+		else {
+			$msg = "Message updated";
+		}
+		update_post_meta( $post->ID, 'vtmpm_status', $msg);
+	}
+	add_action( 'transition_post_status', 'vtm_pm_check_post_transition', 15, 3 );
+
+
+	 //function <function>( $post_id, $post, $update ) {
+	//$post_id - The ID of the post you'd like to change.
+	//$status -  The post status publish|pending|draft|private|static|object|attachment|inherit|future|trash.
+	function vtm_change_post_status($post_id,$status){
+		$current_post = get_post( $post_id, 'ARRAY_A' );
+		$current_post['post_status'] = $status;
+		wp_update_post($current_post, true);
+		if (is_wp_error($post_id)) {
+			$errors = $post_id->get_error_messages();
+			foreach ($errors as $error) {
+				echo $error;
+			}
+		}
+	}
+
+	// Filter functions
+	// --------------------------------------------
+	// SQL WP_QUERY WHERE
+	function vtm_pm_get_posts( $where ) {
+		global $pagenow;
+		if (isset($_GET['post_type'])) {
+			$type = $_GET['post_type'];
+		} else {
+			$type = 'post';
+		}
+		if ( 'vtmpm' == $type && 
+			is_admin() && 
+			$pagenow=='edit.php' && 
+			!vtm_isST()) {
+
+			global $wpdb;
+			global $current_user;
+			$type = 'vtmpm';
+			get_currentuserinfo();
+			
+			$chid = vtm_pm_getchidfromauthid($current_user->ID);
+
+			$where .= " AND (";
+			// show posts TO the logged in character
+			$where .= "({$wpdb->postmeta}.meta_key = '_vtmpm_to_characterID' AND
+							{$wpdb->postmeta}.meta_value = '" . $chid . "')";
+			// show posts FROM the logged in character 
+			$where .= " OR ";
+			$where .= "({$wpdb->posts}.post_author = '" . $current_user->ID . "'
+						AND {$wpdb->postmeta}.meta_key = '_vtmpm_from_characterID')";
+			
+			
+			$where .= ")";
+			//echo "$where";
+		}
+		return $where;
+	}
+	add_filter( 'posts_where' , 'vtm_pm_get_posts' );
 	
+	// SQL WP_QUERY JOIN
+	function vtm_pm_get_posts_join($join){
+		global $pagenow;
+		if (isset($_REQUEST['post_type'])) {
+			$type = $_REQUEST['post_type'];
+		} else {
+			$type = 'post';
+		}
+		if ( 'vtmpm' == $type && 
+			is_admin() && 
+			$pagenow=='edit.php' && 
+			!vtm_isST()) {
+
+			 global $wpdb;
+
+			 $join .= " LEFT JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id ";
+
+		}
+		return $join;
+	}
+	add_filter( 'posts_join' , 'vtm_pm_get_posts_join');
+
+	// And ensure the counts at the top of the page are correct
+	function vtm_pm_get_posts_count( $views ) {
+		$post_type = get_query_var('post_type');
+
+		//print_r($views);
+		// unset($views['mine']);
+
+		$new_views = array(
+				'all'       => __('All'),
+				'publish'   => __('Published'),
+				'private'   => __('Private'),
+				'pending'   => __('Pending Review'),
+				'future'    => __('Scheduled'),
+				'draft'     => __('Draft'),
+				'trash'     => __('Trash')
+				);
+
+		foreach( $new_views as $view => $name ) {
+
+			$query = array(
+				'post_type'   => $post_type
+			);
+
+			if($view == 'all') {
+
+				$query['all_posts'] = 1;
+				$class = ( get_query_var('all_posts') == 1 || get_query_var('post_status') == '' ) ? ' class="current"' : '';
+				$url_query_var = 'all_posts=1';
+
+			} else {
+
+				$query['post_status'] = $view;
+				$class = ( get_query_var('post_status') == $view ) ? ' class="current"' : '';
+				$url_query_var = 'post_status='.$view;
+
+			}
+			
+			// need to add our where and joins into the query
+
+			$result = new WP_Query($query);
+
+			if($result->found_posts > 0) {
+
+				$views[$view] = sprintf(
+					'<a href="%s"'. $class .'>'.__($name).' <span class="count">(%d)</span></a>',
+					admin_url('edit.php?'.$url_query_var.'&post_type='.$post_type),
+					$result->found_posts
+				);
+
+			} else {
+
+				unset($views[$view]);
+
+			}
+
+		}
+
+		return $views;
+	}	
+	function vtm_pm_get_posts_count_filter( $query ) {
+		//Note that current_user_can('edit_others_posts') check for
+		//capability_type like posts, custom capabilities may be defined for custom posts
+		if( is_admin() && $query->is_main_query() ) {
+			//print_r($query);
+			//For standard posts
+			add_filter('views_edit-vtmpm', 'vtm_pm_get_posts_count' );
+		}
+	}
+	add_action( 'pre_get_posts', 'vtm_pm_get_posts_count_filter' );
+	
+
+	// General functions
+	// --------------------------------------------
+	
+	function vtm_pm_getaddrfromcode($code) {
+		
+		if ($code == 'postoffice')
+			return get_option( 'vtm_pm_ic_postoffice_location' );
+		
+		global $wpdb;
+		$sql = "SELECT NAME
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+				WHERE PM_CODE = %s";
+		$sql = $wpdb->prepare($sql, $code);
+		return $wpdb->get_var($sql);
+	}
+	function vtm_pm_getchfromid($characterID) {
+		global $wpdb;
+		$sql = "SELECT NAME
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER
+				WHERE ID = %s";
+		$sql = $wpdb->prepare($sql, $characterID);
+		
+		$name = $wpdb->get_var($sql);
+		
+		if (!isset($name)) 
+			$name = "Anonymous";
+		
+		return $name;
+	}
+	function vtm_pm_getchfromauthid($authorID) {
+		global $wpdb;
+		
+		$wordpressid = get_the_author_meta( 'user_login', $authorID );
+		
+		$sql = "SELECT NAME
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER
+				WHERE WORDPRESS_ID = %s";
+		$sql = $wpdb->prepare($sql, $wordpressid);
+		
+		$name = $wpdb->get_var($sql);
+		
+		if (!isset($name)) 
+			$name = $wordpressid;
+		
+		return $name;
+	}
+	function vtm_pm_getchidfromauthid($authorID) {
+		global $wpdb;
+		
+		$wordpressid = get_the_author_meta( 'user_login', $authorID );
+		
+		$sql = "SELECT ID
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER
+				WHERE WORDPRESS_ID = %s";
+		$sql = $wpdb->prepare($sql, $wordpressid);
+		
+		$characterID = $wpdb->get_var($sql);
+		
+		return $characterID;
+	}
+	
+	// LIST MESSAGES ACTIONS
+	// --------------------------------------------
+	// Remove edit and quick edit for published pms from row
+	function vtm_pm_remove_row_actions( $actions, $post ) {
+		global $current_screen;
+		if( $current_screen->post_type == 'vtmpm' && get_post_status( $post->ID ) == 'publish') {
+			unset( $actions['edit'] );
+			unset( $actions['inline hide-if-no-js'] );
+		}
+		return $actions;
+	}
+	add_filter( 'post_row_actions', 'vtm_pm_remove_row_actions', 10, 2 );
+
+	// Remove edit from bulk actions
+    function vtm_pm_bulk_actions( $actions ){
+ 		global $current_screen;
+		if( $current_screen->post_type == 'vtmpm') {
+			unset( $actions[ 'edit' ] );
+		}
+        return $actions;
+    }	
+	add_filter( 'bulk_actions-edit-vtmpm', 'vtm_pm_bulk_actions' );
 }
 
+//---------------------------------------------------
+// CLASSES
+//---------------------------------------------------
 
 class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
    
@@ -880,326 +1498,6 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
         ) );
     }
 
-}
-function vtm_render_pm_address_add_form($type, $addaction) {
-	global $vtmglobal;
-	global $wpdb;
-	
-	$id   = isset($_REQUEST[$type]) ? $_REQUEST[$type] : '';
-	$characterID = $vtmglobal['characterID'];
-	
-	if ('fix-' . $type == $addaction) {
-		$name    = $_REQUEST[$type . "_name"];
-		$desc    = $_REQUEST[$type . "_desc"];
-		$visible = $_REQUEST[$type . '_visible'];
-		$code    = $_REQUEST[$type . '_code'];
-		$pm_type_id = $_REQUEST[$type . '_pmtype'];
-		$default = $_REQUEST[$type . '_default'];
-		
-		$nextaction = $_REQUEST['action'];
-
-	} elseif ('edit-' . $type == $addaction) {
-		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_row($sql);
-		
-		$name       = $data->NAME;
-		$desc       = $data->DESCRIPTION;
-		$visible    = $data->VISIBLE;
-		$code       = $data->PM_CODE;
-		$pm_type_id = $data->PM_TYPE_ID;
-		$default    = $data->ISDEFAULT;
-		
-		$nextaction = "save";
-
-	} else {
-		$name = "";
-		$desc = "";
-		$code = "";
-		$visible= "N";
-		$pm_type_id = 1;
-		$default = 'N';
-		
-		$nextaction = "add";
-	}
-	
-	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-	$current_url = remove_query_arg( 'action', $current_url );
-	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
-		<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
-		<table>
-		<tr>
-			<td>Public Name:</td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
-			<td>Type:</td>
-			<td>
-				<select name="<?php print $type; ?>_pmtype">
-					<?php
-						foreach (vtm_get_pm_types() as $pmtype) {
-							print "<option value='{$pmtype->ID}' ";
-							($pmtype->ID == $pm_type_id) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($pmtype->NAME) . "</option>";
-						}
-					?>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td>Code/Number:</td>
-			<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=20 /></td>
-			<td>Show on public addressbook:</td>
-			<td>
-				<select name="<?php print $type; ?>_visible">
-					<option value="N" <?php selected($visible, "N"); ?>>No</option>
-					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
-				</select>
-			</td>
-		</tr>
-		<tr>
-			<td>Description:</td>
-			<td><textarea name="<?php print $type; ?>_desc"><?php print vtm_formatOutput($desc); ?></textarea></td> 
-			<td>Default for sending messages:</td>
-			<td>
-				<select name="<?php print $type; ?>_default">
-					<option value="N" <?php selected($default, "N"); ?>>No</option>
-					<option value="Y" <?php selected($default, "Y"); ?>>Yes</option>
-				</select>
-			</td>
-		</tr>
-		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
-	</form>
-	<?php
-	
-}
-function vtm_render_pm_addressbook_add_form($type, $addaction) {
-	global $vtmglobal;
-	global $wpdb;
-	
-	$id   = isset($_REQUEST[$type]) ? $_REQUEST[$type] : '';
-	$characterID = $vtmglobal['characterID'];
-	
-	if ('fix-' . $type == $addaction) {
-		$name    = $_REQUEST[$type . "_name"];
-		$desc    = $_REQUEST[$type . "_desc"];
-		$code    = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
-		$tableID = $_REQUEST[$type . "_id"];
-		
-		$nextaction = $_REQUEST['action'];
-
-	} elseif ('edit-' . $type == $addaction) {
-		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_row($sql);
-		
-		$name       = $data->NAME;
-		$desc       = $data->DESCRIPTION;
-		$code       = $data->PM_CODE;
-		$tableID 	= $data->ID;
-		
-		$nextaction = "save";
-
-	} else {
-		$name = "";
-		$desc = "";
-		$code = "";
-		$tableID = 0;
-		
-		$nextaction = "add";
-	}
-	
-	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
-	$current_url = remove_query_arg( 'action', $current_url );
-	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
-		<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $tableID; ?>" />
-		<table>
-		<tr>
-			<td>Name:</td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
-			<td>Code/Number:</td>
-			<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=20 /></td>
-		</tr>
-		<tr>
-			<td>Description:</td>
-			<td colspan=3><textarea name="<?php print $type; ?>_desc"><?php print vtm_formatOutput($desc); ?></textarea></td> 
-		</tr>
-		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
-	</form>
-	<?php
-	
-}
-
-function vtm_pm_address_input_validation($type) {
-	global $wpdb;
-	global $vtmglobal;
-	
-	$doaction = '';
-	
-	if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit')
-		$doaction = "edit-$type";
-
-	if (!empty($_REQUEST[$type . '_name'])){
-	
-		$doaction = $_REQUEST['action'] . "-" . $type;
-		
-		if (empty($_REQUEST[$type . '_desc']) || $_REQUEST[$type . '_desc'] == "") {
-			$doaction = "fix-$type";
-			echo "<p style='color:red'>ERROR: Description is missing</p>";
-		}
-		if (empty($_REQUEST[$type . '_code']) || $_REQUEST[$type . '_code'] == "") {
-			$doaction = "fix-$type";
-			echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode is missing</p>";
-		} else {
-			$code = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
-			
-			// CODE MUST BE UNIQUE
-			// Other character using it?
-			// Own character using it?
-			$sql = "SELECT COUNT(ID) 
-				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-				WHERE CHARACTER_ID != %s AND PM_CODE = %s";
-			$sql = $wpdb->prepare($sql, $vtmglobal['characterID'], $code);
-			if ($wpdb->get_var($sql) > 0) {
-				$doaction = "fix-$type";
-				echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode already in use by another character</p>";
-			}
-			
-			if ($_REQUEST['action'] == 'add') {
-				$sql = "SELECT COUNT(ID) 
-					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-					WHERE CHARACTER_ID = %s AND PM_CODE = %s";
-				$sql = $wpdb->prepare($sql, $vtmglobal['characterID'], $code);
-				if ($wpdb->get_var($sql) > 0) {
-					$doaction = "fix-$type";
-					echo "<p style='color:red'>ERROR: You have already used Phone number/postcode/zipcode already</p>";
-				}
-			}
-			
-		}
-			
-	}
-	
-	return $doaction;
 
 }
-function vtm_pm_addressbook_input_validation($type) {
-	global $wpdb;
-	global $vtmglobal;
-	
-	$doaction = '';
-	
-	if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit')
-		$doaction = "edit-$type";
-
-	if (!empty($_REQUEST[$type . '_name'])){
-	
-		$doaction = $_REQUEST['action'] . "-" . $type;
-		
-		if (empty($_REQUEST[$type . '_desc']) || $_REQUEST[$type . '_desc'] == "") {
-			$doaction = "fix-$type";
-			echo "<p style='color:red'>ERROR: Description is missing</p>";
-		}
-		if (empty($_REQUEST[$type . '_code']) || $_REQUEST[$type . '_code'] == "") {
-			$doaction = "fix-$type";
-			echo "<p style='color:red'>ERROR: Code is missing</p>";
-		} else {
-			$code = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
-			// Can we match the code up?
-			$sql = "SELECT COUNT(ID) 
-				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-				WHERE PM_CODE = %s";
-			$sql = $wpdb->prepare($sql, $code);
-			if ($wpdb->get_var($sql) == 0) {
-				$doaction = "fix-$type";
-				echo "<p style='color:red'>ERROR: That code does not exist</p>";
-			}
-			else {
-				// Is it already visible?
-				$sql = "SELECT COUNT(ID) 
-					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-					WHERE PM_CODE = %s AND VISIBLE = 'Y'";
-				$sql = $wpdb->prepare($sql, $code);
-				if ($wpdb->get_var($sql) > 0) {
-					$doaction = "fix-$type";
-					echo "<p style='color:red'>ERROR: That code is a public address and already listed</p>";
-				}
-				
-				// Is it one of your own?
-				$sql = "SELECT COUNT(ID) 
-					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-					WHERE PM_CODE = %s AND CHARACTER_ID = %s";
-				$sql = $wpdb->prepare($sql, $code, $vtmglobal['characterID']);
-				if ($wpdb->get_var($sql) > 0) {
-					$doaction = "fix-$type";
-					echo "<p style='color:red'>ERROR: That is one of your own codes</p>";
-				}
-			}
-			
-			
-		}
-	}
-	
-	return $doaction;
-
-}
-
-// Report issues on save_post/save_post_vtmpm
-// Restore to Draft any posts with fails on publish_post/publish_vtmpm
-// Ensure posts stay 'private' (but trashed ok) 
-
- // * Save post metadata when a post is saved.
- // *
- // * @param int $post_id The post ID.
- // * @param post $post The post object.
- // * @param bool $update Whether this is an existing post being updated or not.
-function vtm_validate_vtmpm_metabox($tochid, $tocode, $totype,
-			$fromchid, $fromcode, $fromtype) {
-	global $wpdb;
-	
-	$output = "";
-	
-	// anytype/one can sent TO the postoffice 
-	if ($totype == 0) {
-		$output = "";
-	}
-	// sending anonymously?
-	elseif ($fromtype == 0) {
-		// Yes
-		$allow = $wpdb->get_var($wpdb->prepare(
-			"SELECT ISANONYMOUS FROM " . VTM_TABLE_PREFIX . "PM_TYPE
-			WHERE ID = %s", $totype));
-		
-		if ($allow == 'N')
-			$output .= "<li>anonymous FAIL</li>";
-	} 
-	// No - to and from must be same type/method 
-	elseif ($fromtype != $totype) {
-		$output .= "<li>type mismatch</li>";
-	}
-	
-	return $output;
-}
-
- //function <function>( $post_id, $post, $update ) {
-/*
-$post_id - The ID of the post you'd like to change.
-$status -  The post status publish|pending|draft|private|static|object|attachment|inherit|future|trash.
-*/
-/*
-function change_post_status($post_id,$status){
-    $current_post = get_post( $post_id, 'ARRAY_A' );
-    $current_post['post_status'] = $status;
-    wp_update_post($current_post);
-}
-*/
-
-
 ?>
