@@ -611,3 +611,32 @@ table.feedingmapkey {width:auto;}
 #chargen-main .ritrowselect  label {
 	padding-left:2em;
 }
+
+/* =Private Messaging
+-------------------------------------------------------------- */
+.vtm_pmhead {
+	border-bottom: 1px dotted;
+	font-size: 0.8em;
+}
+.vtm_pmhead span {
+	display:block;
+}
+.vtm_pmfoot {
+	border-top: 1px dotted;
+	font-size: 0.8em;
+}
+.vtm_pmmsg {
+	/* border: 1px solid green; */
+}
+.vtm_pmhistory {
+	margin-left:2em;
+}
+.vtm_pmhistory .vtm_pmhead{
+	border: 1px solid gray;
+	background-color: lightgray;
+	font-size: 0.8em;
+	color: #333333;
+}
+.vtm_pmhistory .entry-content{
+	margin-bottom: 1em;
+}

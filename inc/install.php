@@ -8,7 +8,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.2"; 
-$vtm_character_db_version = "60b"; 
+$vtm_character_db_version = "60"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -1057,6 +1057,11 @@ function vtm_character_install_data() {
 								'WP_PAGE_ID' => '',
 								'ORDERING' => 8,
 						),
+		// 'viewPM' => array(	'VALUE' => 'viewPM',
+							// 'DESCRIPTION' => 'View Private Messages',
+							// 'WP_PAGE_ID' => '',
+							// 'ORDERING' => 9,
+						// ),
 	);
 	foreach ($data as $key => $entry) {
 		$sql = "select VALUE from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";

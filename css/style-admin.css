@@ -112,3 +112,15 @@ div.datatables_detail {
 tr.template_option_row > td {
 	border-bottom: 1px dotted grey;
 }
+
+/* =Messaging
+-------------------------------------------------------------- */
+.vtmpm_title {
+}
+.vtmpm_title.unread {
+	font-weight:bold;
+}
+.vtmpm_title.read {
+	font-weight:auto;
+	font-style:italic;
+}
