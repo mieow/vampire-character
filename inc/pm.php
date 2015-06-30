@@ -9,13 +9,18 @@
 //	* remove anyone elses custom meta boxes
 //	* remove anyone elses custom columns
 //	* Cannot edit sent messages
-//	* Cannot View other people's messages
-//	* Inbox link on widget
+//	* Cannot View (or edit?) other people's messages
+//	* Add unread count to inbox link on widget
 // 	* Mark read/unread actions, and bulk actions
 //	* check [empty trash] button
 //	* No edit link in menu bar at top
 //	* Add new contacts (via link on list table) to addressbook.
-//	register_post_status( $post_status, $args );
+//	* Storytellers can:
+//		- See all messages
+//		- Send a message to/from anyone (doesn't show on from list?)
+//		- Properly trash message 
+//		- ...
+//	* No 'undo' message when you trash something
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -148,13 +153,13 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					if ($info['IsPMOwner']) {
 						$status = "Delivered"; 
 					} else {
-						$status = ucwords(get_post_meta( $post_id, '_vtmpm_readstatus', true ));
+						$status = ucwords(get_post_meta( $post_id, '_vtmpm_to_status', true ));
 					}
 					break;
 				case 'trash':   $status = "Deleted"; break;
 				default: $status = "Drafted";
 			}
-			echo "$status";
+			echo "$status (" . get_post_meta( $post_id, '_vtmpm_to_status', true ) . " / " . get_post_meta( $post_id, '_vtmpm_from_status', true ) . ")";
 			break;
 	    case "vtmfrom":
 			// // sent anonymously
@@ -220,7 +225,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				if (get_post_field( 'post_author', $post_ID ) == $current_user->ID) {
 					$readclass = "read";
 				} else {
-					$readclass = get_post_meta( $post_ID, '_vtmpm_readstatus', true );
+					$readclass = get_post_meta( $post_ID, '_vtmpm_to_status', true );
 				}
 			} else {
 				$readclass = "unread";
@@ -342,6 +347,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
 		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
+		$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
 		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
 		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
 		
@@ -373,7 +379,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				
 			}
 		} else {
-			$notify = vtm_validate_vtmpm_metabox($post);
+			$notify = vtm_pm_validate_metabox($post);
 			if (!empty($notify)) {
 				echo "<ul style='color:red;border:1px solid red'>$notify</ul>";
 			}
@@ -806,13 +812,14 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 	// Report issues on post meta data
 	// --------------------------------------------
-	function vtm_validate_vtmpm_metabox($post) {
+	function vtm_pm_validate_metabox($post) {
 		global $wpdb;
 
 		$tochid   = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
 		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
+		$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
 		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
 		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
 		
@@ -867,37 +874,61 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		if (isset($_POST['vtm_pm_to'])) {
 			$to   = explode(":",sanitize_text_field( $_POST['vtm_pm_to'] ));
 			$from = explode(":",sanitize_text_field( $_POST['vtm_pm_from'] ));
+
+			update_post_meta( $post->ID, '_vtmpm_to_characterID', $to[0] );
+			update_post_meta( $post->ID, '_vtmpm_to_code', $to[1] );
+			update_post_meta( $post->ID, '_vtmpm_to_type', $to[2] );
+			update_post_meta( $post->ID, '_vtmpm_from_characterID', $from[0] );
+			update_post_meta( $post->ID, '_vtmpm_from_code', $from[1] );
+			update_post_meta( $post->ID, '_vtmpm_from_type', $from[2] );
 		} else {
 			$to = array(0,0,0);
 			$from = array(0,0,0);
 		}
 		
+		$msg = "";
+		
 		// Update the meta field in the database.
-		update_post_meta( $post->ID, '_vtmpm_to_characterID', $to[0] );
-		update_post_meta( $post->ID, '_vtmpm_to_code', $to[1] );
-		update_post_meta( $post->ID, '_vtmpm_to_type', $to[2] );
-		update_post_meta( $post->ID, '_vtmpm_from_characterID', $from[0] );
-		update_post_meta( $post->ID, '_vtmpm_from_code', $from[1] );
-		update_post_meta( $post->ID, '_vtmpm_from_type', $from[2] );
+		update_post_meta( $post->ID, '_vtmpm_from_actual_characterID', $post->post_author );
 
-		if ( $new_status == 'publish' ) {
-
-			$notify = vtm_validate_vtmpm_metabox($post);
+		if ( $new_status == 'publish') {
+			$notify = vtm_pm_validate_metabox($post);
 			
 			if (!empty($notify)) {
 				$msg = "Publish failed";
 				vtm_change_post_status($post->ID, 'draft');
+				update_post_meta( $post->ID, '_vtmpm_from_status', 'draft' );
 			} else {
 				$msg = "Message sent";
+				update_post_meta( $post->ID, '_vtmpm_from_status', 'sent' );
 			}
 			
-			if ($old_status != 'publish') {
-				update_post_meta( $post->ID, '_vtmpm_readstatus', 'unread' );
+			if ($old_status != 'publish' && $old_status != 'trash') {
+				update_post_meta( $post->ID, '_vtmpm_to_status', 'unread' );
 			}
-
 		} 
+		elseif ( $new_status == 'trash' ) {
+			
+			// Actually trash the message if user is an ST 
+			// or it was a draft post
+			if (!vtm_isST() && $old_status != 'draft') {
+				global $current_user;
+				get_currentuserinfo();
+				$msg = "Trashed!?";
+				// was this a message the logged in user sent?
+				if ($post->post_author == $current_user->ID) {
+					//update_post_meta( $post->ID, '_vtmpm_from_status', 'trash' );
+				} else {
+					update_post_meta( $post->ID, '_vtmpm_to_status', 'trash' );
+				}
+				
+				// don't actually trash it
+				vtm_change_post_status($post->ID, $old_status);
+			}
+		}
 		else {
-			$msg = "Message updated";
+			$msg = "Message updated $old_status to $new_status";
+			//update_post_meta( $post->ID, '_vtmpm_to_status', 'draft' );
 		}
 		update_post_meta( $post->ID, 'vtmpm_status', $msg);
 	}
@@ -921,43 +952,121 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 	// Filter functions
 	// --------------------------------------------
-	// SQL WP_QUERY WHERE
-	function vtm_pm_get_posts( $where ) {
+	// Get the basic query
+	function vtm_pm_search_filter($query) {
+		if (isset($_GET['post_type'])) {
+			$type = $_GET['post_type'];
+		} else {
+			$type = 'post';
+		}
+		if ( 'vtmpm' == $type && !vtm_isST() && $query->is_main_query() ) {
+			global $current_user;
+			get_currentuserinfo();
+			$chid = vtm_pm_getchidfromauthid($current_user->ID);
+			
+			$tostatus   = get_query_var('tostatus');
+			$fromstatus = get_query_var('fromstatus');
+			$poststatus = get_query_var('post_status');
+			
+			if (empty($tostatus) && empty($fromstatus) && empty($poststatus)) {
+				$tostatus = 'unread';
+			}
+			
+			if (!empty($fromstatus) && $fromstatus == 'sent') {
+				// Viewing sent messages
+				$query->set('post_status','publish');
+				$query->set('author',$current_user->ID);
+			}
+			elseif (!empty($tostatus)) {
+				// Viewing read/unread messages
+				$query->set('post_status','publish');
+				
+				$meta_query = array(
+						'relation' => 'AND',
+						array(
+							'key'=>'_vtmpm_to_characterID',
+							'value'=> "$chid",
+							'compare'=>'==',
+						),
+						array(
+							'key'=>'_vtmpm_to_status',
+							'value'=> "$tostatus",
+							'compare'=>'==',
+						),
+					);
+
+				$query->set('meta_query',$meta_query);
+
+			}
+			elseif (!empty($poststatus) && $poststatus == 'draft') {
+				// Viewing draft messages
+				$query->set('post_status','draft');
+				$query->set('author',$current_user->ID);
+			}
+			else {
+				// All messages
+				//$query->set('meta_query',vtm_pm_get_basic_metaquery());
+			}
+		}
+	}
+	add_action('pre_get_posts','vtm_pm_search_filter');
+	
+	function vtm_pm_get_basic_metaquery() {
+		global $current_user;
+		get_currentuserinfo();
+		$chid = vtm_pm_getchidfromauthid($current_user->ID);
+		
+		return array(
+			'relation' => 'OR',
+			array(
+				'key'=>'_vtmpm_to_characterID',
+				'value'=> "$chid",
+				'compare'=>'==',
+			),
+			array(
+				'key'=>'_vtmpm_from_actual_characterID',
+				'value'=> $current_user->ID,
+				'compare'=>'==',
+			),
+		);
+
+	}
+	
+	// Now filter query based on status, etc
+	
+	function vtm_pm_search_filter_where( $where ) {
 		global $pagenow;
 		if (isset($_GET['post_type'])) {
 			$type = $_GET['post_type'];
 		} else {
 			$type = 'post';
 		}
-		if ( 'vtmpm' == $type && 
-			is_admin() && 
-			$pagenow=='edit.php' && 
-			!vtm_isST()) {
+		if ( 'vtmpm' == $type && is_admin() && is_main_query()) {
+			global $wpdb;	
 
-			global $wpdb;
-			global $current_user;
-			$type = 'vtmpm';
-			get_currentuserinfo();
+			$tostatus   = get_query_var('tostatus');
+			$fromstatus = get_query_var('fromstatus');
+						
+			if (!empty($tostatus)) {
+				$where .= " AND (";
+				$where .= "({$wpdb->postmeta}.meta_key = '_vtmpm_to_status' AND
+							{$wpdb->postmeta}.meta_value = '$tostatus')";
+				$where .= ")";
+			}
+			if (!empty($fromstatus)) {
+				$where .= " AND (";
+				$where .= "({$wpdb->postmeta}.meta_key = '_vtmpm_from_status' AND
+							{$wpdb->postmeta}.meta_value = '$fromstatus')";
+				$where .= ")";
+			}
 			
-			$chid = vtm_pm_getchidfromauthid($current_user->ID);
-
-			$where .= " AND (";
-			// show posts TO the logged in character
-			$where .= "({$wpdb->postmeta}.meta_key = '_vtmpm_to_characterID' AND
-							{$wpdb->postmeta}.meta_value = '" . $chid . "')";
-			// show posts FROM the logged in character 
-			$where .= " OR ";
-			$where .= "({$wpdb->posts}.post_author = '" . $current_user->ID . "'
-						AND {$wpdb->postmeta}.meta_key = '_vtmpm_from_characterID')";
-			
-			
-			$where .= ")";
-			//echo "$where";
+			//echo "<p>WHERE: $where</p>";
 		}
 		return $where;
 	}
-	add_filter( 'posts_where' , 'vtm_pm_get_posts' );
-	
+	//add_filter( 'posts_where' , 'vtm_pm_search_filter_where' );
+
+	/*
 	// SQL WP_QUERY JOIN
 	function vtm_pm_get_posts_join($join){
 		global $pagenow;
@@ -979,22 +1088,35 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		return $join;
 	}
 	add_filter( 'posts_join' , 'vtm_pm_get_posts_join');
+	*/
 
-	// And ensure the counts at the top of the page are correct
+	// And set the counts/categories at the top
 	function vtm_pm_get_posts_count( $views ) {
+		global $current_user;
+		get_currentuserinfo();
+		$chid = vtm_pm_getchidfromauthid($current_user->ID);
+
 		$post_type = get_query_var('post_type');
 
 		//print_r($views);
-		// unset($views['mine']);
+		unset($views['publish']);
+		unset($views['draft']);
+		unset($views['trash']);
+		
+		if (vtm_isST()) {
+			$startview = 'all';
+		} else {
+			unset($views['all']);
+			$startview = 'unread';
+		} 
 
 		$new_views = array(
-				'all'       => __('All'),
-				'publish'   => __('Published'),
-				'private'   => __('Private'),
-				'pending'   => __('Pending Review'),
-				'future'    => __('Scheduled'),
-				'draft'     => __('Draft'),
-				'trash'     => __('Trash')
+				//'all'    => __('ZAll'),
+				'unread' => __('Unread'),
+				'read'   => __('Read'),
+				'draft'  => __('Draft'),
+				'sent'   => __('Sent'),
+				'trash'  => __('Trash')
 				);
 
 		foreach( $new_views as $view => $name ) {
@@ -1002,24 +1124,128 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$query = array(
 				'post_type'   => $post_type
 			);
-
-			if($view == 'all') {
-
-				$query['all_posts'] = 1;
-				$class = ( get_query_var('all_posts') == 1 || get_query_var('post_status') == '' ) ? ' class="current"' : '';
-				$url_query_var = 'all_posts=1';
-
-			} else {
-
-				$query['post_status'] = $view;
-				$class = ( get_query_var('post_status') == $view ) ? ' class="current"' : '';
-				$url_query_var = 'post_status='.$view;
-
+			
+			switch ($view) {
+				case 'all':
+					$query['all_posts'] = 1;
+					$class = ( get_query_var('all_posts') == 1 || 
+						($startview == 'all' &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						))
+						? ' class="current"' : '';
+					$url_query_var = 'all_posts=1';
+					break;
+				case 'read':
+					$query['meta_query'] = array(
+						'relation' => 'AND',
+						array(
+							'key'=>'_vtmpm_to_characterID',
+							'value'=> "$chid",
+							'compare'=>'==',
+						),
+						array(
+							'key'=>'_vtmpm_to_status',
+							'value'=> "read",
+							'compare'=>'==',
+						),
+					);
+					$query['post_status'] = 'publish';
+					$class = ( get_query_var('tostatus') == 'read' ||
+						($startview == 'read' &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						)) ? ' class="current"' : '';
+					$url_query_var = 'tostatus=read';
+					break;
+				case 'unread':
+					$query['meta_query'] = array(
+						'relation' => 'AND',
+						array(
+							'key'=>'_vtmpm_to_characterID',
+							'value'=> "$chid",
+							'compare'=>'==',
+						),
+						array(
+							'key'=>'_vtmpm_to_status',
+							'value'=> "unread",
+							'compare'=>'==',
+						),
+					);
+					$query['post_status'] = 'publish';
+					$class = ( get_query_var('tostatus') == 'unread' ||
+						($startview == 'unread' &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						)) ? ' class="current"' : '';
+					$url_query_var = 'tostatus=unread';
+					break;
+				case 'sent':
+					$query['post_status'] = 'publish';
+					$query['author'] = $current_user->ID;
+					$class = ( get_query_var('fromstatus') == 'sent' ||
+						($startview == 'sent' &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						)) ? ' class="current"' : '';
+					$url_query_var = 'fromstatus=sent';
+					break;
+				case 'draft':
+					$query['post_status'] = 'draft';
+					$query['author'] = $current_user->ID;
+					$class = ( get_query_var('post_status') == $view ||
+						($startview == $view &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						) ) ? ' class="current"' : '';
+					$url_query_var = 'post_status='.$view;
+					break;
+				case 'trash':
+					$query['meta_query'] = array(
+						'relation' => 'AND',
+						array(
+							'key'=>'_vtmpm_to_characterID',
+							'value'=> "$chid",
+							'compare'=>'==',
+						),
+						array(
+							'key'=>'_vtmpm_to_status',
+							'value'=> "trash",
+							'compare'=>'==',
+						),
+					);
+					$class = ( get_query_var('tostatus') == 'trash' ||
+						($startview == 'trash' &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						)) ? ' class="current"' : '';
+					$url_query_var = 'tostatus=trash';
+					break;
+				default:
+					$query['post_status'] = $view;
+					$class = ( get_query_var('post_status') == $view  ||
+						($startview == $view &&
+						 get_query_var('poststatus') == '' &&
+						 get_query_var('tostatus') == '' &&
+						 get_query_var('fromstatus') == ''
+						)) ? ' class="current"' : '';
+					$url_query_var = 'post_status='.$view;
 			}
 			
-			// need to add our where and joins into the query
-
+			
 			$result = new WP_Query($query);
+			
+			// if ($view == 'trash') {
+				// echo "XXX: $view<br />";
+				// print_r($query);
+				// print_r($result);
+			// }
 
 			if($result->found_posts > 0) {
 
@@ -1049,6 +1275,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		}
 	}
 	add_action( 'pre_get_posts', 'vtm_pm_get_posts_count_filter' );
+	function vtm_pm_add_query_vars_filter( $vars ){
+		$vars[] = "tostatus";
+		$vars[] = "fromstatus";
+		return $vars;
+	}
+	add_filter( 'query_vars', 'vtm_pm_add_query_vars_filter' );
 	
 
 	// General functions
@@ -1165,7 +1397,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	function vtm_pm_render_pmmsg() {
 		$postID = get_the_ID();
 		// mark post as read 
-		update_post_meta($postID, '_vtmpm_readstatus', 'read' );
+		update_post_meta($postID, '_vtmpm_to_status', 'read' );
 		?>
 				<div class="vtm_pmmsg">
 		<?php
@@ -1201,6 +1433,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 		$tochid   = get_post_meta( $postID, '_vtmpm_to_characterID', true );
 		$fromchid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
+		$fromactualchid = get_post_meta( $postID, '_vtmpm_from_actual_characterID', true );
 		$authorid = get_post_field( 'post_author', $postID );
 		$fromtype = get_post_meta( $postID, '_vtmpm_from_type', true );
 		$totype   = get_post_meta( $postID, '_vtmpm_to_type', true );
@@ -1265,8 +1498,11 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			unset( $actions['edit'] );
 			unset( $actions['inline hide-if-no-js'] );
 			
-			// get_currentuserinfo();
-			// if ($post->post_author != $current_user->ID) {
+			get_currentuserinfo();
+			if ($post->post_author == $current_user->ID) {
+				// i.e. logged in user sent the message 
+				unset( $actions['trash'] );
+				
 				// $read = get_post_meta( $post->ID, '_vtmpm_readstatus', true );
 				// $action = $read == 'read' ? 'unread' : 'read' ;
 				// $actiontxt = $read == 'read' ? 'Mark Unread' : 'Mark Read' ;
@@ -1278,7 +1514,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 				// //$link = admin_url("post.php?post={$post->ID}&amp;action=$action&amp;post_type=vtmpm");
 				// $actions['read'] = "<a href='$link'>$actiontxt</a>" ;
-			// }
+			} 
+			elseif (get_post_meta( $post->ID, '_vtmpm_to_status', true ) == 'trash') {
+				unset( $actions['trash'] );
+			}
 		}
 		return $actions;
 	}
