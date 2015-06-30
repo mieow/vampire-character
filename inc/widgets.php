@@ -54,18 +54,9 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 					<li><a href="<?php echo $clanlink; ?>">Clan Page</a></li> 
 			<?php } ?>
 			
-		 	<?php
-			     if ( isset( $instance[ 'inbox_link' ] ) && !empty($instance[ 'inbox_link' ]) ) {
-   				if (is_plugin_active('private-messages-for-wordpress/pm4wp.php')) { ?>
-					<li><a href="<?php echo $instance['inbox_link']; ?>">Inbox<?php
-								$num_unread = $wpdb->get_var( 'SELECT COUNT(*) FROM ' . $wpdb->prefix . 'pm WHERE `recipient` = "' . $current_user->user_login . '" AND `read` = 0 AND `deleted` != "2"' );
-								if ( ! empty( $num_unread ) ) {
-						echo ' (' . $num_unread . ' unread)';
-					}
-			?></a></li><?php
-			    }
-   				}
-			?>
+		 	<?php if ( isset( $instance[ 'inbox_link' ] ) ) { ?>
+			<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm'); ?>">Inbox</a></li>
+   			<?php } ?>
  			<li><a href="<?php echo wp_logout_url( home_url() ); ?>" title="Logout">Logout</a></li>
 			</ul>
 			<?php
@@ -105,11 +96,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		$charsheet_link = isset( $instance[ 'charsheet_link' ] );
 		$profile_link   = isset( $instance[ 'profile_link' ] );
 		$spendxp_link   = isset( $instance[ 'spendxp_link' ] );
-		if ( isset( $instance[ 'inbox_link' ] ) ) {
-			$inbox_link = $instance[ 'inbox_link' ];
-		} else {
-			$inbox_link = '';
-		}
+		$inbox_link     = isset( $instance[ 'inbox_link' ] );
 
 		?>
 		<p>
@@ -124,7 +111,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		</p>
 		<p>
 		<label for="<?php echo $this->get_field_id( 'inbox_link' ); ?>"><?php _e( 'Inbox Link:' ); ?></label>
- 		<input class="widefat" id="<?php echo $this->get_field_id( 'inbox_link' ); ?>" name="<?php echo $this->get_field_name( 'inbox_link' ); ?>" type="text" value="<?php echo esc_attr( $inbox_link ); ?>" />
+ 		<input id="<?php echo $this->get_field_id( 'inbox_link' ); ?>" name="<?php echo $this->get_field_name( 'inbox_link' ); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
 		</p>
 		<?php
 		
