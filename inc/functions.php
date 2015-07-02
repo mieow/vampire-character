@@ -226,7 +226,18 @@ function vtm_get_sects() {
 	
 	return $list;
 }
- 
+function vtm_get_character_email($characterID) {
+
+	global $wpdb;
+
+	$sql = "SELECT EMAIL 
+		FROM " . VTM_TABLE_PREFIX . "CHARACTER
+		WHERE ID = %s;";
+	$email = $wpdb->get_var($wpdb->prepare($sql, $characterID));
+	
+	return $email;
+}
+
     function vtm_print_name_value_pairs($atts, $content=null) {
         $output = "";
         if (isST()) {

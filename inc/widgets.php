@@ -54,8 +54,35 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 					<li><a href="<?php echo $clanlink; ?>">Clan Page</a></li> 
 			<?php } ?>
 			
-		 	<?php if ( isset( $instance[ 'inbox_link' ] ) ) { ?>
-			<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm'); ?>">Inbox</a></li>
+		 	<?php if ( isset( $instance[ 'inbox_link' ] ) && get_option( 'vtm_feature_pm', '0' ) == 1 ) { 
+				$chid = vtm_pm_getchidfromauthid($current_user->ID);
+				$inbox_link     = isset( $instance[ 'inbox_link' ] );
+				// How many unread messages?
+				$query['meta_query'] = array(
+					'relation' => 'AND',
+					array(
+						'key'=>'_vtmpm_to_characterID',
+						'value'=> "$chid",
+						'compare'=>'==',
+					),
+					array(
+						'key'=>'_vtmpm_to_status',
+						'value'=> "unread",
+						'compare'=>'==',
+					),
+				);
+				$query['post_status'] = 'publish';
+				$query['post_type'] = 'vtmpm';
+				$result = new WP_Query($query);
+								
+				if($result->found_posts > 0) {
+					$unread = " (" . $result->found_posts . " unread)";
+				} else {
+					$unread = "";
+				}
+			
+			?>
+			<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm'); ?>">Inbox<?php echo $unread; ?></a></li>
    			<?php } ?>
  			<li><a href="<?php echo wp_logout_url( home_url() ); ?>" title="Logout">Logout</a></li>
 			</ul>
@@ -68,6 +95,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		
 		echo $after_widget;
 	}
+
 	/**	 * Sanitize widget form values as they are saved.
 	 *	 * @see WP_Widget::update()
 	 *	 * @param array $new_instance Values just sent to be saved.
@@ -108,12 +136,14 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		</p><p>
 		<label for="<?php echo $this->get_field_id( 'spendxp_link' ); ?>"><?php _e( 'Show Spend XP Link:' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'spendxp_link' ); ?>" name="<?php echo $this->get_field_name( 'spendxp_link' ); ?>" type="checkbox" <?php echo checked( $spendxp_link, true ); ?> />
-		</p>
-		<p>
+		</p><?php
+		if (get_option( 'vtm_feature_pm', '0' ) == 1) {
+		?><p>
 		<label for="<?php echo $this->get_field_id( 'inbox_link' ); ?>"><?php _e( 'Inbox Link:' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'inbox_link' ); ?>" name="<?php echo $this->get_field_name( 'inbox_link' ); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
 		</p>
 		<?php
+		}
 		
 	}
 }

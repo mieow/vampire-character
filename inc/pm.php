@@ -8,12 +8,8 @@
 // TO DO
 //	* remove anyone elses custom meta boxes
 //	* remove anyone elses custom columns
-//	* Cannot edit sent messages
-//	* Cannot View (or edit?) other people's messages
-//	* Add unread count to inbox link on widget
 // 	* Mark read/unread actions, and bulk actions
 //	* check [empty trash] button
-//	* No edit link in menu bar at top
 //	* Add new contacts (via link on list table) to addressbook.
 //	* Storytellers can:
 //		- See all messages
@@ -347,7 +343,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
 		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
-		$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
+		//$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
 		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
 		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
 		
@@ -819,7 +815,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
 		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
-		$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
+		//$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
 		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
 		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
 		
@@ -889,7 +885,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$msg = "";
 		
 		// Update the meta field in the database.
-		update_post_meta( $post->ID, '_vtmpm_from_actual_characterID', $post->post_author );
+		update_post_meta( $post->ID, '_vtmpm_from_actual_authorID', $post->post_author );
 
 		if ( $new_status == 'publish') {
 			$notify = vtm_pm_validate_metabox($post);
@@ -901,6 +897,32 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			} else {
 				$msg = "Message sent";
 				update_post_meta( $post->ID, '_vtmpm_from_status', 'sent' );
+
+				$viewlink = get_permalink( $post->ID );
+				$author    = vtm_pm_getchfromauthid($post->post_author);
+				$recipientID = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
+				$recipient = vtm_pm_getchfromid($recipientID);
+				
+				// Send email to recipient
+				$subject = "You have a new message: " . $post->post_title;
+				$email   = vtm_get_character_email($recipientID);
+				$body    = "Hello $recipient,
+	
+You have a new message from $author: $viewlink
+
+";
+				
+				vtm_send_email($email, $subject, $body);
+				
+				// Send email (with contents) to STs
+				$subject = "Message sent from $author to $recipient";
+				$email = get_option( 'vtm_replyto_address', get_option( 'vtm_chargen_email_from_address', get_bloginfo('admin_email') ) );
+				$body = $post->post_title . "
+" . apply_filters( 'the_content', $post->post_content ) . "
+
+$viewlink";
+				vtm_send_email($email, $subject, $body);
+				
 			}
 			
 			if ($old_status != 'publish' && $old_status != 'trash') {
@@ -1024,7 +1046,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				'compare'=>'==',
 			),
 			array(
-				'key'=>'_vtmpm_from_actual_characterID',
+				'key'=>'_vtmpm_from_actual_authorID',
 				'value'=> $current_user->ID,
 				'compare'=>'==',
 			),
@@ -1102,6 +1124,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		unset($views['publish']);
 		unset($views['draft']);
 		unset($views['trash']);
+		unset($views['mine']);
 		
 		if (vtm_isST()) {
 			$startview = 'all';
@@ -1395,18 +1418,41 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		<?php
 	}
 	function vtm_pm_render_pmmsg() {
+		global $current_user;
+		get_currentuserinfo();
 		$postID = get_the_ID();
-		// mark post as read 
-		update_post_meta($postID, '_vtmpm_to_status', 'read' );
-		?>
+		$chid = vtm_pm_getchidfromauthid($current_user->ID);
+		
+		// check if user is allowed to read the message 
+		//		- either the user sent the message, or 
+		//		- it was sent to the user's character
+		$readok = 0;
+		$post = get_post($postID);
+		if ($post->post_author == $current_user->ID) {
+			$readok = 1;
+		}
+		elseif ($chid == get_post_meta( $postID, '_vtmpm_to_characterID', true )) {
+			$readok = 1;
+		}
+		
+		if ($readok || vtm_isST()) {
+			
+			if ($chid == get_post_meta( $postID, '_vtmpm_to_characterID', true )) {
+				// mark post as read 
+				update_post_meta($postID, '_vtmpm_to_status', 'read' );
+			}
+			?>
 				<div class="vtm_pmmsg">
-		<?php
-		vtm_pm_render_pmhead($postID, 'h1');
-		vtm_pm_render_pmcontent($postID);
-		vtm_pm_render_pmfoot($postID);
-		?>
+			<?php
+			vtm_pm_render_pmhead($postID, 'h1');
+			vtm_pm_render_pmcontent($postID);
+			vtm_pm_render_pmfoot($postID);
+			?>
 				</div>
-		<?php
+			<?php
+		} else {
+			echo "<p>You do not have permission to read this message</p>";
+		}
 	}
 	function vtm_pm_render_pmcontent($postID) {
 		?>
@@ -1433,7 +1479,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 		$tochid   = get_post_meta( $postID, '_vtmpm_to_characterID', true );
 		$fromchid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
-		$fromactualchid = get_post_meta( $postID, '_vtmpm_from_actual_characterID', true );
+		//$fromactualchid = get_post_meta( $postID, '_vtmpm_from_actual_characterID', true );
 		$authorid = get_post_field( 'post_author', $postID );
 		$fromtype = get_post_meta( $postID, '_vtmpm_from_type', true );
 		$totype   = get_post_meta( $postID, '_vtmpm_to_type', true );
@@ -1496,6 +1542,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		global $current_user;
 		if( $current_screen->post_type == 'vtmpm' && get_post_status( $post->ID ) == 'publish') {
 			unset( $actions['edit'] );
+			unset( $actions['mine'] );
 			unset( $actions['inline hide-if-no-js'] );
 			
 			get_currentuserinfo();
@@ -1522,26 +1569,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		return $actions;
 	}
 	add_filter( 'post_row_actions', 'vtm_pm_update_row_actions', 10, 2 );
-/* 	
-	// Add an action to process the read/unread row action
-	add_action('load-edit.php', 'vtm_pm_do_row_action');
-	function vtm_pm_do_row_action() {
 
-		// 1. get the action
-		//$wp_list_table = _get_list_table('WP_Posts_List_Table');
-		//$action = $wp_list_table->current_action();
-
-		// 2. security check
-		if ($_GET['action'] == 'read' && $_GET['post_type'] == 'vtmpm' &&
-			wp_verify_nonce($_GET['_wpnonce'], 'vtmpm_readunread')) {
-			
-			echo "YAY";
-			
-		}
-
-
-	}
- */	
 	// Remove edit from bulk actions
     function vtm_pm_bulk_actions( $actions ){
  		global $current_screen;
@@ -1551,6 +1579,51 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
         return $actions;
     }	
 	add_filter( 'bulk_actions-edit-vtmpm', 'vtm_pm_bulk_actions' );
+
+	 // * author_cap_filter()
+	 // *
+	 // * Filter on the current_user_can() function.
+	 // * This function is used to explicitly allow authors to edit contributors and other
+	 // * authors posts if they are published or pending.
+	 // *
+	 // * @param array $allcaps All the capabilities of the user
+	 // * @param array $cap     [0] Required capability
+	 // * @param array $args    [0] Requested capability
+	 // *                       [1] User ID
+	 // *                       [2] Associated object ID
+	function vtm_pm_author_cap_filter( $allcaps, $cap, $args ) {
+		
+		// Bail out if we're not asking about a post:
+		if ( 'edit_post' != $args[0] )
+			return $allcaps;
+		
+		// Load the post data:
+		$post = get_post( $args[2] );
+		
+		// if (isset($args[2])) {
+			// echo "ALL: {$post->post_type} {$post->post_author}<br>";
+			// print_r($allcaps);
+			// echo "cap<br>";
+			// print_r($cap);
+			// echo "args<br>";
+			// print_r($args);
+		// }
+		
+		// Bail out if it isn't our custom post type
+		if ($post->post_type != 'vtmpm')
+			return $allcaps;
+		
+		// Bail out if the user is the post author and hasn't already
+		// sent the message:
+		if ( $args[1] == $post->post_author && $post->post_status != 'publish')
+			return $allcaps;
+		
+		$allcaps[$cap[0]] = false;
+		
+		return $allcaps;
+	}
+	add_filter( 'user_has_cap', 'vtm_pm_author_cap_filter', 10, 3 );
+
 	
 	// MESSAGE TEMPLATE
 	// --------------------------------------------
@@ -1571,38 +1644,22 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		return $single_template;
 	}
 	add_filter( 'single_template', 'vtm_pm_post_template' );
-	// function vtm_pm_post_content($content) {
-		// global $post;
-		// if ($post->post_type == 'vtmpm') {
-			// // Mark Read
-			// update_post_meta( $post->ID, '_vtmpm_readstatus', 'read' );
-			
-			// $info = vtm_pm_getpostmeta($post->ID);
-			
-			// $date = get_the_date( "'F j, Y'", $post->ID );
-			
-			// // output header
-			// $header = '<div class="vtm_pmhead">';
-			// $header .= "<span>To: {$info['ToFull']}</span>";
-			// $header .= "<span>From: {$info['FromFull']}</span>";
-			// $header .= "<span>Sent: $date</span>";
-			// $header .= "</div>";
-						
-			// // output message footer
-			// $footer = '<div class="vtm_pmfoot">';
-			// $footer .= "[Reply] [Trash]";
-			// $footer .= '</div>';
-			
-			// // output replyto messages
-			// $footer .= "<br />/Previous messages/";
-			
-			// $content = $header . $content . $footer;
-		// }
-		// return $content;
-	// }
-	// add_filter('the_content', 'vtm_pm_post_content');
 
-	
+	// remove links/menus from the admin bar
+    // my-account – link to your account (avatars disabled)
+    // my-account-with-avatar – link to your account (avatars enabled)
+    // my-blogs – the "My Sites" menu if the user has more than one site
+    // get-shortlink – provides a Shortlink to that page
+    // edit – link to the Edit/Write-Post page
+    // new-content – link to the "Add New" dropdown list
+    // comments – link to the "Comments" dropdown
+    // appearance – link to the "Appearance" dropdown
+    // updates – the "Updates" dropdown
+	function vtm_pm_admin_bar() {
+		global $wp_admin_bar;
+		$wp_admin_bar->remove_menu('edit');
+	}
+	add_action( 'wp_before_admin_bar_render', 'vtm_pm_admin_bar' );	
 	
 }
 
