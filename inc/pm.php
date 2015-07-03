@@ -17,6 +17,7 @@
 //		- Properly trash message 
 //		- ...
 //	* No 'undo' message when you trash something
+//	* Don't go to 'no permission' page on initial publish
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -111,9 +112,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$cols['vtmpmstatus']  =  __( 'Send Status', 'trans' );
 		$cols['vtmfrom']    =  __( 'From', 'trans' );
 		$cols['vtmto']      =  __( 'To', 'trans' );
-		//$cols['vtmaddress'] =  __( 'To Address', 'trans' );
-		//$cols['debug'] =  __( 'Debug', 'trans' );
-		//$cols['title'] =  __( 'Message Subject', 'trans' );
 	  return $cols;
 	}
 	add_filter( "manage_vtmpm_posts_columns", "vtm_pm_change_columns" );
@@ -124,22 +122,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		global $current_user;
 		global $vtmglobal;
 
-		// get_currentuserinfo();
-		// if (!isset($vtmglobal['characterID'])) {
-			// $vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
-		// }
-		// $characterID = $vtmglobal['characterID'];
-		
-		// $tochid   = get_post_meta( $post_id, '_vtmpm_to_characterID', true );
-		// $fromchid = get_post_meta( $post_id, '_vtmpm_from_characterID', true );
-		// $authorid = get_post_field( 'post_author', $post_id );
-
-		// $toch     = vtm_pm_getchfromid($tochid);
-		// $fromch   = vtm_pm_getchfromid($fromchid);
-		// $authorch = vtm_pm_getchfromauthid($authorid);
-		// $tocode   = vtm_pm_getaddrfromcode(get_post_meta( $post_id, '_vtmpm_to_code', true ));
-		// $fromcode = vtm_pm_getaddrfromcode(get_post_meta( $post_id, '_vtmpm_from_code', true ));
-		
 		$info = vtm_pm_getpostmeta($post_id);
 		
 		switch ( $column ) {
@@ -155,28 +137,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				case 'trash':   $status = "Deleted"; break;
 				default: $status = "Drafted";
 			}
-			echo "$status (" . get_post_meta( $post_id, '_vtmpm_to_status', true ) . " / " . get_post_meta( $post_id, '_vtmpm_from_status', true ) . ")";
+			//echo "$status (" . get_post_meta( $post_id, '_vtmpm_to_status', true ) . " / " . get_post_meta( $post_id, '_vtmpm_from_status', true ) . ")";
+			echo "$status";
 			break;
 	    case "vtmfrom":
-			// // sent anonymously
-			// if ($fromchid == 'anonymous') {
-				// // STs get full information
-				// if (vtm_isST()) {
-					// echo "$authorch ($fromcode) Anonymous";
-				// }
-				// // if you sent it, you also get full information
-				// elseif ($authorid == $current_user->ID) {
-					// echo "$authorch (Anonymous)";
-				// }
-				// // Otherwise
-				// else {
-					// echo "$fromch ($fromcode)";
-				// }
-			// }
-			// // not anonymous
-			// else {
-				// echo "$fromch ($fromcode)";
-			// }
 			echo $info['FromFull'];
 			break;
 	    case "vtmto":
@@ -343,7 +307,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
 		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
-		//$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
 		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
 		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
 		
@@ -351,7 +314,15 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$fromcode = $fromtype == 0 ? 'postoffice' : $fromcode;
 		
 		$to   = esc_attr($tochid . ":" . $tocode . ":" . $totype);
-		$from = esc_attr($fromchid . ":" . $fromcode . ":" . $fromtype);
+		
+		$poststatus = get_post_field( 'post_status', $post->ID );
+		if ($poststatus == 'new' || $poststatus == 'auto-draft') {
+			$defaultaddr = vtm_get_default_address($vtmglobal['characterID']);
+			$from = esc_attr($vtmglobal['characterID'] . ":" . 
+				$defaultaddr->PM_CODE . ":" . $defaultaddr->PM_TYPE_ID);
+		} else {
+			$from = esc_attr($fromchid . ":" . $fromcode . ":" . $fromtype);
+		}
 		
 		
 		// Set replyto post ID
@@ -383,7 +354,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$status = get_post_meta( $post->ID, 'vtmpm_status', true );
 		echo "<p>Status: $status</p>";
-		//echo "<p>To: $to</p>";
+		//echo "<pTo: $to</p>";
 		//echo "<p>From: $from</p>";
 		
 				
@@ -451,7 +422,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 	// Display the address book
 	// --------------------------------------------
-	function vtmpm_render_address_book (){
+	function vtmpm_render_address_book() {
 		global $current_user;
 		global $vtmglobal;
 		get_currentuserinfo();
@@ -652,7 +623,22 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			
 			$nextaction = "save";
 
-		} else {
+		} 
+		elseif (isset($_REQUEST['code'])) {
+			if ($_REQUEST['from'] > 0) {
+				$ch = vtm_pm_getchfromid($_REQUEST['from']);
+				$pmtype = vtm_get_pm_typefromid($_REQUEST['type']);
+				$name = "$ch's " . ucfirst($pmtype);
+			} else {
+				$name = "";
+			}
+			$desc = "";
+			$code = $_REQUEST['code'];
+			$tableID = 0;
+			
+			$nextaction = "add";
+		}
+		else {
 			$name = "";
 			$desc = "";
 			$code = "";
@@ -663,6 +649,9 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 		$current_url = remove_query_arg( 'action', $current_url );
+		$current_url = remove_query_arg( 'code', $current_url );
+		$current_url = remove_query_arg( 'type', $current_url );
+		$current_url = remove_query_arg( 'from', $current_url );
 		?>
 		<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
 			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
@@ -713,28 +702,14 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				$code = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
 				
 				// CODE MUST BE UNIQUE
-				// Other character using it?
-				// Own character using it?
 				$sql = "SELECT COUNT(ID) 
 					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-					WHERE CHARACTER_ID != %s AND PM_CODE = %s";
-				$sql = $wpdb->prepare($sql, $vtmglobal['characterID'], $code);
+					WHERE PM_CODE = %s";
+				$sql = $wpdb->prepare($sql, $code);
 				if ($wpdb->get_var($sql) > 0) {
 					$doaction = "fix-$type";
-					echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode already in use by another character</p>";
+					echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode already in use. Please select another.</p>";
 				}
-				
-				if ($_REQUEST['action'] == 'add') {
-					$sql = "SELECT COUNT(ID) 
-						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-						WHERE CHARACTER_ID = %s AND PM_CODE = %s";
-					$sql = $wpdb->prepare($sql, $vtmglobal['characterID'], $code);
-					if ($wpdb->get_var($sql) > 0) {
-						$doaction = "fix-$type";
-						echo "<p style='color:red'>ERROR: You have already used Phone number/postcode/zipcode already</p>";
-					}
-				}
-				
 			}
 				
 		}
@@ -770,17 +745,17 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				// Can we match the code up?
 				$sql = "SELECT COUNT(ID) 
 					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-					WHERE PM_CODE = %s";
+					WHERE PM_CODE = %s AND DELETED = 'N'";
 				$sql = $wpdb->prepare($sql, $code);
 				if ($wpdb->get_var($sql) == 0) {
 					$doaction = "fix-$type";
-					echo "<p style='color:red'>ERROR: That code does not exist</p>";
+					echo "<p style='color:red'>ERROR: That code does not exist or has been removed</p>";
 				}
 				else {
 					// Is it already visible?
 					$sql = "SELECT COUNT(ID) 
 						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-						WHERE PM_CODE = %s AND VISIBLE = 'Y'";
+						WHERE PM_CODE = %s AND VISIBLE = 'Y' AND DELETED = 'N'";
 					$sql = $wpdb->prepare($sql, $code);
 					if ($wpdb->get_var($sql) > 0) {
 						$doaction = "fix-$type";
@@ -790,7 +765,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					// Is it one of your own?
 					$sql = "SELECT COUNT(ID) 
 						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-						WHERE PM_CODE = %s AND CHARACTER_ID = %s";
+						WHERE PM_CODE = %s AND CHARACTER_ID = %s AND DELETED = 'N'";
 					$sql = $wpdb->prepare($sql, $code, $vtmglobal['characterID']);
 					if ($wpdb->get_var($sql) > 0) {
 						$doaction = "fix-$type";
@@ -1317,9 +1292,11 @@ $viewlink";
 		global $wpdb;
 		$sql = "SELECT NAME
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-				WHERE PM_CODE = %s";
+				WHERE PM_CODE = %s AND DELETED = 'N'";
 		$sql = $wpdb->prepare($sql, $code);
-		return $wpdb->get_var($sql);
+		$result = $wpdb->get_var($sql);
+		
+		return $result;
 	}
 	function vtm_pm_isinaddrbook($code, $characterID) {
 		
@@ -1328,9 +1305,21 @@ $viewlink";
 		
 		global $wpdb;
 		$sql = "SELECT COUNT(ID)
-				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-				WHERE CHARACTER_ID = %s AND PM_CODE = %s";
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK
+				WHERE CHARACTER_ID = %s AND PM_CODE = %s ";
 		$sql = $wpdb->prepare($sql, $characterID, $code);
+		return ($wpdb->get_var($sql) > 0);
+	}
+	function vtm_pm_iscoderemoved($code) {
+		
+		if ($code == 'postoffice')
+			return false;
+		
+		global $wpdb;
+		$sql = "SELECT COUNT(ID)
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+				WHERE PM_CODE = %s AND DELETED = 'Y'";
+		$sql = $wpdb->prepare($sql, $code);
 		return ($wpdb->get_var($sql) > 0);
 	}
 	function vtm_pm_getchfromid($characterID) {
@@ -1479,7 +1468,6 @@ $viewlink";
 
 		$tochid   = get_post_meta( $postID, '_vtmpm_to_characterID', true );
 		$fromchid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
-		//$fromactualchid = get_post_meta( $postID, '_vtmpm_from_actual_characterID', true );
 		$authorid = get_post_field( 'post_author', $postID );
 		$fromtype = get_post_meta( $postID, '_vtmpm_from_type', true );
 		$totype   = get_post_meta( $postID, '_vtmpm_to_type', true );
@@ -1492,7 +1480,20 @@ $viewlink";
 		$fromcode = get_post_meta( $postID, '_vtmpm_from_code', true );
 		$toaddr   = vtm_pm_getaddrfromcode($tocode);
 		$fromaddr = vtm_pm_getaddrfromcode($fromcode);
+		
+		$toaddr   = empty($toaddr) ? $tocode . ' unavailable' : $toaddr;
+		$fromaddr = empty($fromaddr) ? $tocode . ' unavailable' : $fromaddr;
 
+		// User has from address in their addressbook?
+		// If not, give them a link to add it 
+		if ($fromcode != 'postoffice' &&
+			!vtm_pm_isinaddrbook($fromcode, $characterID) &&
+			!vtm_pm_iscoderemoved($fromcode)) {
+			$addlink = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses&code='.$fromcode.
+				"&from=$fromchid&type=$fromtype");
+			$fromaddr = "<a href='$addlink' title='Add to address book'>$fromaddr</a>";
+		}
+		
 		$ispmowner = ($authorid == $current_user->ID);
 		
 		if ($fromchid == 'anonymous') {
@@ -1699,6 +1700,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 						'DESCRIPTION'  => $_REQUEST['address_desc'],
 						'VISIBLE'      => $_REQUEST['address_visible'],
 						'ISDEFAULT'    => $_REQUEST['address_default'],
+						'DELETED'      => 'N',
 					);
 		
 		/* print_r($dataarray); */
@@ -1777,11 +1779,23 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
  	function delete($selectedID) {
 		global $wpdb;
 		
-		$sql = "delete from " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS where ID = %d;";
-			
-		$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		//$sql = "delete from " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS where ID = %d;";
+		//$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		//echo "<p style='color:green'>Deleted address $selectedID</p>";
 		
-		echo "<p style='color:green'>Deleted address $selectedID</p>";
+		$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
+					array ('DELETED' => 'Y'),
+					array ('ID' => $selectedID)
+				);
+		
+		if ($result) 
+			echo "<p style='color:green'>Deleted address</p>";
+		else if ($result === 0) 
+			echo "<p style='color:orange'>No changes made</p>";
+		else {
+			$wpdb->print_error();
+			echo "<p style='color:red'>Could not delete address</p>";
+		}
 	}
 
 

@@ -205,6 +205,18 @@ function vtm_get_player_type() {
 	
 	return $list;
 }
+function vtm_get_pm_typefromid($typeID) {
+
+	global $wpdb;
+
+	$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE
+		WHERE ID = %s;";
+	$list = $wpdb->get_var($wpdb->prepare($sql, $typeID));
+	
+	//print_r($list);
+	
+	return $list;
+}
 function vtm_get_generations() {
 
 	global $wpdb;
@@ -1039,11 +1051,22 @@ function vtm_get_pm_addresses($characterID = 0) {
 	
 	$sql = "SELECT *
 			FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-			WHERE CHARACTER_ID = %s
+			WHERE CHARACTER_ID = %s AND DELETED = 'N'
 			ORDER BY NAME";
 	$sql = $wpdb->prepare($sql, $characterID);
 	
 	return $wpdb->get_results($sql);
+}
+
+function vtm_get_default_address($characterID) {
+	global $wpdb;
+	
+	$sql = "SELECT *
+			FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+			WHERE CHARACTER_ID = %s AND ISDEFAULT = 'Y'
+			AND DELETED = 'N'";
+	$sql = $wpdb->prepare($sql, $characterID);
+	return $wpdb->get_row($sql);
 }
 
 function vtm_get_pm_types() {
@@ -1111,6 +1134,7 @@ function vtm_get_pm_addressbook($characterID = 0,
 			AND ch.DELETED = 'N'
 			AND ch.VISIBLE = 'Y'
 			AND pstatus.NAME = 'Active'
+			AND pm.DELETED = 'N'
 			AND pm.VISIBLE = 'Y' " . $filtersql;
 		
 	if ($filter_addressbook == 'all' ||
@@ -1147,6 +1171,7 @@ function vtm_get_pm_addressbook($characterID = 0,
 			AND ch.VISIBLE = 'Y'
 			AND pstatus.NAME = 'Active'
 			AND ab.PM_CODE = pm.PM_CODE
+			AND pm.DELETED = 'N'
 			AND ab.CHARACTER_ID = %s " . $filtersql;
 	if ($filter_addressbook == 'all' ||
 		$filter_addressbook == 'private') {

@@ -8,7 +8,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.2"; 
-$vtm_character_db_version = "60"; 
+$vtm_character_db_version = "61"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -989,6 +989,7 @@ function vtm_character_install() {
 					DESCRIPTION           TINYTEXT      NOT NULL,
 					VISIBLE               VARCHAR(1)    NOT NULL,
 					ISDEFAULT             VARCHAR(1)    NOT NULL,
+					DELETED               VARCHAR(1)    NOT NULL,
 					PRIMARY KEY  (ID),
 					CONSTRAINT `" . $table_prefix . "pm_address_constraint_1` FOREIGN KEY (CHARACTER_ID)  REFERENCES " . $table_prefix . "CHARACTER(ID),
 					CONSTRAINT `" . $table_prefix . "pm_address_constraint_2` FOREIGN KEY (PM_TYPE_ID)  REFERENCES " . $table_prefix . "PM_TYPE(ID)
