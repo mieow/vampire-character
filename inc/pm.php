@@ -6,18 +6,18 @@
 //	* Uppercase
 //
 // TO DO
-//	* remove anyone elses custom meta boxes
-//	* remove anyone elses custom columns
 // 	* Mark read/unread actions, and bulk actions
 //	* check [empty trash] button
-//	* Add new contacts (via link on list table) to addressbook.
 //	* Storytellers can:
 //		- See all messages
 //		- Send a message to/from anyone (doesn't show on from list?)
 //		- Properly trash message 
-//		- ...
+//		- Filter on To/From, Active characters
+//		- See real sender
+//		- See all addresses in addressbook
+//		- Add addresses for NPCs/characters
 //	* No 'undo' message when you trash something
-//	* Don't go to 'no permission' page on initial publish
+//	* Direct link to send message to a user
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -150,6 +150,21 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	}
 	add_action( "manage_vtmpm_posts_custom_column", "vtm_pm_custom_columns", 10, 2 );
 
+
+	function vtm_pm_remove_others_columns($columns) {
+
+		$expected = array(
+			'subject', 'date', 'vtmfrom', 'vtmto', 'vtmpmstatus'
+		);
+	
+		foreach($columns as $key => $title) {
+			if (!in_array($key,$expected))
+				unset($columns[$key]);
+		}
+		return $columns;
+	}
+	add_filter('manage_vtmpm_posts_columns', 'vtm_pm_remove_others_columns', 100);
+
 	
 	function vtm_pm_replace_title_column($columns) {
 
@@ -266,9 +281,27 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	}
 	add_filter( 'default_title', 'vtm_pm_set_replyto_title' );
 	
-	// Add the Meta box to the Edit Post page
+	// Setup Meta box to the Edit Post page
 	// --------------------------------------------
 	function vtm_pm_metabox($post_type) {
+			global $wp_meta_boxes;
+						
+			
+			// remove extra metaboxes
+			$expected = array(
+				'submitdiv', 'slugdiv'
+			);
+			$postboxes = $wp_meta_boxes['vtmpm'];
+			foreach ($postboxes as $boxcontext => $boxinfo) {
+				foreach ($boxinfo as $boxpriority => $box) {
+					foreach ($box as $boxname => $boxdata) {
+						if (!in_array($boxdata['id'],$expected))
+							remove_meta_box( $boxdata['id'], 'vtmpm', $boxcontext );
+					}
+				}
+			}
+			
+			// add our metabox
 			add_meta_box(
 				'vtm_pm_metabox',
 				'V:tM Messages',
@@ -277,8 +310,9 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				'special',
 				'high'
 			);
+			
 	}
-	add_action( 'add_meta_boxes', 'vtm_pm_metabox' );
+	add_action( 'add_meta_boxes', 'vtm_pm_metabox', 100 );
 	
 	// Move the Meta box to the top of the page
 	// --------------------------------------------
@@ -318,8 +352,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$poststatus = get_post_field( 'post_status', $post->ID );
 		if ($poststatus == 'new' || $poststatus == 'auto-draft') {
 			$defaultaddr = vtm_get_default_address($vtmglobal['characterID']);
-			$from = esc_attr($vtmglobal['characterID'] . ":" . 
-				$defaultaddr->PM_CODE . ":" . $defaultaddr->PM_TYPE_ID);
+			if (isset($defaultaddr)) {
+				$from = esc_attr($vtmglobal['characterID'] . ":" . 
+					$defaultaddr->PM_CODE . ":" . $defaultaddr->PM_TYPE_ID);
+			} else {
+				$from = "";
+			}
 		} else {
 			$from = esc_attr($fromchid . ":" . $fromcode . ":" . $fromtype);
 		}
@@ -841,6 +879,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Restore to Draft any posts with fails on publish_post/publish_vtmpm
 	// --------------------------------------------
 	function vtm_pm_check_post_transition( $new_status, $old_status, $post ) {
+		
+		if ($post->post_type != 'vtmpm')
+			return;
+		
 		// Sanitize user input.
 		if (isset($_POST['vtm_pm_to'])) {
 			$to   = explode(":",sanitize_text_field( $_POST['vtm_pm_to'] ));
@@ -865,44 +907,49 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		if ( $new_status == 'publish') {
 			$notify = vtm_pm_validate_metabox($post);
 			
+			if ($old_status != 'publish' && $old_status != 'trash') {
+				update_post_meta( $post->ID, '_vtmpm_to_status', 'unread' );
+			}
+			
 			if (!empty($notify)) {
 				$msg = "Publish failed";
 				vtm_change_post_status($post->ID, 'draft');
 				update_post_meta( $post->ID, '_vtmpm_from_status', 'draft' );
-			} else {
+			} 
+			else {
 				$msg = "Message sent";
 				update_post_meta( $post->ID, '_vtmpm_from_status', 'sent' );
 
-				$viewlink = get_permalink( $post->ID );
-				$author    = vtm_pm_getchfromauthid($post->post_author);
-				$recipientID = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
-				$recipient = vtm_pm_getchfromid($recipientID);
-				
-				// Send email to recipient
-				$subject = "You have a new message: " . $post->post_title;
-				$email   = vtm_get_character_email($recipientID);
-				$body    = "Hello $recipient,
+				if ($old_status != 'trash') {
+					$viewlink    = get_permalink( $post->ID );
+					$author      = vtm_pm_getchfromauthid($post->post_author);
+					$recipientID = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
+					$recipient   = vtm_pm_getchfromid($recipientID);
+					
+					// Send email to recipient
+					$subject = "You have a new message: " . $post->post_title;
+					$email   = vtm_get_character_email($recipientID);
+					$body    = "Hello $recipient,
 	
 You have a new message from $author: $viewlink
 
 ";
 				
-				vtm_send_email($email, $subject, $body);
+					vtm_send_email($email, $subject, $body);
+					
+					// Send email (with contents) to STs
+					$subject = "Message sent from $author to $recipient";
+					$email = get_option( 'vtm_replyto_address', get_option( 'vtm_chargen_email_from_address', get_bloginfo('admin_email') ) );
+					$body = "Subject: " . $post->post_title . "
 				
-				// Send email (with contents) to STs
-				$subject = "Message sent from $author to $recipient";
-				$email = get_option( 'vtm_replyto_address', get_option( 'vtm_chargen_email_from_address', get_bloginfo('admin_email') ) );
-				$body = $post->post_title . "
-" . apply_filters( 'the_content', $post->post_content ) . "
+" . $post->post_content . "
 
 $viewlink";
 				vtm_send_email($email, $subject, $body);
 				
+				}
 			}
 			
-			if ($old_status != 'publish' && $old_status != 'trash') {
-				update_post_meta( $post->ID, '_vtmpm_to_status', 'unread' );
-			}
 		} 
 		elseif ( $new_status == 'trash' ) {
 			
@@ -931,8 +978,22 @@ $viewlink";
 	}
 	add_action( 'transition_post_status', 'vtm_pm_check_post_transition', 15, 3 );
 
-
-	 //function <function>( $post_id, $post, $update ) {
+	// redirect to the view post after publishing/sending
+	function vtm_pm_post_redirect($location) {
+		if (isset($_POST['save']) || isset($_POST['publish'])) {
+			global $post;
+			if (get_post_meta($post->ID, '_vtmpm_from_status', true ) == 'sent') {
+				$location = get_permalink($post->ID);
+			}
+		}
+		elseif ($_POST['save']) {
+			
+		}
+		return $location;
+	}
+	add_filter('redirect_post_location', 'vtm_pm_post_redirect');
+	
+	//function <function>( $post_id, $post, $update ) {
 	//$post_id - The ID of the post you'd like to change.
 	//$status -  The post status publish|pending|draft|private|static|object|attachment|inherit|future|trash.
 	function vtm_change_post_status($post_id,$status){
@@ -1245,7 +1306,7 @@ $viewlink";
 				// print_r($result);
 			// }
 
-			if($result->found_posts > 0) {
+			if($result->found_posts > 0 || $view == 'unread') {
 
 				$views[$view] = sprintf(
 					'<a href="%s"'. $class .'>'.__($name).' <span class="count">(%d)</span></a>',
@@ -1281,6 +1342,28 @@ $viewlink";
 	add_filter( 'query_vars', 'vtm_pm_add_query_vars_filter' );
 	
 
+
+	// function vtm_pm_remove_messages( $messages )
+	// {
+		// print_r($messages);
+		// return array();
+	// }
+	//add_filter( 'post_updated_messages', 'vtm_pm_remove_messages' );
+	function vtm_pm_update_bulk_messages( $bulk_messages, $bulk_counts ) {
+
+		//print_r($bulk_messages);
+		$bulk_messages['vtmpm'] = array(
+			'updated'   => _n( '%s message updated.', '%s messages updated.', $bulk_counts['updated'] ),
+			//'locked'    => _n( '%s my_cpt not updated, somebody is editing it.', '%s my_cpts not updated, somebody is editing them.', $bulk_counts['locked'] ),
+			'deleted'   => _n( '%s my_cpt permanently deleted.', '%s my_cpts permanently deleted.', $bulk_counts['deleted'] ),
+			'trashed'   => _n( '%s message moved to the Trash.', '%s messages moved to the Trash.', $bulk_counts['trashed'] ),
+			//'untrashed' => _n( '%s my_cpt restored from the Trash.', '%s my_cpts restored from the Trash.', $bulk_counts['untrashed'] ),
+		);
+
+		return $bulk_messages;
+
+	}
+	add_filter( 'bulk_post_updated_messages', 'vtm_pm_update_bulk_messages', 10, 2 );	
 	// General functions
 	// --------------------------------------------
 	
@@ -1304,11 +1387,25 @@ $viewlink";
 			return false;
 		
 		global $wpdb;
+		
+		// Addresses you have saved
 		$sql = "SELECT COUNT(ID)
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK
 				WHERE CHARACTER_ID = %s AND PM_CODE = %s ";
 		$sql = $wpdb->prepare($sql, $characterID, $code);
-		return ($wpdb->get_var($sql) > 0);
+		$saved = $wpdb->get_var($sql);
+		
+		// Public addresses
+		$sql = "SELECT COUNT(ID)
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+				WHERE PM_CODE = %s 
+					AND VISIBLE = 'Y' AND DELETED = 'N'";
+		$sql = $wpdb->prepare($sql, $code);
+		$public = $wpdb->get_var($sql);
+		
+		$result = $saved + $public;
+		//echo "Result1: $saved + $public = $result ($sql)";
+		return ($result > 0);
 	}
 	function vtm_pm_iscoderemoved($code) {
 		
@@ -1320,7 +1417,10 @@ $viewlink";
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 				WHERE PM_CODE = %s AND DELETED = 'Y'";
 		$sql = $wpdb->prepare($sql, $code);
-		return ($wpdb->get_var($sql) > 0);
+		$result = $wpdb->get_var($sql);
+		
+		//echo "Result2: $result, SQL: $sql";
+		return ($result > 0);
 	}
 	function vtm_pm_getchfromid($characterID) {
 		global $wpdb;
@@ -1564,6 +1664,7 @@ $viewlink";
 				// $actions['read'] = "<a href='$link'>$actiontxt</a>" ;
 			} 
 			elseif (get_post_meta( $post->ID, '_vtmpm_to_status', true ) == 'trash') {
+				$actions['view'] = str_replace(__( 'View' ),__( 'View/Untrash' ),$actions['view']) ;
 				unset( $actions['trash'] );
 			}
 		}
@@ -1625,6 +1726,15 @@ $viewlink";
 	}
 	add_filter( 'user_has_cap', 'vtm_pm_author_cap_filter', 10, 3 );
 
+
+
+	// function vtm_pm_publish_button_text( $translation, $text ) {
+		// if ( $text == 'Publish') {
+			// return 'Send Message';
+		// }
+		// return $translation;
+	// }
+	// add_filter( 'gettext', 'vtm_pm_publish_button_text', 10, 2 );
 	
 	// MESSAGE TEMPLATE
 	// --------------------------------------------
