@@ -73,12 +73,13 @@ function vtm_get_loggedindomain($characterID) {
 
 function vtm_get_profilelink($wordpressid, $character) {
 	$markup = '<a href="@PROFILELINK@?CHARACTER=@WORDPRESS@" @EXTRA@>@NAME@</a>';
-
-	return str_replace(
+	$link = str_replace(
 		Array('@PROFILELINK@','@WORDPRESS@','@EXTRA@','@NAME@'),
 			Array(vtm_get_stlink_url('viewProfile'), urlencode($wordpressid), "",vtm_formatOutput($character)),
 			$markup
 		);
+	$link = vtm_pm_link($link, array('character' => $wordpressid));
+	return $link;
 }
 
 function vtm_print_background_shortcode($atts, $content = null) {
@@ -96,7 +97,7 @@ function vtm_print_background_shortcode($atts, $content = null) {
 		"level"      => "all",
 		"columns"    => "level,character,player,clan,domain,background,sector,office,comment,level",  // also sect
 		"heading"    => 1,
-		"charactertype" => 'all'
+		"charactertype" => 'all',
 		), $atts)
 	);
 	
@@ -1161,16 +1162,17 @@ function vtm_print_office_block($atts, $content=null) {
 	$output    = "";
 	$sqlOutput = "";
 
-	$sql = "SELECT chara.name charname, office.name oname, domain.name domainname, office.ordering, coffice.comment
-					FROM " . $table_prefix . "CHARACTER chara,
-						 " . $table_prefix . "CHARACTER_OFFICE coffice,
-						 " . $table_prefix . "OFFICE office,
-						 " . $table_prefix . "DOMAIN domain
-					WHERE coffice.character_id = chara.id
-					  AND coffice.office_id    = office.id
-					  AND coffice.domain_id     = domain.id
-					  AND chara.deleted        = 'N'
-					  AND domain.name = %s ";
+	$sql = "SELECT chara.name charname, office.name oname, domain.name domainname, 
+				office.ordering, coffice.comment, chara.ID characterID
+			FROM " . $table_prefix . "CHARACTER chara,
+				 " . $table_prefix . "CHARACTER_OFFICE coffice,
+				 " . $table_prefix . "OFFICE office,
+				 " . $table_prefix . "DOMAIN domain
+			WHERE coffice.character_id = chara.id
+			  AND coffice.office_id    = office.id
+			  AND coffice.domain_id     = domain.id
+			  AND chara.deleted        = 'N'
+			  AND domain.name = %s ";
 	if (!vtm_isSt()) {
 		$sql .= " AND office.visible = 'Y' AND chara.visible = 'Y' ";
 	}
@@ -1203,7 +1205,7 @@ function vtm_print_office_block($atts, $content=null) {
 			else {
 				$sqlOutput .= "<tr><td class=\"gvcol_1 gvcol_key\">&nbsp;</td>";
 			}
-			$sqlOutput .= "<td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($characterOffice->charname) . "</td><td class=\"gvcol_3 gvcol_val\">" . stripslashes($characterOffice->comment) . "</td></tr>";
+			$sqlOutput .= "<td class=\"gvcol_2 gvcol_val\">" . vtm_pm_link(vtm_formatOutput($characterOffice->charname), array('characterID' => $characterOffice->characterID)) . "</td><td class=\"gvcol_3 gvcol_val\">" . stripslashes($characterOffice->comment) . "</td></tr>";
 		}
 
 		if ($sqlOutput != "") {

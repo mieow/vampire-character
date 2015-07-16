@@ -642,6 +642,7 @@ function vtm_render_config_skinning() {
 		<td><img alt="spacer"     width=16 src='<?php echo plugins_url( 'vtm-character/images/spacer.jpg' ); ?>'></td>
 		<td><img alt="fill"       width=16 src='<?php echo plugins_url( 'vtm-character/images/fill.jpg' ); ?>'></td>
 		<td><img alt="arrow"      width=16 src='<?php echo plugins_url( 'vtm-character/images/arrowright.jpg' ); ?>'></td>
+		<td><img alt="mail"       width=16 src='<?php echo plugins_url( 'vtm-character/images/mail.jpg' ); ?>'></td>
 		</tr>
 		</table>
 
@@ -698,6 +699,8 @@ function vtm_render_config_skinning() {
 		vtm_draw_dot("dot4",   $dot4colour, $drawbgcolour, $drawborder, 1);
 		vtm_draw_check("check", $dot1colour, $drawbgcolour, $drawborder);
 		vtm_draw_arrow("arrowright", $dot1colour, $drawbgcolour, $drawborder * 2);
+		//vtm_draw_mail("mail", $dot1colour, $drawbgcolour, $drawborder, 0);
+		vtm_draw_mail("mail", $dot1colour, $drawbgcolour, 1, 0);
 		
 		// PDF dots
 		$drawborder   = get_option('vtm_pdf_dotlinewidth', '3');
@@ -767,6 +770,34 @@ function vtm_draw_box($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) 
 			$draw->line( $drawborder, $drawheight - $drawborder - 1, $drawwidth - $drawborder - 1, $drawborder);
 		if ($crosses >= 3)
 			$draw->line( $drawborder, $drawheight/2, $drawwidth - $drawborder - 1, $drawheight / 2);
+		
+		$image->drawImage($draw);
+		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
+
+		$image = "";
+	}
+	
+}
+function vtm_draw_mail($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) {
+	if (class_exists('Imagick')) {
+		$drawwidth    = 15;
+		$drawheight   = 10;
+		$drawmargin   = 1;
+		$imagetype    = 'jpg';
+
+		$image = new Imagick();
+		
+		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
+		$draw = new ImagickDraw();
+		$draw->setStrokeColor($drawcolour);
+		$draw->setStrokeWidth($drawborder);
+		$draw->setFillColor($drawbgcolour);
+		$draw->rectangle( $drawborder, $drawborder, $drawwidth - $drawborder - 1, $drawheight - $drawborder - 1);
+		
+		$draw->line(	$drawborder,					$drawborder, 
+						$drawwidth / 2,					$drawheight / 2);
+		$draw->line( 	$drawwidth / 2,					$drawheight / 2, 
+						$drawwidth - $drawborder - 1,	$drawborder);
 		
 		$image->drawImage($draw);
 		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);

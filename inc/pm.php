@@ -9,15 +9,11 @@
 // 	* Mark read/unread actions, and bulk actions
 //	* check [empty trash] button
 //	* Storytellers can:
-//		- See all messages
-//		- Send a message to/from anyone (doesn't show on from list?)
-//		- Properly trash message 
+//		* Send a message to/from anyone (doesn't show on From list?)
 //		- Filter on To/From, Active characters
-//		- See real sender
-//		- See all addresses in addressbook
-//		- Add addresses for NPCs/characters
-//	* No 'undo' message when you trash something
-//	* Direct link to send message to a user
+//		* See all addresses in addressbook
+//		* Add addresses for NPCs/characters
+//  * Test purge tables (characters.php)
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -109,9 +105,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Add extra columns for the List Messages screen
 	// --------------------------------------------
 	function vtm_pm_change_columns( $cols ) {
-		$cols['vtmpmstatus']  =  __( 'Send Status', 'trans' );
-		$cols['vtmfrom']    =  __( 'From', 'trans' );
-		$cols['vtmto']      =  __( 'To', 'trans' );
+		$cols['vtmpmstatus'] =  __( 'Send Status', 'trans' );
+		$cols['vtmfrom']     =  __( 'From', 'trans' );
+		$cols['vtmto']       =  __( 'To', 'trans' );
+		
+		if (vtm_isST())
+			$cols['author'] =  __( 'Actually From', 'trans' );
 	  return $cols;
 	}
 	add_filter( "manage_vtmpm_posts_columns", "vtm_pm_change_columns" );
@@ -150,11 +149,11 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	}
 	add_action( "manage_vtmpm_posts_custom_column", "vtm_pm_custom_columns", 10, 2 );
 
-
 	function vtm_pm_remove_others_columns($columns) {
 
 		$expected = array(
-			'subject', 'date', 'vtmfrom', 'vtmto', 'vtmpmstatus'
+			'subject', 'date', 'vtmfrom', 'vtmto', 'vtmpmstatus',
+			'author'
 		);
 	
 		foreach($columns as $key => $title) {
@@ -165,7 +164,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	}
 	add_filter('manage_vtmpm_posts_columns', 'vtm_pm_remove_others_columns', 100);
 
-	
 	function vtm_pm_replace_title_column($columns) {
 
 		$new = array();
@@ -188,6 +186,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			
 			$post    = get_post( $post_ID );
 			$subject = esc_attr(get_the_title());
+			$subject = empty($subject) ? '(no title)' : $subject;
 			
 			if ($post->post_status == 'publish') {
 				$link = get_permalink($post_ID);
@@ -206,7 +205,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				$readclass = "unread";
 			}
 			
-			$pid = " <span style='color:silver'>($post_ID)</span>";
+			$pid = " <span style='color:silver'>(ID: $post_ID)</span>";
 			$title ="<span class='sub-title vtmpm_title $readclass'><a href='$link'>$subject</a></span>$pid";
 			
 			// add in row actions
@@ -257,20 +256,15 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		return $rowactions;
 	}
 	
-	
 	// New column is sortable 
 	function vtm_pm_sortable_columns( $columns ) {
-
 		$columns['subject'] = 'subject';
-
 		return $columns;
 	}
 	add_filter( 'manage_edit-vtmpm_sortable_columns', 'vtm_pm_sortable_columns' );
 	
-	
 	// replyto title 
 	function vtm_pm_set_replyto_title( $title ) {
-
 		if (isset($_GET['replyto'])) {
 			$title = get_post_field( 'post_title', $_GET['replyto'] );
 			if (!strstr($title,"RE: ")) {
@@ -285,12 +279,9 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// --------------------------------------------
 	function vtm_pm_metabox($post_type) {
 			global $wp_meta_boxes;
-						
 			
 			// remove extra metaboxes
-			$expected = array(
-				'submitdiv', 'slugdiv'
-			);
+			$expected = array('submitdiv', 'slugdiv');
 			$postboxes = $wp_meta_boxes['vtmpm'];
 			foreach ($postboxes as $boxcontext => $boxinfo) {
 				foreach ($boxinfo as $boxpriority => $box) {
@@ -349,14 +340,16 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$to   = esc_attr($tochid . ":" . $tocode . ":" . $totype);
 		
+		// Set who post is from
 		$poststatus = get_post_field( 'post_status', $post->ID );
 		if ($poststatus == 'new' || $poststatus == 'auto-draft') {
-			$defaultaddr = vtm_get_default_address($vtmglobal['characterID']);
-			if (isset($defaultaddr)) {
-				$from = esc_attr($vtmglobal['characterID'] . ":" . 
-					$defaultaddr->PM_CODE . ":" . $defaultaddr->PM_TYPE_ID);
-			} else {
-				$from = "";
+			$from = "";
+			if (!vtm_isST()) {
+				$defaultaddr = vtm_get_default_address($vtmglobal['characterID']);
+				if (isset($defaultaddr)) {
+					$from = esc_attr($vtmglobal['characterID'] . ":" . 
+						$defaultaddr->PM_CODE . ":" . $defaultaddr->PM_TYPE_ID);
+				} 
 			}
 		} else {
 			$from = esc_attr($fromchid . ":" . $fromcode . ":" . $fromtype);
@@ -383,7 +376,15 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				}
 				
 			}
-		} else {
+		} 
+		// Or set who post is To
+		elseif (isset($_GET['characterID']) ) {
+			$tocode = isset($_GET['code']) ? $_GET['code'] : 'postoffice';
+			$totype = isset($_GET['type']) ? $_GET['type'] : 0;
+			$to = esc_attr($_GET['characterID'] . ":$tocode:$totype");
+		}
+		// Or check the To and From settings
+		else {
 			$notify = vtm_pm_validate_metabox($post);
 			if (!empty($notify)) {
 				echo "<ul style='color:red;border:1px solid red'>$notify</ul>";
@@ -428,7 +429,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		echo "<option value='anonymous:postoffice:0'>No return address / Anonymous</option>";
 		
 		foreach ($myaddresses as $address) {
-			$title = $address->NAME . " (" . $address->PM_CODE . ")";
+			$title = "";
+			if (vtm_isST()) {
+				$title .= vtm_pm_getchfromid($address->CHARACTER_ID) . ": ";
+			}
+			
+			$title .= $address->NAME . " (" . $address->PM_CODE . ")";
 			
 			$code = $address->PM_TYPE_ID == 0 ? 'postoffice' : $address->PM_CODE;
 			$value = esc_attr(implode(":", array($address->CHARACTER_ID, 
@@ -449,9 +455,13 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Add the extra page/menu items
 	// --------------------------------------------
 	function vtmpm_submenus() {
-		add_submenu_page( 'edit.php?post_type=vtmpm', "Address Book", 
-			"Address Book", "read", 'vtmpm_addresses',
-			"vtmpm_render_address_book" );
+		
+		// STs don't need an addressbook to see addresses
+		if (!vtm_isST()) {
+			add_submenu_page( 'edit.php?post_type=vtmpm', "Address Book", 
+				"Address Book", "read", 'vtmpm_addresses',
+				"vtmpm_render_address_book" );
+		}
 		add_submenu_page( 'edit.php?post_type=vtmpm', "My Addresses", 
 			"My Addresses", "read", 'vtmpm_mydetails',
 			"vtmpm_render_my_details" );
@@ -506,7 +516,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 		echo "<h3>My Details</h3>";
 		
-		if ($vtmglobal['characterID'] > 0) {
+		if ($vtmglobal['characterID'] > 0 || vtm_isST()) {
 			$testListTable = new vtmclass_pm_address_table();
 			$doaction = vtm_pm_address_input_validation('address');
 			
@@ -529,7 +539,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				<?php $testListTable->display() ?>
 			</form>	
 			<?php
-		} else {
+		} 
+		else {
 			echo "<p>You do not have a character associated with this Wordpress account.</p>";
 		}
 		
@@ -542,7 +553,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		global $wpdb;
 		
 		$id   = isset($_REQUEST[$type]) ? $_REQUEST[$type] : '';
-		$characterID = $vtmglobal['characterID'];
 		
 		if ('fix-' . $type == $addaction) {
 			$name    = $_REQUEST[$type . "_name"];
@@ -551,6 +561,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$code    = $_REQUEST[$type . '_code'];
 			$pm_type_id = $_REQUEST[$type . '_pmtype'];
 			$default = $_REQUEST[$type . '_default'];
+			$characterID = $_REQUEST[$type . "_charid"];
 			
 			$nextaction = $_REQUEST['action'];
 
@@ -565,6 +576,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$code       = $data->PM_CODE;
 			$pm_type_id = $data->PM_TYPE_ID;
 			$default    = $data->ISDEFAULT;
+			$characterID = $data->CHARACTER_ID;
 			
 			$nextaction = "save";
 
@@ -575,8 +587,14 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$visible= "N";
 			$pm_type_id = 1;
 			$default = 'N';
+			$characterID = 0;
 			
 			$nextaction = "add";
+		}
+
+		// override character ID if this is a logged in character
+		if (!vtm_isST()) {
+			$characterID = $vtmglobal['characterID'];
 		}
 		
 		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
@@ -587,7 +605,24 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
 			<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
 			<table>
-			<tr>
+			<?php
+			if (vtm_isST()) {
+			?><tr>
+				<td>Character Name:</td>
+				<td>
+					<select name="<?php print $type; ?>_charid">
+						<?php
+							foreach (vtm_get_characters() as $ch) {
+								print "<option value='{$ch->ID}' ";
+								($ch->ID == $characterID) ? print "selected" : print "";
+								echo ">" . vtm_formatOutput($ch->NAME) . "</option>";
+							}
+						?>
+					</select>
+				</td>
+			</tr><?php
+			}
+			?><tr>
 				<td>Public Name:</td>
 				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
 				<td>Type:</td>
@@ -828,7 +863,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
 		$totype   = get_post_meta( $post->ID, '_vtmpm_to_type', true );
 		$fromchid = get_post_meta( $post->ID, '_vtmpm_from_characterID', true );
-		//$fromactualchid = get_post_meta( $post->ID, '_vtmpm_from_actual_characterID', true );
 		$fromcode = get_post_meta( $post->ID, '_vtmpm_from_code', true );
 		$fromtype = get_post_meta( $post->ID, '_vtmpm_from_type', true );
 		
@@ -949,7 +983,6 @@ $viewlink";
 				
 				}
 			}
-			
 		} 
 		elseif ( $new_status == 'trash' ) {
 			
@@ -1008,6 +1041,15 @@ $viewlink";
 		}
 	}
 
+	// Don;t show trash undo message for players as it won't work
+	// because we don't really trash the message
+	function vtm_pm_style() {
+		if (!vtm_isST() && is_admin() && get_query_var('post_type') == 'vtmpm') {
+			wp_enqueue_style('vtmpm-style', plugins_url('css/style-hidemessage.css',dirname(__FILE__)));
+		}
+	}
+	add_action('admin_enqueue_scripts', 'vtm_pm_style');
+	
 	// Filter functions
 	// --------------------------------------------
 	// Get the basic query
@@ -1124,32 +1166,12 @@ $viewlink";
 	}
 	//add_filter( 'posts_where' , 'vtm_pm_search_filter_where' );
 
-	/*
-	// SQL WP_QUERY JOIN
-	function vtm_pm_get_posts_join($join){
-		global $pagenow;
-		if (isset($_REQUEST['post_type'])) {
-			$type = $_REQUEST['post_type'];
-		} else {
-			$type = 'post';
-		}
-		if ( 'vtmpm' == $type && 
-			is_admin() && 
-			$pagenow=='edit.php' && 
-			!vtm_isST()) {
-
-			 global $wpdb;
-
-			 $join .= " LEFT JOIN $wpdb->postmeta ON $wpdb->posts.ID = $wpdb->postmeta.post_id ";
-
-		}
-		return $join;
-	}
-	add_filter( 'posts_join' , 'vtm_pm_get_posts_join');
-	*/
-
 	// And set the counts/categories at the top
 	function vtm_pm_get_posts_count( $views ) {
+		
+		if (vtm_isST())
+			return $views;
+		
 		global $current_user;
 		get_currentuserinfo();
 		$chid = vtm_pm_getchidfromauthid($current_user->ID);
@@ -1162,12 +1184,12 @@ $viewlink";
 		unset($views['trash']);
 		unset($views['mine']);
 		
-		if (vtm_isST()) {
-			$startview = 'all';
-		} else {
+		//if (vtm_isST()) {
+		//	$startview = 'all';
+		//} else {
 			unset($views['all']);
 			$startview = 'unread';
-		} 
+		//} 
 
 		$new_views = array(
 				//'all'    => __('ZAll'),
@@ -1342,28 +1364,22 @@ $viewlink";
 	add_filter( 'query_vars', 'vtm_pm_add_query_vars_filter' );
 	
 
-
-	// function vtm_pm_remove_messages( $messages )
-	// {
-		// print_r($messages);
-		// return array();
-	// }
-	//add_filter( 'post_updated_messages', 'vtm_pm_remove_messages' );
 	function vtm_pm_update_bulk_messages( $bulk_messages, $bulk_counts ) {
 
 		//print_r($bulk_messages);
 		$bulk_messages['vtmpm'] = array(
 			'updated'   => _n( '%s message updated.', '%s messages updated.', $bulk_counts['updated'] ),
-			//'locked'    => _n( '%s my_cpt not updated, somebody is editing it.', '%s my_cpts not updated, somebody is editing them.', $bulk_counts['locked'] ),
-			'deleted'   => _n( '%s my_cpt permanently deleted.', '%s my_cpts permanently deleted.', $bulk_counts['deleted'] ),
+			'locked'    => _n( '%s message not updated, somebody is editing it.', '%s messages not updated, somebody is editing them.', $bulk_counts['locked'] ),
+			'deleted'   => _n( '%s message permanently deleted.', '%s messages permanently deleted.', $bulk_counts['deleted'] ),
 			'trashed'   => _n( '%s message moved to the Trash.', '%s messages moved to the Trash.', $bulk_counts['trashed'] ),
-			//'untrashed' => _n( '%s my_cpt restored from the Trash.', '%s my_cpts restored from the Trash.', $bulk_counts['untrashed'] ),
+			'untrashed' => _n( '%s message restored from the Trash.', '%s messages restored from the Trash.', $bulk_counts['untrashed'] ),
 		);
 
 		return $bulk_messages;
 
 	}
 	add_filter( 'bulk_post_updated_messages', 'vtm_pm_update_bulk_messages', 10, 2 );	
+
 	// General functions
 	// --------------------------------------------
 	
@@ -1793,18 +1809,24 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		$wpdb->show_errors();
 		
+		if (vtm_isST()) {
+			$characterID = $_REQUEST['address_charid'];
+		} else {
+			$characterID = $_REQUEST['characterID'];
+		}
+		
 		// set all other addresses to default = N if this one
 		// is going to be the default 
 		if ($_REQUEST['address_default'] == 'Y') {
 			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
 				array ('ISDEFAULT' => 'N'),
-				array ('CHARACTER_ID' => $_REQUEST['characterID'])
+				array ('CHARACTER_ID' => $characterID)
 			);			
 		}
 		
 		$dataarray = array(
 						'NAME'         => $_REQUEST['address_name'],
-						'CHARACTER_ID' => $_REQUEST['characterID'],
+						'CHARACTER_ID' => $characterID,
 						'PM_TYPE_ID'   => $_REQUEST['address_pmtype'],
 						'PM_CODE'      => vtm_sanitize_pm_code($_REQUEST['address_code']),
 						'DESCRIPTION'  => $_REQUEST['address_desc'],
@@ -1840,12 +1862,18 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		$wpdb->show_errors();
 		
+		if (vtm_isST()) {
+			$characterID = $_REQUEST['address_charid'];
+		} else {
+			$characterID = $_REQUEST['characterID'];
+		}
+		
 		// set all other addresses to default = N if this one
 		// is going to be the default 
 		if ($_REQUEST['address_default'] == 'Y') {
 			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
 				array ('ISDEFAULT' => 'N'),
-				array ('CHARACTER_ID' => $_REQUEST['characterID'])
+				array ('CHARACTER_ID' => $characterID)
 			);
 			/*			
 			if ($result) 
@@ -1861,7 +1889,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		
 		$dataarray = array(
 						'NAME'         => $_REQUEST['address_name'],
-						'CHARACTER_ID' => $_REQUEST['characterID'],
+						'CHARACTER_ID' => $characterID,
 						'PM_TYPE_ID'   => $_REQUEST['address_pmtype'],
 						'PM_CODE'      => vtm_sanitize_pm_code($_REQUEST['address_code']),
 						'DESCRIPTION'  => $_REQUEST['address_desc'],
@@ -1923,19 +1951,35 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 
    function column_name($item){
         
-        $actions = array(
-            'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
-            'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
-       );
-        
-        return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
-            $item->ID,
-            $this->row_actions($actions)
-        );
+		if (vtm_isST()) {
+			return vtm_formatOutput($item->NAME);
+		} else {
+			$actions = array(
+				'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
+				'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
+		   );
+			
+			return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
+				vtm_formatOutput($item->NAME),
+				$item->ID,
+				$this->row_actions($actions)
+			);
+		}
     }
     function column_pm_code($item){
         return vtm_formatOutput($item->PM_CODE);
+    }
+    function column_charactername($item){
+		$actions = array(
+			'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
+			'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
+		);
+
+		return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
+			vtm_formatOutput(vtm_pm_getchfromid($item->CHARACTER_ID)),
+			$item->ID,
+			$this->row_actions($actions)
+		);
     }
     function column_pm_type($item){
 		global $wpdb;
@@ -1943,15 +1987,16 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
     }
 
     function get_columns(){
-        $columns = array(
-            'cb'          => '<input type="checkbox" />', 
-            'NAME'        => 'Name',
-            'PM_TYPE'     => 'Type',
-            'PM_CODE'     => 'Code',
-            'DESCRIPTION' => 'Private Description',
-            'VISIBLE'     => 'Visible to the public',
-            'ISDEFAULT'   => 'Default for sending',
-        );
+		$columns['cb']          = '<input type="checkbox" />';
+		if (vtm_isST()) {
+			$columns['CHARACTERNAME'] = 'Character';
+		}
+		$columns['NAME']        = 'Name';
+		$columns['PM_TYPE']     = 'Type';
+		$columns['PM_CODE']     = 'Code';
+		$columns['DESCRIPTION'] = 'Private Description';
+		$columns['VISIBLE']     = 'Visible to the public';
+		$columns['ISDEFAULT']   = 'Default for sending';
         return $columns;
 		
     }
@@ -1981,7 +2026,6 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 				}
 			}
         }
-        		
      }
 
         
@@ -2114,6 +2158,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 		}
     }
    function column_name($item){
+	   global $vtmglobal;
 		
 		// actions only available for own addressbook entries
 		if ($item->ADDRESSBOOK == 'Private') {
@@ -2129,7 +2174,21 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 			$name = $item->charactername;
 		} else {
 			$name = $item->NAME;
-		}        
+		}
+
+		if (!(isset($vtmglobal['characterID']) && $item->CHARACTER_ID == $vtmglobal['characterID'] )) {
+			$type = vtm_get_pm_typeidfromcode($item->PM_CODE);
+			$linkurl = admin_url('post-new.php');
+			$linkurl = add_query_arg('post_type','vtmpm',$linkurl );
+			$linkurl = add_query_arg('characterID',$item->CHARACTER_ID,$linkurl);
+			$linkurl = add_query_arg('type',$type,$linkurl);
+			if ($item->PM_CODE != '') {
+				$linkurl = add_query_arg('code',$item->PM_CODE,$linkurl);
+			}
+			$actions['message'] = sprintf('<a href="%s">Send Message</a>',$linkurl);
+		}
+
+		
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
             vtm_formatOutput($name),
             $item->ID,

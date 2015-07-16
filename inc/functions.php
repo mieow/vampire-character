@@ -217,6 +217,18 @@ function vtm_get_pm_typefromid($typeID) {
 	
 	return $list;
 }
+function vtm_get_pm_typeidfromcode($code) {
+
+	global $wpdb;
+
+	$sql = "SELECT PM_TYPE_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+		WHERE PM_CODE = %s;";
+	$list = $wpdb->get_var($wpdb->prepare($sql, $code));
+	
+	//print_r($list);
+	
+	return $list;
+}
 function vtm_get_generations() {
 
 	global $wpdb;
@@ -234,6 +246,30 @@ function vtm_get_sects() {
 	global $wpdb;
 
 	$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX . "SECT;";
+	$list = $wpdb->get_results($sql);
+	
+	return $list;
+}
+function vtm_get_characters() {
+
+	global $wpdb;
+
+	$sql = "SELECT ch.ID, ch.NAME 
+			FROM 
+				" . VTM_TABLE_PREFIX . "CHARACTER ch,
+				" . VTM_TABLE_PREFIX . "PLAYER pl,
+				" . VTM_TABLE_PREFIX . "PLAYER_STATUS ps,
+				" . VTM_TABLE_PREFIX . "CHARACTER_STATUS cs,
+				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgs
+			WHERE 
+				ch.PLAYER_ID = pl.ID
+                AND pl.PLAYER_STATUS_ID = ps.ID
+				AND ch.CHARACTER_STATUS_ID = cs.ID
+				AND cgs.ID = ch.CHARGEN_STATUS_ID
+				AND ch.VISIBLE = 'Y'
+				AND ch.DELETED = 'N'
+				AND cgs.NAME = 'Approved'
+				AND ps.NAME = 'Active';";
 	$list = $wpdb->get_results($sql);
 	
 	return $list;
@@ -786,6 +822,7 @@ function vtm_get_character_email($characterID) {
 
     function vtm_establishCharacterID($character = '') {
         global $wpdb;
+		global $vtmglobal;
 
 		$sql = "SELECT id
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER
@@ -794,6 +831,11 @@ function vtm_get_character_email($characterID) {
 		
 		if (empty($cid) && isset($_REQUEST['characterID'])) {
 			$cid = $_REQUEST['characterID'];
+		}
+		
+		if ($character == '' || 
+			(isset($vtmglobal['character']) && $character == $vtmglobal['character']) ) {
+			$vtmglobal['characterID'] = $cid;
 		}
 
         return $cid;
@@ -1041,7 +1083,7 @@ function vtm_get_pm_addresses($characterID = 0) {
 	global $vtmglobal;
 	global $current_user;
 
-	if ($characterID == 0){
+	if (!vtm_isST() && $characterID == 0){
 		if (!isset($vtmglobal['characterID'])) {
 			get_currentuserinfo();
 			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
@@ -1049,11 +1091,18 @@ function vtm_get_pm_addresses($characterID = 0) {
 		$characterID = $vtmglobal['characterID'];
 	}
 	
-	$sql = "SELECT *
-			FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-			WHERE CHARACTER_ID = %s AND DELETED = 'N'
-			ORDER BY NAME";
-	$sql = $wpdb->prepare($sql, $characterID);
+	if (vtm_isST()) {
+		$sql = "SELECT *
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+				WHERE DELETED = 'N'
+				ORDER BY CHARACTER_ID, NAME";
+	} else {
+		$sql = "SELECT *
+				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+				WHERE CHARACTER_ID = %s AND DELETED = 'N'
+				ORDER BY CHARACTER_ID, NAME";
+		$sql = $wpdb->prepare($sql, $characterID);
+	}
 	
 	return $wpdb->get_results($sql);
 }
@@ -1066,7 +1115,23 @@ function vtm_get_default_address($characterID) {
 			WHERE CHARACTER_ID = %s AND ISDEFAULT = 'Y'
 			AND DELETED = 'N'";
 	$sql = $wpdb->prepare($sql, $characterID);
-	return $wpdb->get_row($sql);
+	$address = $wpdb->get_row($sql);
+	
+	// Use the post office address if it's enable and we don't
+	// have any other choices
+	if ($wpdb->num_rows == 0 && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == '1') {		
+		$address->ID = 0;
+		$address->NAME = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'", $characterID));
+		$address->CHARACTER_ID = $characterID;
+		$address->PM_TYPE_ID = 0;
+		$address->PM_CODE = '';
+		$address->DESCRIPTION = 'Addressed message left in a secure location';
+		$address->VISIBLE = 'Y';
+		$address->ISDEFAULT = 'Y';
+		$address->DELETED = 'N';
+	} 
+	
+	return $address;
 }
 
 function vtm_get_pm_types() {
@@ -1135,7 +1200,7 @@ function vtm_get_pm_addressbook($characterID = 0,
 			AND ch.VISIBLE = 'Y'
 			AND pstatus.NAME = 'Active'
 			AND pm.DELETED = 'N'
-			AND pm.VISIBLE = 'Y' " . $filtersql;
+			AND pm.VISIBLE = 'Y' " . $filtersql ;
 		
 	if ($filter_addressbook == 'all' ||
 		$filter_addressbook == 'public') {
@@ -1215,7 +1280,7 @@ function vtm_get_pm_addressbook($characterID = 0,
 			
 	}
 	$sql = "(" . implode(") UNION (", $sqlarray) . ")";
-	$sql .= " ORDER BY NAME, tableID";
+	$sql .= " ORDER BY charactername, NAME, tableID";
 		
 	//print_r($sqlargs);
 	
@@ -1235,4 +1300,64 @@ function vtm_get_pm_addressbook($characterID = 0,
 	return $data;
 }
 
+// args = 	array('character' => <wordpress_id>), or
+//			array('characterID' => <characterID>), and/or 
+//			array('code' => <address code>)
+function vtm_pm_link($linktext, $args) {
+	global $vtmglobal;
+	
+	
+	if (get_option( 'vtm_feature_pm', '0' ) == '1' && is_user_logged_in()) {
+		$linkurl = admin_url('post-new.php');
+		$linkurl = add_query_arg('post_type','vtmpm',$linkurl );
+		
+		// work out the character
+		if (isset($args['characterID'])) {
+			$characterID = $args['characterID'];
+		} 
+		elseif (isset($args['character'])) {
+			$characterID = vtm_establishCharacterID($args['character']);
+		} 
+		else {
+			$characterID = vtm_get_characterID_from_pm_code($args['code']);
+		}
+		
+		if (isset($vtmglobal['characterID']) && $characterID ==	$vtmglobal['characterID'] ) {
+			// don't add a contact link for your own character
+			return $linktext;
+		}
+		
+		// work out the code
+		if (isset($args['code'])) {
+			$code = $args['code'];
+			$type = vtm_get_pm_typeidfromcode($code);
+		} else {
+			$address = vtm_get_default_address($characterID);
+			$code = $address->PM_CODE;
+			$type = $address->PM_TYPE_ID;
+		}
+		
+		// work out the url to create a new PM
+		if ($code != '') {
+			$linkurl = add_query_arg('code',$code,$linkurl);
+		}
+		$linkurl = add_query_arg('characterID',$characterID,$linkurl);
+		$linkurl = add_query_arg('type',$type,$linkurl);
+		
+		$imgurl = plugins_url( 'vtm-character/images/mail.jpg' );
+		
+		// output link
+		$linktext .= " <a href='$linkurl'><img class='vtmpm_icon' src='$imgurl' alt='(contact)'></a>";
+		
+	}
+	
+	return $linktext;
+}
+
+function  vtm_get_characterID_from_pm_code($code) {
+	global $wpdb;
+	
+	return $wpdb->get_var($wpdb->prepare("SELECT CHARACTER_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS WHERE PM_CODE = '%s'", $code));
+	
+}
 ?>

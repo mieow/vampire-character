@@ -93,6 +93,7 @@ function vtm_isST() {
 
 function vtm_establishCharacter($character) {
 	global $current_user;
+	global $vtmglobal;
 	get_currentuserinfo();
 	if (vtm_isST()) {
 		if (isset($_POST['VTM_CHARACTER'])) {
@@ -107,6 +108,7 @@ function vtm_establishCharacter($character) {
 	}
 	else {
 		$character = $current_user->user_login;
+		$vtmglobal['character'] = $character;
 	}
 	return $character;
 }

@@ -19,6 +19,7 @@ function vtm_get_profile_content() {
 	// Work out current character and what character profile is requested
 	$currentUser      = wp_get_current_user();
 	$currentCharacter = $currentUser->user_login;
+	$vtmglobal['character'] = $currentCharacter;
 	$currentCharacterID = vtm_establishCharacterID($currentCharacter);
 	
 	if (isset($_REQUEST['CHARACTER']))
@@ -258,14 +259,22 @@ function vtm_get_profile_content() {
 			<td class=\"gvcol_2 gvcol_val\">";
 		foreach ($addr2display as $address) {
 			$output .= "<strong>" . vtm_formatOutput($address->NAME) . 
-				"</strong>: " . vtm_formatOutput($address->PM_CODE);
+				"</strong>: " . vtm_pm_link(
+					vtm_formatOutput($address->PM_CODE), 
+					array('code' => $address->PM_CODE, 'characterID' => $characterID));
 			if ($address->VISIBLE == 'N') {
 				$output .= " (private)";
 			}
 			$output .= "<br />";
 		}
-		$output .= "</td></tr>";
 	}
+	// and post office, if enabled
+	if (get_option( 'vtm_feature_pm', '0' ) == '1' && is_user_logged_in()) {
+		$output .= "<strong>" . vtm_pm_link(vtm_formatOutput(get_option( 'vtm_pm_ic_postoffice_location' )), array('code' => '', 'characterID' => $characterID)) . 
+			"</strong>";
+		$output .= "<br />";
+	}
+	$output .= "</td></tr>";
 	
 	$output .= "</table></td><td class=\"gvcol_2 gvcol_img\">\n";
 	// Portrait
