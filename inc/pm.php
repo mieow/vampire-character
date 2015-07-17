@@ -4,16 +4,6 @@
 //	* No spaces
 //	* Alphanumeric characters
 //	* Uppercase
-//
-// TO DO
-// 	* Mark read/unread actions, and bulk actions
-//	* check [empty trash] button
-//	* Storytellers can:
-//		* Send a message to/from anyone (doesn't show on From list?)
-//		- Filter on To/From, Active characters
-//		* See all addresses in addressbook
-//		* Add addresses for NPCs/characters
-//  * Test purge tables (characters.php)
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -878,12 +868,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		if ($totype == 0 && $tochid == 0 && $tocode == 0) {
 			$output = "<li>Please select a recipient</li>";
 		}
-		// anytype/one can sent TO the postoffice 
+		// anytype/one can sent TO the postoffice
 		elseif ($totype == 0) {
 			$output = "";
 		}
-		// sending anonymously?
-		elseif ($fromtype == 0) {
+		// sending anonymously? (unless you are an ST)
+		elseif ($fromtype == 0 && !vtm_isST()) {
 			// Yes
 			$allow = $wpdb->get_var($wpdb->prepare(
 				"SELECT ISANONYMOUS FROM " . VTM_TABLE_PREFIX . "PM_TYPE
@@ -896,7 +886,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 		} 
 		// No - to and from must be same type/method 
-		elseif ($fromtype != $totype) {
+		elseif ($fromtype != $totype && $fromtype != 0) {
 			$from = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $fromtype));
 			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totype));
 			
@@ -956,8 +946,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 				if ($old_status != 'trash') {
 					$viewlink    = get_permalink( $post->ID );
-					$author      = vtm_pm_getchfromauthid($post->post_author);
-					$recipientID = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
+					
+					$meta = vtm_pm_getpostmeta($post->ID);
+					$from      = $meta['From'];
+					$recipientID = $meta['ToChID'];
 					$recipient   = vtm_pm_getchfromid($recipientID);
 					
 					// Send email to recipient
@@ -965,14 +957,14 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					$email   = vtm_get_character_email($recipientID);
 					$body    = "Hello $recipient,
 	
-You have a new message from $author: $viewlink
+You have a new message from $from: $viewlink
 
 ";
 				
 					vtm_send_email($email, $subject, $body);
 					
 					// Send email (with contents) to STs
-					$subject = "Message sent from $author to $recipient";
+					$subject = "Message sent from $from ({$meta['Author']}) to $recipient";
 					$email = get_option( 'vtm_replyto_address', get_option( 'vtm_chargen_email_from_address', get_bloginfo('admin_email') ) );
 					$body = "Subject: " . $post->post_title . "
 				
@@ -1111,7 +1103,7 @@ $viewlink";
 	}
 	add_action('pre_get_posts','vtm_pm_search_filter');
 	
-	function vtm_pm_get_basic_metaquery() {
+/* 	function vtm_pm_get_basic_metaquery() {
 		global $current_user;
 		get_currentuserinfo();
 		$chid = vtm_pm_getchidfromauthid($current_user->ID);
@@ -1130,11 +1122,9 @@ $viewlink";
 			),
 		);
 
-	}
+	} */
 	
-	// Now filter query based on status, etc
-	
-	function vtm_pm_search_filter_where( $where ) {
+/* 	function vtm_pm_search_filter_where( $where ) {
 		global $pagenow;
 		if (isset($_GET['post_type'])) {
 			$type = $_GET['post_type'];
@@ -1164,7 +1154,7 @@ $viewlink";
 		}
 		return $where;
 	}
-	//add_filter( 'posts_where' , 'vtm_pm_search_filter_where' );
+ */	//add_filter( 'posts_where' , 'vtm_pm_search_filter_where' );
 
 	// And set the counts/categories at the top
 	function vtm_pm_get_posts_count( $views ) {
@@ -1183,13 +1173,8 @@ $viewlink";
 		unset($views['draft']);
 		unset($views['trash']);
 		unset($views['mine']);
-		
-		//if (vtm_isST()) {
-		//	$startview = 'all';
-		//} else {
-			unset($views['all']);
-			$startview = 'unread';
-		//} 
+		unset($views['all']);
+		$startview = 'unread';
 
 		$new_views = array(
 				//'all'    => __('ZAll'),
@@ -1497,16 +1482,33 @@ $viewlink";
 		<?php
 	}
 	function vtm_pm_render_pmfoot($postID) {
+		global $current_user;
+		global $vtmglobal;
+		
 		$dellink = get_delete_post_link(get_the_ID());
 		$replylink = admin_url('post-new.php?replyto=' . get_the_ID());
 		$replylink = add_query_arg('post_type','vtmpm',$replylink );
 		$inboxlink = admin_url('edit.php?post_type=vtmpm');
+		
+		get_currentuserinfo();
+		$meta = vtm_pm_getpostmeta($postID);
+		$post = get_post( $postID );
+		
+		$links = array("<a href='$inboxlink'>Inbox</a>");
+		// Add reply link if you weren't the one that sent it
+		// and it isn't an anonymous post (who would you reply to?)
+		if ($post->post_author != $current_user->ID && $meta['FromChID'] != 'anonymous') {
+			$links[] = "<a href='$replylink'>Reply</a>";
+		}
+		// Add trash link if it was sent to you
+		if ($vtmglobal['characterID'] == $meta['ToChID']) {
+			$links[] = "<a href='$dellink'>Trash</a>";
+		}
+		
 		?>
 					<footer class="entry-meta">
 						<div class="vtm_pmfoot">
-							<a href="<?php echo $inboxlink; ?>">Inbox</a> | 
-							<a href="<?php echo $replylink; ?>">Reply</a> | 
-							<a href="<?php echo $dellink; ?>">Trash</a>
+							<?php echo implode(' | ', $links); ?>
 						</div>
 						<div class="vtm_pmhistory">
 						<?php 
@@ -1575,6 +1577,7 @@ $viewlink";
 	}	
 	function vtm_pm_getpostmeta($postID) {
 		global $current_user;
+		global $vtmglobal;
 		
 		get_currentuserinfo();
 		if (!isset($vtmglobal['characterID'])) {
@@ -1598,7 +1601,7 @@ $viewlink";
 		$fromaddr = vtm_pm_getaddrfromcode($fromcode);
 		
 		$toaddr   = empty($toaddr) ? $tocode . ' unavailable' : $toaddr;
-		$fromaddr = empty($fromaddr) ? $tocode . ' unavailable' : $fromaddr;
+		$fromaddr = empty($fromaddr) ? $fromcode . ' unavailable' : $fromaddr;
 
 		// User has from address in their addressbook?
 		// If not, give them a link to add it 
@@ -1607,28 +1610,45 @@ $viewlink";
 			!vtm_pm_iscoderemoved($fromcode)) {
 			$addlink = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses&code='.$fromcode.
 				"&from=$fromchid&type=$fromtype");
-			$fromaddr = "<a href='$addlink' title='Add to address book'>$fromaddr</a>";
+			$fromaddrlink = "<a href='$addlink' title='Add to address book'>$fromaddr</a>";
+		} else {
+			$fromaddrlink = $fromaddr;
 		}
 		
+		// anonymous
 		$ispmowner = ($authorid == $current_user->ID);
 		
 		if ($fromchid == 'anonymous') {
 			// STs get full information
 			if (vtm_isST()) {
-				$fromfull = "$authorch ($fromaddr) Anonymous";
+				$fromfull = "Anonymous ($authorch) ";
 			}
 			// if you sent it, you also get full information
 			elseif ($ispmowner) {
-				$fromfull = "$authorch (Anonymous)";
+				$fromfull = "Anonymous ($authorch)";
 			}
 			// Otherwise
 			else {
-				$fromfull = "$fromch ($fromaddr)";
+				$fromfull = "Anonymous";
 			}
 		}
-		// not anonymous
-		else {
+		// from character deleted - then use post author name
+		elseif ($fromchid > 0 && $fromch == 'Anonymous') {
+			$wordpressid = get_the_author_meta( 'user_login', $authorid );
+			$fromfull = "$wordpressid ($fromaddr)";
+		}
+		// don't have an address link for your own posts
+		elseif ($ispmowner) {
 			$fromfull = "$fromch ($fromaddr)";
+		}
+		// otherwise
+		else {
+			$fromfull = "$fromch ($fromaddrlink)";
+		}
+		
+		// Show if TO character is deleted
+		if ($tochid > 0 && $toch == 'Anonymous') {
+			$toch = 'Unknown/Deleted';
 		}
 		
 		//echo "ReplyTo: $replyto";
@@ -1658,30 +1678,33 @@ $viewlink";
 		global $current_screen;
 		global $current_user;
 		if( $current_screen->post_type == 'vtmpm' && get_post_status( $post->ID ) == 'publish') {
-			unset( $actions['edit'] );
 			unset( $actions['mine'] );
 			unset( $actions['inline hide-if-no-js'] );
 			
-			get_currentuserinfo();
-			if ($post->post_author == $current_user->ID) {
-				// i.e. logged in user sent the message 
-				unset( $actions['trash'] );
-				
-				// $read = get_post_meta( $post->ID, '_vtmpm_readstatus', true );
-				// $action = $read == 'read' ? 'unread' : 'read' ;
-				// $actiontxt = $read == 'read' ? 'Mark Unread' : 'Mark Read' ;
+			if (!vtm_isST()) {
+				unset( $actions['edit'] );
+			
+				get_currentuserinfo();
+				if ($post->post_author == $current_user->ID) {
+					// i.e. logged in user sent the message 
+					unset( $actions['trash'] );
+					
+					// $read = get_post_meta( $post->ID, '_vtmpm_readstatus', true );
+					// $action = $read == 'read' ? 'unread' : 'read' ;
+					// $actiontxt = $read == 'read' ? 'Mark Unread' : 'Mark Read' ;
 
-				// $link = add_query_arg('action',$action);
-				// $link = add_query_arg('post_type','vtmpm', $link);
-				// $link = add_query_arg('post',$post->ID, $link);
-				// $link = wp_nonce_url($link, 'vtmpm_readunread');
+					// $link = add_query_arg('action',$action);
+					// $link = add_query_arg('post_type','vtmpm', $link);
+					// $link = add_query_arg('post',$post->ID, $link);
+					// $link = wp_nonce_url($link, 'vtmpm_readunread');
 
-				// //$link = admin_url("post.php?post={$post->ID}&amp;action=$action&amp;post_type=vtmpm");
-				// $actions['read'] = "<a href='$link'>$actiontxt</a>" ;
-			} 
-			elseif (get_post_meta( $post->ID, '_vtmpm_to_status', true ) == 'trash') {
-				$actions['view'] = str_replace(__( 'View' ),__( 'View/Untrash' ),$actions['view']) ;
-				unset( $actions['trash'] );
+					// //$link = admin_url("post.php?post={$post->ID}&amp;action=$action&amp;post_type=vtmpm");
+					// $actions['read'] = "<a href='$link'>$actiontxt</a>" ;
+				} 
+				elseif (get_post_meta( $post->ID, '_vtmpm_to_status', true ) == 'trash') {
+					$actions['view'] = str_replace(__( 'View' ),__( 'View/Untrash' ),$actions['view']) ;
+					unset( $actions['trash'] );
+				}
 			}
 		}
 		return $actions;
@@ -1756,7 +1779,6 @@ $viewlink";
 	// --------------------------------------------
 	function vtm_pm_post_template($single_template) {
 		global $post;
-
 		if ($post->post_type == 'vtmpm') {
 			$path = locate_template("vtmpm.php");
 			if (file_exists($path)) {
