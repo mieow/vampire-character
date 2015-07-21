@@ -54,36 +54,50 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 					<li><a href="<?php echo $clanlink; ?>">Clan Page</a></li> 
 			<?php } ?>
 			
-		 	<?php if ( isset( $instance[ 'inbox_link' ] ) && get_option( 'vtm_feature_pm', '0' ) == 1 ) { 
-				$chid = vtm_pm_getchidfromauthid($current_user->ID);
-				$inbox_link     = isset( $instance[ 'inbox_link' ] );
-				// How many unread messages?
-				$query['meta_query'] = array(
-					'relation' => 'AND',
-					array(
-						'key'=>'_vtmpm_to_characterID',
-						'value'=> "$chid",
-						'compare'=>'==',
-					),
-					array(
-						'key'=>'_vtmpm_to_status',
-						'value'=> "unread",
-						'compare'=>'==',
-					),
-				);
-				$query['post_status'] = 'publish';
-				$query['post_type'] = 'vtmpm';
-				$result = new WP_Query($query);
-								
-				if($result->found_posts > 0) {
-					$unread = " (" . $result->found_posts . " unread)";
-				} else {
-					$unread = "";
+		 	<?php 
+			if ( get_option( 'vtm_feature_pm', '0' ) == 1 ) { 
+				if ( isset( $instance[ 'inbox_link' ] ) ) { 
+					$chid = vtm_pm_getchidfromauthid($current_user->ID);
+					$inbox_link     = isset( $instance[ 'inbox_link' ] );
+					// How many unread messages?
+					$query['meta_query'] = array(
+						'relation' => 'AND',
+						array(
+							'key'=>'_vtmpm_to_characterID',
+							'value'=> "$chid",
+							'compare'=>'==',
+						),
+						array(
+							'key'=>'_vtmpm_to_status',
+							'value'=> "unread",
+							'compare'=>'==',
+						),
+					);
+					$query['post_status'] = 'publish';
+					$query['post_type'] = 'vtmpm';
+					$result = new WP_Query($query);
+									
+					if($result->found_posts > 0) {
+						$unread = " (" . $result->found_posts . " unread)";
+					} else {
+						$unread = "";
+					}
+				
+					?>
+					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm'); ?>">Character Inbox<?php echo $unread; ?></a></li>
+					<?php 
 				}
-			
-			?>
-			<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm'); ?>">Inbox<?php echo $unread; ?></a></li>
-   			<?php } ?>
+				if ( isset( $instance[ 'addressbook_link' ] ) && !vtm_isST() ) { 
+					?>
+					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses'); ?>">Addressbook</a></li>
+					<?php 
+				}
+				if ( isset( $instance[ 'addresses_link' ] ) ) { 
+					?>
+					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&page=vtmpm_mydetails'); ?>">Contact Details</a></li>
+					<?php 
+				}
+			}?>
  			<li><a href="<?php echo wp_logout_url( home_url() ); ?>" title="Logout">Logout</a></li>
 			</ul>
 			<?php
@@ -104,10 +118,12 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 	 */
 	public function update( $new_instance, $old_instance ) {
 		$instance = array();
-		$instance['charsheet_link'] = $new_instance['charsheet_link'];
-		$instance['profile_link']  = $new_instance['profile_link'];
-		$instance['inbox_link']    = $new_instance['inbox_link'];
-		$instance['spendxp_link']  = $new_instance['spendxp_link'];
+		$instance['charsheet_link']   = $new_instance['charsheet_link'];
+		$instance['profile_link']     = $new_instance['profile_link'];
+		$instance['spendxp_link']     = $new_instance['spendxp_link'];
+		$instance['inbox_link']       = $new_instance['inbox_link'];
+		$instance['addresses_link']   = $new_instance['addresses_link'];
+		$instance['addressbook_link'] = $new_instance['addressbook_link'];
 		$instance['dl_category'] = strip_tags( $new_instance['dl_category'] );
 		return $instance;
 	}
@@ -121,10 +137,12 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 	 */
 	public function form( $instance ) {
 		
-		$charsheet_link = isset( $instance[ 'charsheet_link' ] );
-		$profile_link   = isset( $instance[ 'profile_link' ] );
-		$spendxp_link   = isset( $instance[ 'spendxp_link' ] );
-		$inbox_link     = isset( $instance[ 'inbox_link' ] );
+		$charsheet_link   = isset( $instance[ 'charsheet_link' ] );
+		$profile_link     = isset( $instance[ 'profile_link' ] );
+		$spendxp_link     = isset( $instance[ 'spendxp_link' ] );
+		$inbox_link       = isset( $instance[ 'inbox_link' ] );
+		$addresses_link   = isset( $instance[ 'addresses_link' ] );
+		$addressbook_link = isset( $instance[ 'addressbook_link' ] );
 
 		?>
 		<p>
@@ -141,6 +159,12 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		?><p>
 		<label for="<?php echo $this->get_field_id( 'inbox_link' ); ?>"><?php _e( 'Inbox Link:' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'inbox_link' ); ?>" name="<?php echo $this->get_field_name( 'inbox_link' ); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
+		</p><p>
+		<label for="<?php echo $this->get_field_id( 'addresses_link' ); ?>"><?php _e( 'My Addresses Link:' ); ?></label>
+ 		<input id="<?php echo $this->get_field_id( 'addresses_link' ); ?>" name="<?php echo $this->get_field_name( 'addresses_link' ); ?>" type="checkbox" <?php echo checked( $addresses_link, true ); ?> />
+		</p><p>
+		<label for="<?php echo $this->get_field_id( 'addressbook_link' ); ?>"><?php _e( 'Addressbook Link:' ); ?></label>
+ 		<input id="<?php echo $this->get_field_id( 'addressbook_link' ); ?>" name="<?php echo $this->get_field_name( 'addressbook_link' ); ?>" type="checkbox" <?php echo checked( $addressbook_link, true ); ?> />
 		</p>
 		<?php
 		}

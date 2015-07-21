@@ -5,6 +5,14 @@
 //	* Alphanumeric characters
 //	* Uppercase
 
+// TO DO:
+//	* Tell user to add an address if they want to send
+//		to something other than anonymous. Underline this is IC.
+//		and explain Elysium/Post Office
+//	* Add non-anonymous character/Elysium option to From pull-down
+//		- be able to use for reply messages 
+//	* Use CSS to change Publish to Send Message?
+
 // Register Custom Post Type
 function vtm_PM_post_type() {
 
@@ -327,6 +335,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$tocode   = $totype == 0   ? 'postoffice' : $tocode;
 		$fromcode = $fromtype == 0 ? 'postoffice' : $fromcode;
+		$fromchid = empty($fromchid) ? $vtmglobal['characterID'] : $fromchid;
 		
 		$to   = esc_attr($tochid . ":" . $tocode . ":" . $totype);
 		
@@ -383,7 +392,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$status = get_post_meta( $post->ID, 'vtmpm_status', true );
 		echo "<p>Status: $status</p>";
-		//echo "<pTo: $to</p>";
+		//echo "<p>To: $to</p>";
 		//echo "<p>From: $from</p>";
 		
 				
@@ -414,9 +423,17 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				vtm_formatOutput($title) . "</option>";
 			}
 		}
-		echo "</select><br />";
+		echo "</select>";
+		if (count($addressbook) + count($extra) == 0) {
+			echo "There is no one in your Addressbook. Please add someone to select them as a recipient.";
+		} else {
+			$link = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses');
+			echo "Select a message recipient from your <a href='$link'>Addressbook</a>";
+		}
+		echo "<br />";
 		echo "<label>From: </label><select name='vtm_pm_from'>";
-		echo "<option value='anonymous:postoffice:0'>No return address / Anonymous</option>";
+		echo "<option value='$fromchid:postoffice:0'>Yourself with no return address</option>";
+		echo "<option value='anonymous:postoffice:0'>Anonymous with no return address</option>";
 		
 		foreach ($myaddresses as $address) {
 			$title = "";
@@ -433,11 +450,18 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			echo "<option value='$value' " . selected($value, $from, false) .
 				">" . vtm_formatOutput($title) . "</option>";
 		}
-		echo "</select><br />";
-		if (isset($replytolink)) {
-			echo "<label>Replying to: </label><a href='$replytolink'>$replytotitle</a>";
+		echo "</select>";
+		echo "Select how you are contacting the recipient. ";
+		if (count($myaddresses) == 0) {
+			$link = admin_url('edit.php?post_type=vtmpm&page=vtmpm_mydetails');
+			echo "You will need to add your <a href='$link'>Contact Details</a> if you want additional options.";
 		}
 		echo "</p>";
+		if (isset($replytolink)) {
+			echo "<p><label>Replying to: </label><a href='$replytolink'>$replytotitle</a></p>";
+		}
+		echo "<p>Click 'Publish' when you are ready to send your message. A copy of the message will be
+		sent to the Storytellers.</p>";
 		
 		//print_r($addressbook);
 	}
@@ -453,7 +477,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				"vtmpm_render_address_book" );
 		}
 		add_submenu_page( 'edit.php?post_type=vtmpm', "My Addresses", 
-			"My Addresses", "read", 'vtmpm_mydetails',
+			"Contact Details", "read", 'vtmpm_mydetails',
 			"vtmpm_render_my_details" );
 	}
 	add_action('admin_menu' , 'vtmpm_submenus'); 
@@ -467,6 +491,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 
 		echo "<h3>Addressbook</h3>";
+		
+		?><p>Your addressbook lists all the characters available for you to send a message to.</p>
+		<p>Contact details that have been made public by other characters are automatically listed.  You can
+		add additional contact details where the character has provided you their 'code'.  This code represents
+		the character's phone number or address and you will need it to be able to sent them a message.</p>
+		<?php
 		
 		if ($vtmglobal['characterID'] > 0) {
 			$testListTable = new vtmclass_pm_addressbook_table();
@@ -504,8 +534,16 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		get_currentuserinfo();
 		$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 
-		echo "<h3>My Details</h3>";
+		echo "<h3>My Contact Details</h3>";
 		
+		?><p>In this section, you should enter all the methods of communication that other characters
+		might use to contact you.  It includes any mobile phone, dead drop locations, places of business, etc.</p>
+		<p>If you wish, you can set the address/number to be public.  That will allow anyone to contact you through
+		that method.  If you keep it private then you will have to give them the 'code' yourself so that they can
+		add it to their Addressbook.</p>
+		<p>These contact details are also needed for sending messages.  For example, if you are phoning another
+		character, you will need to call them from another phone number to do so.</p>
+		<?php	
 		if ($vtmglobal['characterID'] > 0 || vtm_isST()) {
 			$testListTable = new vtmclass_pm_address_table();
 			$doaction = vtm_pm_address_input_validation('address');
@@ -611,6 +649,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					</select>
 				</td>
 			</tr><?php
+			} else {
+				?>
+				<input type="hidden" name="<?php print $type; ?>_charid" value="<?php print $characterID; ?>" />
+				<?php
 			}
 			?><tr>
 				<td>Public Name:</td>
@@ -765,10 +807,21 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				$code = vtm_sanitize_pm_code($_REQUEST[$type . '_code']);
 				
 				// CODE MUST BE UNIQUE
-				$sql = "SELECT COUNT(ID) 
-					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
-					WHERE PM_CODE = %s";
-				$sql = $wpdb->prepare($sql, $code);
+				
+				if ($_REQUEST['action'] == 'save') {
+					// exclude current entry from check
+					$sql = "SELECT COUNT(ID) 
+						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+						WHERE PM_CODE = %s AND ID != %s";
+					$sql = $wpdb->prepare($sql, $code, $_REQUEST[$type . '_id']);
+				} else {
+					$sql = "SELECT COUNT(ID) 
+						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+						WHERE PM_CODE = %s";
+					$sql = $wpdb->prepare($sql, $code);
+				}
+				
+				//echo "action: {$_REQUEST['action']}, SQL: $sql";
 				if ($wpdb->get_var($sql) > 0) {
 					$doaction = "fix-$type";
 					echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode already in use. Please select another.</p>";
@@ -882,7 +935,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			if ($allow == 'N') {
 			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totype));
 			$to_ana = strtoupper(substr($to, 0, 1)) == 'A' ? 'an' : 'a';
-				$output .= "<li>You cannot send to $to_ana $to anonymously</li>";
+				$output .= "<li>You cannot send to $to_ana $to without providing a return address</li>";
 			}
 		} 
 		// No - to and from must be same type/method 
@@ -1470,6 +1523,7 @@ $viewlink";
 	}
 	function vtm_pm_render_pmhead($postID, $subjecthtag) {
 		$info = vtm_pm_getpostmeta($postID);
+		//print_r($info);
 		?>
 					<header class="entry-header">
 					<<?php echo $subjecthtag; ?> class="entry-title"><?php echo get_the_title($postID); ?></<?php echo $subjecthtag; ?>>
