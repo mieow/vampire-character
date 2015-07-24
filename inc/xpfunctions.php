@@ -210,9 +210,9 @@ function vtm_render_select_spends($character) {
 	$xp_total      = vtm_get_total_xp($playerID, $characterID);
 	$xp_pending    = vtm_get_pending_xp($playerID, $characterID);
 	$xp_avail      = $xp_total - $xp_pending;
-	$fulldoturl    = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$emptydoturl   = plugins_url( 'vtm-character/images/dot1empty.jpg' );
-	$pendingdoturl = plugins_url( 'vtm-character/images/dot2.jpg' );
+	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.jpg';
 	
 	$sectioncontent = array();
 	$sectionheading = array();
@@ -683,9 +683,9 @@ function vtm_render_skills($characterID, $maxRating, $pendingSpends, $xp_avail) 
 
 function vtm_render_skills_row($type, $rownum, $max2display, $maxRating, $datarow, $levelsdata, $xp_avail) {
 
-	$fulldoturl    = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$emptydoturl   = plugins_url( 'vtm-character/images/dot1empty.jpg' );
-	$pendingdoturl = plugins_url( 'vtm-character/images/dot2.jpg' );
+	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.jpg';
 
 	$datarow->comment = vtm_formatOutput($datarow->comment);
 	$datarow->name    = vtm_formatOutput($datarow->name);
@@ -1205,9 +1205,9 @@ function vtm_render_merits($characterID, $pendingSpends, $xp_avail) {
 function vtm_render_spend_table($type, $allxpdata, $maxRating, $columns, $xp_avail) {
 	global $vtmglobal;
 	
-	$fulldoturl    = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$emptydoturl   = plugins_url( 'vtm-character/images/dot1empty.jpg' );
-	$pendingdoturl = plugins_url( 'vtm-character/images/dot2.jpg' );
+	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.jpg';
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 
 	switch ($columns) {
@@ -1456,9 +1456,9 @@ function vtm_render_skill_spend_table($type, $list, $allxpdata, $maxRating, $col
 
 function vtm_render_ritual_spend_table($type, $allxpdata, $columns, $xp_avail) {
 
-	$fulldoturl    = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$emptydoturl   = plugins_url( 'vtm-character/images/dot1empty.jpg' );
-	$pendingdoturl = plugins_url( 'vtm-character/images/dot2.jpg' );
+	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.jpg';
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 	
 	//$colclass = $columns == 3 ? 'vtm_colnarrow' : 'vtm_colfull';
@@ -1561,9 +1561,9 @@ function vtm_render_ritual_spend_table($type, $allxpdata, $columns, $xp_avail) {
 }
 function vtm_render_combo_spend_table($type, $allxpdata, $xp_avail) {
 
-	$fulldoturl    = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$emptydoturl   = plugins_url( 'vtm-character/images/dot1empty.jpg' );
-	$pendingdoturl = plugins_url( 'vtm-character/images/dot2.jpg' );
+	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.jpg';
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 
 	//$colclass = $columns == 3 ? 'vtm_colnarrow' : 'vtm_colfull';
@@ -1710,9 +1710,9 @@ function vtm_render_merit_spend_table($type, $list, $allxpdata, $columns, $xp_av
 
 function vtm_render_merits_row($type, $id, $xpdata, $levelsdata, $xp_avail) {
 
-	$fulldoturl    = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$emptydoturl   = plugins_url( 'vtm-character/images/dot1empty.jpg' );
-	$pendingdoturl = plugins_url( 'vtm-character/images/dot2.jpg' );
+	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.jpg';
 
 	$rowoutput = "";
 	

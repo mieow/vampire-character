@@ -165,8 +165,8 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
         
         $this->items = $data;
 		
-		$this->output_report("Merits and Flaws Report");
-		$this->output_csv();
+		//$this->output_report("Merits and Flaws Report");
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  
@@ -275,8 +275,8 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
         
         $this->items = $data;
 		
-		$this->output_report("Profile Quotes Report");
-		$this->output_csv();
+		//$this->output_report("Profile Quotes Report");
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  
@@ -443,8 +443,8 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
         
         $this->items = $data;
 		
-		$this->output_report("Clan Prestige Report");
-		$this->output_csv();
+		//$this->output_report("Clan Prestige Report");
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  
@@ -631,8 +631,8 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
         $this->items = $data;
 		
 		$this->lineheight = 10;
-		$this->output_report("Signin Sheet " . Date('F Y'), 'P');
-		$this->output_csv();
+		//$this->output_report("Signin Sheet " . Date('F Y'), 'P');
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  
@@ -759,8 +759,8 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
 
         $this->items = $data;
 		
-		$this->output_report("Character Sects List", 'P');
-		$this->output_csv();
+		//$this->output_report("Character Sects List", 'P');
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  
@@ -852,8 +852,8 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 
         $this->items = $data;
 		
-		$this->output_report("Character Activity", 'P');
-		$this->output_csv();
+		//$this->output_report("Character Activity", 'P');
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  
@@ -992,8 +992,8 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
 
         $this->items = $data;
 		
-		$this->output_report("Sector and Background", 'P');
-		$this->output_csv();
+		//$this->output_report("Sector and Background", 'P');
+		//$this->output_csv();
         
         $this->set_pagination_args( array(
             'total_items' => $total_items,                  

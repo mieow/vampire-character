@@ -172,7 +172,7 @@ function vtm_render_config_general() {
 				<td><input type="text" name="placeholder" value="<?php print $options[0]->PLACEHOLDER_IMAGE; ?>" size=60 /></td>
 				<td>This image is used in place of a character portrait on the profile page.</td>
 			</tr><tr>
-				<td>Home Domain</td>
+				<td>Home City</td>
 				<td>
 				<select name="homedomain">
 					<?php
@@ -184,9 +184,9 @@ function vtm_render_config_general() {
 					?>
 				</select>
 				</td>
-				<td>Select which in-character domain your game is based in</td>
+				<td>Select which in-character city or location your game is based in</td>
 			</tr><tr>
-				<td>Default Sect</td>
+				<td>Default Affiliation</td>
 				<td>
 				<select name="homesect">
 					<?php
@@ -198,7 +198,7 @@ function vtm_render_config_general() {
 					?>
 				</select>
 				</td>
-				<td>Select what is the default sect for new character</td>
+				<td>Select what is the default affiliation for new characters</td>
 			</tr><tr>
 				<td>Assign XP By</td>
 				<td>
@@ -631,18 +631,18 @@ function vtm_render_config_skinning() {
 		</table>
 		<table>
 		<tr>
-		<td><img alt="empty dot1" width=16 src='<?php echo plugins_url( 'vtm-character/images/dot1empty.jpg' ); ?>'></td>
-		<td><img alt="full dot1"  width=16 src='<?php echo plugins_url( 'vtm-character/images/dot1full.jpg' ); ?>'></td>
-		<td><img alt="dot2"       width=16 src='<?php echo plugins_url( 'vtm-character/images/dot2.jpg' ); ?>'></td>
-		<td><img alt="dot3"       width=16 src='<?php echo plugins_url( 'vtm-character/images/dot3.jpg' ); ?>'></td>
-		<td><img alt="dot4"       width=16 src='<?php echo plugins_url( 'vtm-character/images/dot4.jpg' ); ?>'></td>
-		<td><img alt="crossclear" width=16 src='<?php echo plugins_url( 'vtm-character/images/crossclear.jpg' ); ?>'></td>
-		<td><img alt="box"        width=16 src='<?php echo plugins_url( 'vtm-character/images/webbox.jpg' ); ?>'></td>
-		<td><img alt="checked"    width=16 src='<?php echo plugins_url( 'vtm-character/images/check.jpg' ); ?>'></td>
-		<td><img alt="spacer"     width=16 src='<?php echo plugins_url( 'vtm-character/images/spacer.jpg' ); ?>'></td>
-		<td><img alt="fill"       width=16 src='<?php echo plugins_url( 'vtm-character/images/fill.jpg' ); ?>'></td>
-		<td><img alt="arrow"      width=16 src='<?php echo plugins_url( 'vtm-character/images/arrowright.jpg' ); ?>'></td>
-		<td><img alt="mail"       width=16 src='<?php echo plugins_url( 'vtm-character/images/mail.jpg' ); ?>'></td>
+		<td><img alt="empty dot1" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1empty.jpg'; ?>'></td>
+		<td><img alt="full dot1"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1full.jpg'; ?>'></td>
+		<td><img alt="dot2"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot2.jpg'; ?>'></td>
+		<td><img alt="dot3"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot3.jpg'; ?>'></td>
+		<td><img alt="dot4"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot4.jpg'; ?>'></td>
+		<td><img alt="crossclear" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/crossclear.jpg'; ?>'></td>
+		<td><img alt="box"        width=16 src='<?php echo VTM_PLUGIN_URL . '/images/webbox.jpg'; ?>'></td>
+		<td><img alt="checked"    width=16 src='<?php echo VTM_PLUGIN_URL . '/images/check.jpg'; ?>'></td>
+		<td><img alt="spacer"     width=16 src='<?php echo VTM_PLUGIN_URL . '/images/spacer.jpg'; ?>'></td>
+		<td><img alt="fill"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fill.jpg'; ?>'></td>
+		<td><img alt="arrow"      width=16 src='<?php echo VTM_PLUGIN_URL . '/images/arrowright.jpg'; ?>'></td>
+		<td><img alt="mail"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/mail.jpg'; ?>'></td>
 		</tr>
 		</table>
 
@@ -672,13 +672,13 @@ function vtm_render_config_skinning() {
 		</table>
 		<table>
 		<tr>
-		<td><img alt="empty dot"  width=16 src='<?php echo plugins_url( 'vtm-character/images/emptydot.jpg' ); ?>'></td>
-		<td><img alt="full dot"  width=16 src='<?php echo plugins_url( 'vtm-character/images/fulldot.jpg' ); ?>'></td>
-		<td><img alt="xp dot"  width=16 src='<?php echo plugins_url( 'vtm-character/images/pdfxpdot.jpg' ); ?>'></td>
-		<td><img alt="box dot"  width=16 src='<?php echo plugins_url( 'vtm-character/images/box.jpg' ); ?>'></td>
-		<td><img alt="box2 dot" width=16 src='<?php echo plugins_url( 'vtm-character/images/boxcross1.jpg' ); ?>'></td>
-		<td><img alt="box3 dot" width=16 src='<?php echo plugins_url( 'vtm-character/images/boxcross2.jpg' ); ?>'></td>
-		<td><img alt="box4 dot" width=16 src='<?php echo plugins_url( 'vtm-character/images/boxcross3.jpg' ); ?>'></td>
+		<td><img alt="empty dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/emptydot.jpg'; ?>'></td>
+		<td><img alt="full dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fulldot.jpg'; ?>'></td>
+		<td><img alt="xp dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/pdfxpdot.jpg'; ?>'></td>
+		<td><img alt="box dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/box.jpg'; ?>'></td>
+		<td><img alt="box2 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross1.jpg'; ?>'></td>
+		<td><img alt="box3 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross2.jpg'; ?>'></td>
+		<td><img alt="box4 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross3.jpg'; ?>'></td>
 		</tr>
 		</table>
 		
@@ -895,12 +895,12 @@ function vtm_render_config_features() {
 		<tr>
 			<td><label>Maps: </label></td>
 			<td><input type="checkbox" name="vtm_feature_maps" value="1" <?php checked( '1', get_option( 'vtm_feature_maps', '0' ) ); ?> /></td>
-			<td>Show feeding/domain map</td>
+			<td>Show hunting/city maps</td>
 		</tr>
 		<tr>
 			<td><label>Reports: </label></td>
 			<td><input type="checkbox" name="vtm_feature_reports" value="1" <?php checked( '1', get_option( 'vtm_feature_reports', '0' ) ); ?> /></td>
-			<td>Show admin reports, including sign-in sheet</td>
+			<td>Show administrator reports, including sign-in sheet</td>
 		</tr>
 		<tr>
 			<td><label>Email configuration: </label></td>
@@ -942,9 +942,9 @@ function vtm_render_config_pm() {
 			<td>Allow messages to be posted to all active characters.</td>
 		</tr>
 		<tr>
-			<td><label>In-Character postoffice location: </label></td>
+			<td><label>In-Character Post Office location: </label></td>
 			<td><input type="text" name="vtm_pm_ic_postoffice_location" value="<?php echo get_option( 'vtm_pm_ic_postoffice_location' ); ?>" /></td>
-			<td>For example, in a Camarilla game, characters might be able to leave messages at an Elysium.</td>
+			<td>For example, characters might be able to leave messages for each other at a central location such as a nightclub</td>
 		</tr>
 		</table>
 		<?php submit_button("Save Changes", "primary", "save_pm_button"); ?>

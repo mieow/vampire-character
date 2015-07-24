@@ -182,11 +182,11 @@ function vtm_get_chargen_content() {
 	$vtmglobal['flow']        = vtm_chargen_flow_steps();
 	$vtmglobal['genInfo']     = vtm_calculate_generation();
 	$vtmglobal['dots'] = array(
-		'dot1full'  => plugins_url( 'vtm-character/images/dot1full.jpg' ),
-		'dot1empty' => plugins_url( 'vtm-character/images/dot1empty.jpg' ),
-		'dot3'      => plugins_url( 'vtm-character/images/dot3.jpg' ),
-		'dot2'      => plugins_url( 'vtm-character/images/dot2.jpg' ),
-		'spacer'    => plugins_url( 'vtm-character/images/spacer.jpg' )
+		'dot1full'  => VTM_PLUGIN_URL . '/images/dot1full.jpg',
+		'dot1empty' => VTM_PLUGIN_URL . '/images/dot1empty.jpg',
+		'dot3'      => VTM_PLUGIN_URL . '/images/dot3.jpg',
+		'dot2'      => VTM_PLUGIN_URL . '/images/dot2.jpg',
+		'spacer'    => VTM_PLUGIN_URL . '/images/spacer.jpg'
 	);
 	
 	$output = "";

@@ -2074,6 +2074,8 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 	var $ytop_data;
 	var $ybottom_page;
 	var $row = 0;
+	var $pdftitle;
+	var $pdforientation;
       
     function __construct(){
         global $status, $page;
@@ -2226,8 +2228,14 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 			
 			submit_button( 'Filter', 'secondary', 'do_filter_tablenav', false );
 			echo "<label>Download: </label>";
-			echo "<a class='button-primary' href='" . plugins_url( 'vtm-character/tmp/report.pdf') . "'>PDF</a>";
-			echo "<a class='button-primary' href='" . plugins_url( 'vtm-character/tmp/report.csv') . "'>CSV</a>";
+			
+			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+			$current_url = add_query_arg('report', $_REQUEST['report'], $current_url);
+			$pdf_url = add_query_arg('format', 'pdf', $current_url);
+			$csv_url = add_query_arg('format', 'csv', $current_url);
+			
+			echo "<a class='button-primary' href='$pdf_url'>PDF</a>";
+			echo "<a class='button-primary' href='$csv_url'>CSV</a>";
 	}
 	 
 	function extra_tablenav($which) {
@@ -2334,7 +2342,10 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 	}
  
 	
-	function output_report ($title, $orientation = 'L') {
+	function output_report () {
+		
+		$title       = $this->pdftitle;
+		$orientation = $this->pdforientation;
 		
 		$pdf = new vtmclass_PDFreport($orientation,'mm','A4');
 		
@@ -2478,15 +2489,22 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 		} 
 		$pdf->autobreak = false;
 		
-		$pdf->Output(VTM_CHARACTER_URL . 'tmp/report.pdf', 'F');
+		$pdf->Output(VTM_CHARACTER_URL . 'tmp/report.pdf', 'I');
 		
 	}
 	
 	function output_csv() {
 		
-		/* open file */
-		$file = fopen(VTM_CHARACTER_URL . "tmp/report.csv","w");
+		header("Content-Type: text/csv");
+		header("Content-Disposition: attachment; filename=file.csv");
+		// Disable caching
+		header("Cache-Control: no-cache, no-store, must-revalidate"); // HTTP 1.1
+		header("Pragma: no-cache"); // HTTP 1.0
+		header("Expires: 0"); // Proxies		
 		
+		/* open file */
+		//$file = fopen(VTM_CHARACTER_URL . "tmp/report.csv","w");
+		$file = fopen("php://output","w");
 		/* write headings */
 		$columns = $this->get_columns();
 		fputcsv($file, array_values($columns));

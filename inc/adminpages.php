@@ -20,6 +20,7 @@ require_once VTM_CHARACTER_URL . 'inc/adminpages/masterpath.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/generation.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/tempstats.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/chargentemplates.php';
+require_once VTM_CHARACTER_URL . 'inc/adminpages/sects.php';
 
 if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
@@ -135,7 +136,7 @@ add_action( 'admin_menu', 'vtm_register_character_settings' );
 ----------------------------------------------------------------- */
 
 function vtm_register_character_menu() {
-	add_menu_page( "Character Plugin Options", "V:tM Characters", "manage_options", "character-plugin", "vtm_character_options");
+	add_menu_page( "Character Plugin Options", "Characters", "manage_options", "character-plugin", "vtm_character_options");
 	add_submenu_page( "character-plugin", "Character Admin",     "Character Admin",     "manage_options", "character-plugin",    "vtm_character_options" );  
 	add_submenu_page( "character-plugin", "Character Approval",  "Character Approval",  "manage_options", "vtmcharacter-chargen","vtm_character_chargen_approval" );  
 	add_submenu_page( "character-plugin", "Player Admin",        "Player Admin",        "manage_options", "vtmcharacter-player", "vtm_character_players" );  
@@ -236,12 +237,13 @@ function vtm_character_datatables() {
 				<li><?php echo vtm_get_tablink('enlighten', 'Paths of Enlightenment'); ?></li>
 				<li><?php echo vtm_get_tablink('path',    'Paths of Magik'); ?></li>
 				<li><?php if (isset($vtmglobal['config']->USE_NATURE_DEMEANOUR) && $vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') echo vtm_get_tablink('nature',  'Nature/Demeanour'); ?></li>
-				<li><?php echo vtm_get_tablink('domain',  'Domains'); ?></li>
+				<li><?php echo vtm_get_tablink('domain',  'Cities/Locations'); ?></li>
+				<li><?php echo vtm_get_tablink('sect',    'Affiliations'); ?></li>
 				<li><?php echo vtm_get_tablink('office',  'Offices'); ?></li>
 				<li><?php echo vtm_get_tablink('combo',   'Combination Disciplines'); ?></li>
 				<li><?php echo vtm_get_tablink('generation', 'Generation'); ?></li>
-				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapowner', 'Map Domain Owners'); ?></li>
-				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapdomain','Map Domains'); ?></li>
+				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapowner', 'Map Owners'); ?></li>
+				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapdomain','Map Locations'); ?></li>
 				<li><?php echo vtm_get_tablink('template', 'Character Templates'); ?></li>
 			</ul>
 		</div>
@@ -316,6 +318,9 @@ function vtm_character_datatables() {
 				break;
 			case 'template':
 				vtm_render_template_data();
+				break;
+			case 'sect':
+				vtm_render_sect_page();
 				break;
 			default:
 				vtm_render_stat_page("stat");

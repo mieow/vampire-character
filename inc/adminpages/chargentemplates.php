@@ -508,21 +508,21 @@ function vtm_render_template_data(){
 		</td>
 	</tr>
 	<tr class="template_option_row">
-		<td rowspan=1>Controlling Sects</td>
+		<td rowspan=1>Controlling Affiliations</td>
 		<td colspan=2>
 			<table>
 			<tr>
-				<th>Limiting Sects</th>
+				<th>Limiting Affiliations</th>
 				<td>
 					<select name="limit-sect-method">
 						<option value="none" <?php selected($settings['limit-sect-method'], "none"); ?>>No Limit</option>
-						<option value="only" <?php selected($settings['limit-sect-method'], "only"); ?>>Limit to a specific Sect</option>
-						<option value="exclude" <?php selected($settings['limit-sect-method'], "exclude"); ?>>Exclude a specific Sect</option>
+						<option value="only" <?php selected($settings['limit-sect-method'], "only"); ?>>Limit to a specific Affiliation</option>
+						<option value="exclude" <?php selected($settings['limit-sect-method'], "exclude"); ?>>Exclude a specific Affiliation</option>
 					</select>
 				</td>
 			</tr>
 			<tr>
-				<th>Select Sect for limit</th>
+				<th>Select Affiliation for limit</th>
 				<td>
 					<select name="limit-sect-id">
 					<?php 

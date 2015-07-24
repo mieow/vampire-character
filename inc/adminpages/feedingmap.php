@@ -215,7 +215,7 @@ function vtm_render_feedingdomain_add_form($inputsok) {
 		
 		
 		</table>
-		<input type="submit" name="do_add_domain" class="button-primary" value="Save Domain" />
+		<input type="submit" name="do_add_domain" class="button-primary" value="Save Location" />
 	</form>
 	
 	<?php
@@ -305,7 +305,7 @@ class vtmclass_owner_table extends WP_List_Table {
 		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
 		
 		if ($isused) {
-			echo "<p style='color:red'>Cannot delete as owner is assigned to the following domains:";
+			echo "<p style='color:red'>Cannot delete as owner is assigned to the following locations:";
 			echo "<ul>";
 			foreach ($isused as $mapdomain)
 				echo "<li style='color:red'>" . vtm_formatOutput($mapdomain->NAME) . "</li>";
@@ -514,7 +514,7 @@ class vtmclass_domain_table extends WP_List_Table {
 		if ($wpdb->insert_id == 0) {
 			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['domain_name']) . " could not be inserted</p>";
 		} else {
-			echo "<p style='color:green'>Added mapdomain '" . vtm_formatOutput($_REQUEST['domain_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added location '" . vtm_formatOutput($_REQUEST['domain_name']) . "' (ID: {$wpdb->insert_id})</p>";
 		}
 	}
  	function edit() {
@@ -560,7 +560,7 @@ class vtmclass_domain_table extends WP_List_Table {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated map domain $selectedID</p>";
+			echo "<p style='color:green'>Updated map location $selectedID</p>";
 		else if ($result === 0) 
 			echo "<p style='color:orange'>No updates made to $selectedID</p>";
 		else {
@@ -652,7 +652,7 @@ class vtmclass_domain_table extends WP_List_Table {
         $columns = array(
             'cb'           => '<input type="checkbox" />', 
             'NAME'         => 'Name',
-            'OWNER'        => 'Domain Owner',
+            'OWNER'        => 'Owner',
             'DESCRIPTION'  => 'Description',
             'VISIBLE'      => 'Visible',
         );

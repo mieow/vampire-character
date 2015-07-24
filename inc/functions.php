@@ -814,6 +814,8 @@ function vtm_get_character_email($characterID) {
         if ($grouping_sector != "")  {
             $sql = $wpdb->prepare($sql, $group);
         }
+		
+		//echo "<p>SQL: $sql</p>";
 
         $merits = $wpdb->get_results($sql);
         return $merits;
@@ -978,8 +980,8 @@ function vtm_get_character_email($characterID) {
 
 function vtm_numberToDots($base, $input) {
 	$number = (int) $input;
-	$full  = plugins_url( 'vtm-character/images/dot1full.jpg' );
-	$empty = plugins_url( 'vtm-character/images/dot1empty.jpg' );
+	$full  = VTM_PLUGIN_URL . '/images/dot1full.jpg';
+	$empty = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
 	
 	$output = "";
 	
@@ -994,8 +996,8 @@ function vtm_numberToDots($base, $input) {
 }
 function vtm_numberToBoxes($base, $input) {
 	$number = (int) $input;
-	$full  = plugins_url( 'vtm-character/images/crossclear.jpg' );
-	$empty = plugins_url( 'vtm-character/images/webbox.jpg' );
+	$full  = VTM_PLUGIN_URL . '/images/crossclear.jpg';
+	$empty = VTM_PLUGIN_URL . '/images/webbox.jpg';
 	
 	$output = "";
 	
@@ -1156,13 +1158,12 @@ function vtm_get_pm_addressbook($characterID = 0,
 	global $wpdb;
 	global $vtmglobal;
 	global $current_user;
-	
 	if ($characterID == 0){
-		if (!isset($vtmglobal['characterID'])) {
+		if (!isset($vtmglobal['characterID']) && !vtm_isST()) {
 			get_currentuserinfo();
 			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
+			$characterID = $vtmglobal['characterID'];
 		}
-		$characterID = $vtmglobal['characterID'];
 	}
 	
 	$sqlarray = array();
@@ -1173,6 +1174,12 @@ function vtm_get_pm_addressbook($characterID = 0,
 	if ( "all" !== $filter_address_type) {
 		$filtersql .= " AND pm.PM_TYPE_ID = %s";
 		$filterargs = $filter_address_type;
+	}
+	
+	if (vtm_isST()) {
+		$stfiltersql = "";
+	} else {
+		$stfiltersql = " AND pm.VISIBLE = 'Y'";
 	}
 	
 	// all visible addresses entered by characters
@@ -1199,18 +1206,25 @@ function vtm_get_pm_addressbook($characterID = 0,
 			AND ch.DELETED = 'N'
 			AND ch.VISIBLE = 'Y'
 			AND pstatus.NAME = 'Active'
-			AND pm.DELETED = 'N'
-			AND pm.VISIBLE = 'Y' " . $filtersql ;
+			AND pm.DELETED = 'N' " . 
+			$stfiltersql . " " . $filtersql ;
 		
 	if ($filter_addressbook == 'all' ||
 		$filter_addressbook == 'public') {
 		array_push($sqlarray, $public);
-		if ($filtersql !== '') {
+		if ($filtersql !== '' && $filterargs !== '') {
 			array_push($sqlargs, $filterargs);
 		}
 	}
 		
 	// all addressbook entries added by character
+	if (vtm_isST()) {
+		$stfiltersql = "";
+	} else {
+		$stfiltersql = "AND ab.CHARACTER_ID = %s";
+		array_push($sqlargs, $characterID);
+	}
+	
 	$addressbook = "SELECT ab.NAME as NAME,
 			'Private' as ADDRESSBOOK,
 			pm.PM_TYPE_ID as PM_TYPE_ID,
@@ -1236,12 +1250,14 @@ function vtm_get_pm_addressbook($characterID = 0,
 			AND ch.VISIBLE = 'Y'
 			AND pstatus.NAME = 'Active'
 			AND ab.PM_CODE = pm.PM_CODE
-			AND pm.DELETED = 'N'
-			AND ab.CHARACTER_ID = %s " . $filtersql;
+			AND pm.DELETED = 'N' " .
+			$stfiltersql . " " . $filtersql;
+
 	if ($filter_addressbook == 'all' ||
 		$filter_addressbook == 'private') {
 		array_push($sqlarray, $addressbook);
-		array_push($sqlargs, $characterID, $filterargs);
+		if ($filterargs !== '')
+			array_push($sqlargs, $filterargs);
 	}
 				
 	// all addresses from post office (if enabled) of visible/active/undeleted
@@ -1273,7 +1289,7 @@ function vtm_get_pm_addressbook($characterID = 0,
 		if ( ($filter_address_type == 'all' || $filter_address_type == 0) &&
 			 ($filter_addressbook == 'all' || $filter_addressbook == 'postoffice') ) {
 			array_push($sqlarray, $postoffice);
-			if ($filtersql !== '') {
+			if ($filtersql !== '' && $filterargs !== '') {
 				array_push($sqlargs, $filterargs);
 			}
 		}
@@ -1283,11 +1299,11 @@ function vtm_get_pm_addressbook($characterID = 0,
 	$sql .= " ORDER BY charactername, NAME, tableID";
 		
 	//print_r($sqlargs);
-	
 	if (count($sqlargs) > 0) {
 		$sql  = $wpdb->prepare($sql, $sqlargs);
 	}
 	//echo "<p>SQL: $sql</p>";
+	
 	$data = $wpdb->get_results($sql);
 	
 	if (count($data) > 0) {
@@ -1297,6 +1313,7 @@ function vtm_get_pm_addressbook($characterID = 0,
 		}
 	}
 	
+	//print_r($data);
 	return $data;
 }
 
@@ -1333,6 +1350,10 @@ function vtm_pm_link($linktext, $args) {
 			$type = vtm_get_pm_typeidfromcode($code);
 		} else {
 			$address = vtm_get_default_address($characterID);
+			
+			if (!isset($address->PM_CODE))
+				return $linktext;
+		
 			$code = $address->PM_CODE;
 			$type = $address->PM_TYPE_ID;
 		}
@@ -1344,7 +1365,7 @@ function vtm_pm_link($linktext, $args) {
 		$linkurl = add_query_arg('characterID',$characterID,$linkurl);
 		$linkurl = add_query_arg('type',$type,$linkurl);
 		
-		$imgurl = plugins_url( 'vtm-character/images/mail.jpg' );
+		$imgurl = VTM_PLUGIN_URL . '/images/mail.jpg';
 		
 		// output link
 		$linktext .= " <a href='$linkurl'><img class='vtmpm_icon' src='$imgurl' alt='(contact)'></a>";

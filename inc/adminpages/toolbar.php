@@ -82,7 +82,7 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 	if ( current_user_can( 'manage_options' ) )  {
 		$args = array(
 			'id'    => 'vtmcharacters',
-			'title' => 'V:tM Characters',
+			'title' => 'Characters',
 			'href'  => admin_url('admin.php?page=character-plugin'),
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		);

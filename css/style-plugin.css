@@ -226,7 +226,7 @@ div#csheet {
 	padding: 5px;
 }
 .vtmbgmenu .shown,.vtmbgmenu a:focus  {
-    background-image: url('/wp-content/plugins/vtm-character/images/fill.jpg');
+    background-image: url('../images/fill.jpg');
 	color: inherit;
 }
 .vtmbgmain {
@@ -341,11 +341,11 @@ input[type="submit"].vtmxp_clear {
     display:inline-block;
 }
 #vtmid_xpst .vtmdots > input[type="checkbox"] + label {
-    background:url('/wp-content/plugins/vtm-character/images/webbox.jpg') no-repeat 0 0;
+    background:url('../images/webbox.jpg') no-repeat 0 0;
 	background-size: 100% auto;
 }
 #vtmid_xpst .vtmdots > input[type="checkbox"]:checked + label {
-    background-image: url('/wp-content/plugins/vtm-character/images/check.jpg');
+    background-image: url('../images/check.jpg');
 }
 input[type="submit"].vtmxp_submit {
 	float:right;
@@ -488,7 +488,7 @@ table.feedingmapkey {width:auto;}
 	padding-right:10px;
 	padding-top:5px;
  	padding-bottom:5px;
-    background-image: url('/wp-content/plugins/vtm-character/images/arrowright.jpg');
+    background-image: url('../images/arrowright.jpg');
     background-repeat: no-repeat;
 	background-size:1em 1em;
 	background-position:right center;
@@ -525,32 +525,32 @@ table.feedingmapkey {width:auto;}
 
 /* DOTS - IMAGES */
 #chargen-main .dotselect label.freedot {
-    background-image: url('/wp-content/plugins/vtm-character/images/dot1full.jpg') !important;
+    background-image: url('../images/dot1full.jpg') !important;
 }
 #chargen-main .dotselect label.cleardot {
-    background-image: url('/wp-content/plugins/vtm-character/images/crossclear.jpg') !important;
+    background-image: url('../images/crossclear.jpg') !important;
 }
 #chargen-main .dotselect:not(:checked) > label {
-    background-image: url('/wp-content/plugins/vtm-character/images/dot1empty.jpg');
+    background-image: url('../images/dot1empty.jpg');
 }
 #chargen-main .dotselect > input:checked ~ label {
-    background-image: url('/wp-content/plugins/vtm-character/images/dot2.jpg');
+    background-image: url('../images/dot2.jpg');
 }
 #chargen-main .dotselect:not(:checked) > label:hover,
 #chargen-main .dotselect:not(:checked) > label:hover ~ label {
-    background-image: url('/wp-content/plugins/vtm-character/images/dot2.jpg');
+    background-image: url('../images/dot2.jpg');
 }
 #chargen-main .dotselect > label:active {
-    content: url('/wp-content/plugins/vtm-character/images/cg_selectdot.jpg');
+    content: url('../images/cg_selectdot.jpg');
 }
 #chargen-main .mfdotselect > input[type="checkbox"]:checked + div {
-    background-image: url('/wp-content/plugins/vtm-character/images/fill.jpg');
+    background-image: url('../images/fill.jpg');
 }
 #chargen-main .mfdotselect > input[type="checkbox"]:checked + div label  {
-    background-image: url('/wp-content/plugins/vtm-character/images/check.jpg');
+    background-image: url('../images/check.jpg');
 }
 #chargen-main .mfdotselect > input[type="checkbox"] + div label {
-    background:url('/wp-content/plugins/vtm-character/images/webbox.jpg') no-repeat 0 0;
+    background:url('../images/webbox.jpg') no-repeat 0 0;
 }
 
 /* DOTS - FORMATING */

@@ -13,32 +13,7 @@ function vtm_character_reports () {
 	$report = isset($_REQUEST['report']) ? $_REQUEST['report'] : '';
 	
 	vtm_render_select_report($report);
-	
-	
-	switch ($report) {
-		case 'meritflaw_report':
-			vtm_render_report(new vtmclass_report_flaws());
-			break;
-		case 'quotes_report':
-			vtm_render_report(new vtmclass_report_quotes());
-			break;
-		case 'prestige_report':
-			vtm_render_report(new vtmclass_report_prestige());
-			break;
-		case 'signin_report':
-			vtm_render_report(new vtmclass_report_signin());
-			break;
-		case 'sect_report':
-			vtm_render_report(new vtmclass_report_sect());
-			break;
-		case 'activity_report':
-			vtm_render_report(new vtmclass_report_activity());
-			break;
-		case 'sector_report':
-			vtm_render_report(new vtmclass_report_sector());
-			break;
-	
-	}
+	vtm_render_report(vtm_report_switch($report));
 	
 	?>
 	</div>
@@ -72,7 +47,7 @@ function vtm_render_select_report($report) {
 	
 	echo "<option value='sect_report' ";
 	selected($report,'sect_report');
-	echo ">Sect List</option>\n";
+	echo ">Affiliation List</option>\n";
 
 	echo "<option value='sector_report' ";
 	selected($report,'sector_report');
@@ -101,6 +76,72 @@ function vtm_render_report($reporttable) {
 	</form>
 	
 	<?php
+}
+
+function vtm_report_redirect()
+{
+    if (isset($_REQUEST['report']) && isset($_REQUEST['format'])) {
+		
+		$reporttable = vtm_report_switch($_REQUEST['report']);
+		$reporttable->prepare_items(); 
+		
+		switch($_REQUEST['format']) {
+			case 'pdf':
+				$reporttable->output_report();
+				break;
+			case 'csv':
+				$reporttable->output_csv();
+				break;
+		}
+		
+		exit;
+    }
+}
+add_action( 'admin_init', 'vtm_report_redirect', 1 );
+
+
+function vtm_report_switch($report) {
+	
+	switch ($report) {
+		case 'meritflaw_report':
+			$reportclass = new vtmclass_report_flaws();
+			$reportclass->pdftitle = "Merits and Flaws Report";
+			$reportclass->pdforientation = 'L';
+			break;
+		case 'quotes_report':
+			$reportclass = new vtmclass_report_quotes();
+			$reportclass->pdftitle = "Profile Quotes Report";
+			$reportclass->pdforientation = 'L';
+			break;
+		case 'prestige_report':
+			$reportclass = new vtmclass_report_prestige();
+			$reportclass->pdftitle = "Clan Prestige Report";
+			$reportclass->pdforientation = 'L';
+			break;
+		case 'signin_report':
+			$reportclass = new vtmclass_report_signin();
+			$reportclass->pdftitle = "Signin Sheet " . Date('F Y');
+			$reportclass->pdforientation = 'P';
+			break;
+		case 'sect_report':
+			$reportclass = new vtmclass_report_sect();
+			$reportclass->pdftitle = "Character Sects List";
+			$reportclass->pdforientation = 'P';
+			break;
+		case 'activity_report':
+			$reportclass = new vtmclass_report_activity();
+			$reportclass->pdftitle = "Character Activity";
+			$reportclass->pdforientation = 'P';
+			break;
+		case 'sector_report':
+			$reportclass = new vtmclass_report_sector();
+			$reportclass->pdftitle = "Sector and Background";
+			$reportclass->pdforientation = 'P';
+			break;
+	
+	}
+
+	return $reportclass;
 }
 
 ?>

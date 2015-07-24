@@ -352,13 +352,13 @@ function vtm_print_background_shortcode($atts, $content = null) {
 				if ($name == 'player') $output .= "<th>Player</th>";
 				if ($name == 'clan')   $output .= "<th>Clan</th>";
 				if ($name == 'status') $output .= "<th>Character Status</th>";
-				if ($name == 'domain')  $output .= "<th>Domain</th>";
+				if ($name == 'domain')  $output .= "<th>Location</th>";
 				if ($name == 'background')   $output .= "<th>Background</th>";
 				if ($name == 'comment')   $output .= "<th>Comment</th>";
 				if ($name == 'sector')   $output .= "<th>Sector</th>";
 				if ($name == 'level')  $output .= "<th>Level</th>";
 				if ($name == 'office')   $output .= "<th>Office</th>";
-				if ($name == 'sect')   $output .= "<th>Sect</th>";
+				if ($name == 'sect')   $output .= "<th>Affiliation</th>";
 			}
 			$output .= "</tr>\n";
 		}
@@ -589,11 +589,11 @@ function vtm_print_merit_shortcode($atts, $content = null) {
 				if ($name == 'player') $output .= "<th>Player</th>";
 				if ($name == 'clan')   $output .= "<th>Clan</th>";
 				if ($name == 'status') $output .= "<th>Character Status</th>";
-				if ($name == 'domain')  $output .= "<th>Domain</th>";
+				if ($name == 'domain')  $output .= "<th>Location</th>";
 				if ($name == 'merit')   $output .= "<th>Merit</th>";
 				if ($name == 'comment')   $output .= "<th>Comment</th>";
 				if ($name == 'level')  $output .= "<th>Level</th>";
-				if ($name == 'sect')  $output .= "<th>Sect</th>";
+				if ($name == 'sect')  $output .= "<th>Affiliation</th>";
 			}
 			$output .= "</tr>\n";
 		}
@@ -1212,7 +1212,7 @@ function vtm_print_office_block($atts, $content=null) {
 			$output = "<table class='gvplugin' id=\"" . vtm_get_shortcode_id("gvid_cob") . "\">" . $sqlOutput . "</table>";
 		}
 		else {
-			$output = "No office holders found for the domain of " . vtm_formatOutput($domain);
+			$output = "No office holders found for " . vtm_formatOutput($domain);
 		}
 	}
 	else {

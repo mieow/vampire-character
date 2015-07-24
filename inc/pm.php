@@ -6,20 +6,15 @@
 //	* Uppercase
 
 // TO DO:
-//	* Tell user to add an address if they want to send
-//		to something other than anonymous. Underline this is IC.
-//		and explain Elysium/Post Office
-//	* Add non-anonymous character/Elysium option to From pull-down
-//		- be able to use for reply messages 
 //	* Use CSS to change Publish to Send Message?
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
 
 	$labels = array(
-		'name'                => _x( 'VtM PMs', 'Post Type General Name', 'text_domain' ),
-		'singular_name'       => _x( 'VtM PM', 'Post Type Singular Name', 'text_domain' ),
-		'menu_name'           => __( 'V:tM Message', 'text_domain' ),
+		'name'                => _x( 'Character messages', 'Post Type General Name', 'text_domain' ),
+		'singular_name'       => _x( 'Character message', 'Post Type Singular Name', 'text_domain' ),
+		'menu_name'           => __( 'Character Mail', 'text_domain' ),
 		'parent_item_colon'   => __( 'Parent Message:', 'text_domain' ),
 		'all_items'           => __( 'All Messages', 'text_domain' ),
 		'view_item'           => __( 'View Message', 'text_domain' ),
@@ -325,6 +320,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$addressbook = vtm_get_pm_addressbook();
 		$myaddresses = vtm_get_pm_addresses();
+		
+		$characterID = isset($vtmglobal['characterID']) ? $vtmglobal['characterID'] : 0;
 
 		$tochid   = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
 		$tocode   = get_post_meta( $post->ID, '_vtmpm_to_code', true );
@@ -335,7 +332,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$tocode   = $totype == 0   ? 'postoffice' : $tocode;
 		$fromcode = $fromtype == 0 ? 'postoffice' : $fromcode;
-		$fromchid = empty($fromchid) ? $vtmglobal['characterID'] : $fromchid;
+		$fromchid = empty($fromchid) ? $characterID : $fromchid;
 		
 		$to   = esc_attr($tochid . ":" . $tocode . ":" . $totype);
 		
@@ -368,8 +365,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$to   = esc_attr($info['FromChID'] . ":" . $info['FromCode'] . ":" . $info['FromType']);
 			$from = esc_attr($info['ToChID'] . ":" . $info['ToCode'] . ":" . $info['ToType']);
 			
-			// If not anonymous, auto-add a new contact to the To list
-			if ($info['FromChID'] != 0) {
+			// If return address, auto-add a new contact to the To list
+			if ($info['FromChID'] != 0 && !($info['FromCode'] == 'postoffice' && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == 0)) {
 				if (!vtm_pm_isinaddrbook($info['FromCode'], $vtmglobal['characterID'])) {
 					$extra[$info['FromFull']] = $to;
 				}
@@ -397,8 +394,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 				
 		echo "<p>";
+		//print_r($addressbook);
 		echo "<label>To: </label><select name='vtm_pm_to'>";
 		echo "<option value='0:0:0'>[Select recipient]</option>";
+		$addrcount = 0;
 		foreach ($addressbook as $address) {
 			if ($vtmglobal['characterID'] != $address->CHARACTER_ID) {
 				$title = $address->charactername;
@@ -415,6 +414,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				
 				echo "<option value='$value' " . selected($value, $to, false) . ">" . 
 				vtm_formatOutput($title) . "</option>";
+				
+				$addrcount++;
 			}
 		}
 		if (count($extra) > 0) {
@@ -424,10 +425,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 		}
 		echo "</select>";
-		if (count($addressbook) + count($extra) == 0) {
-			echo "There is no one in your Addressbook. Please add someone to select them as a recipient.";
+		$link = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses');
+		if (($addrcount + count($extra)) == 0) {
+			echo "There is no one in your <a href='$link'>Addressbook</a>. Please add someone to select them as a recipient.";
 		} else {
-			$link = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses');
 			echo "Select a message recipient from your <a href='$link'>Addressbook</a>";
 		}
 		echo "<br />";
@@ -1551,7 +1552,9 @@ $viewlink";
 		$links = array("<a href='$inboxlink'>Inbox</a>");
 		// Add reply link if you weren't the one that sent it
 		// and it isn't an anonymous post (who would you reply to?)
-		if ($post->post_author != $current_user->ID && $meta['FromChID'] != 'anonymous') {
+		if ($post->post_author != $current_user->ID && 
+			$meta['FromChID'] != 'anonymous' &&
+			!($meta['FromCode'] == 'postoffice' && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == 0)) {
 			$links[] = "<a href='$replylink'>Reply</a>";
 		}
 		// Add trash link if it was sent to you
@@ -1665,7 +1668,11 @@ $viewlink";
 			$addlink = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses&code='.$fromcode.
 				"&from=$fromchid&type=$fromtype");
 			$fromaddrlink = "<a href='$addlink' title='Add to address book'>$fromaddr</a>";
-		} else {
+		} 
+		elseif ($fromcode == 'postoffice' && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == 0) {
+			$fromaddrlink = "No return address";
+		}
+		else {
 			$fromaddrlink = $fromaddr;
 		}
 		

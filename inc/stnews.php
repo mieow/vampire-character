@@ -6,9 +6,9 @@ $vtmglobal['cronbatch'] = 5; // emails per batch
 function vtm_news_post_type() {
 
 	$labels = array(
-		'name'                => _x( 'VtM Posts', 'Post Type General Name', 'text_domain' ),
-		'singular_name'       => _x( 'VtM Post', 'Post Type Singular Name', 'text_domain' ),
-		'menu_name'           => __( 'V:tM News', 'text_domain' ),
+		'name'                => _x( 'Storyteller Posts', 'Post Type General Name', 'text_domain' ),
+		'singular_name'       => _x( 'Storyteller Post', 'Post Type Singular Name', 'text_domain' ),
+		'menu_name'           => __( 'Storyteller News', 'text_domain' ),
 		'parent_item_colon'   => __( 'Parent Item:', 'text_domain' ),
 		'all_items'           => __( 'All Items', 'text_domain' ),
 		'view_item'           => __( 'View Item', 'text_domain' ),

@@ -27,6 +27,7 @@ global $wpdb;
 
 define( 'VTM_CHARACTER_URL', plugin_dir_path(__FILE__) );
 define( 'VTM_TABLE_PREFIX', $wpdb->prefix . "vtm_" );
+define( 'VTM_PLUGIN_URL',  plugins_url('vtm-character'));
 require_once VTM_CHARACTER_URL . 'inc/functions.php';
 require_once VTM_CHARACTER_URL . 'inc/printable.php';
 require_once VTM_CHARACTER_URL . 'inc/extendedbackground.php';
@@ -51,7 +52,7 @@ if (is_admin()) {
 require_once VTM_CHARACTER_URL . 'inc/adminpages/toolbar.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/characters.php';
 
-$title = "V:tM Character Management";
+$title = "Vampire Character Management";
 $vtmglobal['config'] = vtm_getConfig();
 
 /* STYLESHEETS
@@ -59,7 +60,7 @@ $vtmglobal['config'] = vtm_getConfig();
 
 function vtm_plugin_style()  
 { 
-  wp_register_style( 'plugin-style', plugins_url( 'vtm-character/css/style-plugin.css' ) );
+  wp_register_style( 'plugin-style', VTM_PLUGIN_URL . '/css/style-plugin.css' );
   wp_enqueue_style( 'plugin-style' );
 }
 add_action('wp_enqueue_scripts', 'vtm_plugin_style');
@@ -67,7 +68,7 @@ add_action('wp_enqueue_scripts', 'vtm_plugin_style');
 /* JAVASCRIPT
 ----------------------------------------------------------------- */
 function vtm_feedingmap_scripts() {
-	wp_enqueue_script( 'feedingmap-setup-api', plugins_url('vtm-character/js/googleapi.js'));
+	wp_enqueue_script( 'feedingmap-setup-api', VTM_PLUGIN_URL . '/js/googleapi.js');
 }
 
 add_action( 'wp_enqueue_scripts', 'vtm_feedingmap_scripts' );
