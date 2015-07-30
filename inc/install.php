@@ -8,7 +8,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.2"; 
-$vtm_character_db_version = "61"; 
+$vtm_character_db_version = "61e"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -16,10 +16,11 @@ function vtm_update_db_check() {
 	
     if (get_option( 'vtm_character_db_version' ) != $vtm_character_db_version ||
 		get_option( 'vtm_character_version' ) != $vtm_character_version) {
-		
-		echo "<p>Updating from " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
-		echo " to  $vtm_character_version.$vtm_character_db_version</p>";
-		
+
+		$text =  "Vampire Character Manager updated from version " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
+		$text .= " to $vtm_character_version.$vtm_character_db_version";
+		vtm_add_admin_notice($text);
+  
         $errors = vtm_character_update('before');
         vtm_character_install();
 		vtm_character_install_data();
@@ -1594,5 +1595,53 @@ function save_error(){
     update_option('vtm_plugin_error',  ob_get_contents());
 }
 
+// Display notice with version update
+
+
+function vtm_install_notice() {
+	if (vtm_isST()) {
+		global $current_user ;
+		
+		$user_id = $current_user->ID;
+		
+		$ignored = get_user_meta($user_id, 'vtm_ignore_notice');
+		$notices = get_option('vtm_admin_notices');
+		
+		for ($i = 0 ; $i < count($notices) ; $i++) {
+			//Check that the user hasn't already clicked to ignore the message
+			if (!isset($ignored[$i])) {
+				echo "<div class='updated'><p>{$notices[$i]} | <a href='?vtm_ignore_notice=$i'>Dismiss</a></p></div>";
+			}
+			//else {
+			//	echo "<div class='updated'><p>(ignored $i) {$notices[$i]} | <a href='?vtm_ignore_notice=$i'>Dismiss</a></p></div>";
+			//}
+		}
+
+	}
+}
+add_action('admin_notices', 'vtm_install_notice');
+
+
+function vtm_install_notice_ignore() {
+	global $current_user;
+	$user_id = $current_user->ID;
+	
+	/* If user clicks to ignore the notice, add that to their user meta */
+	if ( isset($_GET['vtm_ignore_notice']) ) {
+	
+		$ignored = get_user_meta($user_id, 'vtm_ignore_notice');
+		$ignored[$_GET['vtm_ignore_notice']] = true;
+			
+		add_user_meta($user_id, 'vtm_ignore_notice', $ignored);
+	}
+}
+add_action('admin_init', 'vtm_install_notice_ignore');
+
+function vtm_add_admin_notice($text) {
+	$notices = get_option('vtm_admin_notices', array());
+	$notices[] = $text;
+	update_option('vtm_admin_notices', $notices);
+	
+}
 
 ?>

@@ -1,7 +1,7 @@
 <?php
-    /*  Plugin Name: Vampire:the Masquerade Character Manager
+    /*  Plugin Name: Vampire Character Manager
         Plugin URI: http://plugin.gvlarp.com
-        Description: Management of Characters and Players for Vampire:the Masquerade
+        Description: Management of Characters and Players
         Author: Jane Houston
         Version: 2.2
         Author URI: http://www.mieow.co.uk

@@ -1034,9 +1034,9 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 				player.name as player_name,
 				chara.name as char_name,
 				xp_reason.name as reason_name,
-				xp_spent.amount,
-				xp_spent.comment,
-				xp_spent.awarded
+				xp_spent.amount as amount,
+				xp_spent.comment as comment,
+				xp_spent.awarded as awarded
 			FROM
 				" . VTM_TABLE_PREFIX . "CHARACTER chara,
 				" . VTM_TABLE_PREFIX . "XP_REASON xp_reason,
@@ -1053,9 +1053,9 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 				player.name as player_name,
 				chara.name as char_name,
 				\"Pending\" as reason_name,
-				pending.amount,
-				pending.comment,
-				pending.awarded
+				pending.amount as amount,
+				pending.comment as comment,
+				pending.awarded as awarded
 			FROM
 				" . VTM_TABLE_PREFIX . "CHARACTER chara,
 				" . VTM_TABLE_PREFIX . "PENDING_XP_SPEND pending,
@@ -1067,14 +1067,14 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 				AND chara.DELETED != 'Y'
 				AND pending.$filteron = %s";
 	
-	$sql = "$sqlSpent
-			UNION
-			$sqlPending
+	$sql = "($sqlSpent)
+			UNION ALL
+			($sqlPending)
 			ORDER BY awarded DESC, comment
 			$sqlLimit";
 	$sql = $wpdb->prepare($sql, $filterid, $filterid);	
 	
-	//print "<p>SQL: $sql</p>";
+	print "<p>SQL: $sql</p>";
 	
 	return $wpdb->get_results($sql);
 	
