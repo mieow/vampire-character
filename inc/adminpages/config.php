@@ -10,12 +10,6 @@ function vtm_character_config() {
 			
 	?>
 	<div class="wrap">
-		<?php 
-			$activation_output = get_option('vtm_plugin_error');
-			if (isset($activation_output) && $activation_output != "") {
-				echo $activation_output;
-			}
-		?>
 		<h2>Configuration</h2>
 		<div class="gvadmin_nav">
 			<ul>
