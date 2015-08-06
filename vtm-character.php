@@ -26,7 +26,7 @@
 global $wpdb;
 
 define( 'VTM_CHARACTER_URL', plugin_dir_path(__FILE__) );
-define( 'VTM_TABLE_PREFIX', $wpdb->prefix . "vtm_" );
+define( 'VTM_TABLE_PREFIX', $wpdb->prefix . "vtm_init_" );
 define( 'VTM_PLUGIN_URL',  plugins_url('vtm-character'));
 require_once VTM_CHARACTER_URL . 'inc/functions.php';
 require_once VTM_CHARACTER_URL . 'inc/printable.php';

@@ -1,6 +1,6 @@
-NAME,DESCRIPTION
-Initial,Initial Road or Path Rating
-Game action,Action taken during the game
-Downtime action,Action taken during downtime
-Outside influenc,Influences outside your control
-Path change,Change of Road or Path
+NAME,DESCRIPTION
+Initial,Initial rating
+Downtime action,Action taken during downtime
+Game action,Action taken during the game
+Outside influence,Influences outside your control
+Other,Miscellaneous rating change

@@ -916,8 +916,20 @@ function vtm_get_character_email($characterID) {
     function vtm_getConfig() {
         global $wpdb;
 
-        $sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CONFIG";
-        $vtmglobal['config'] = $wpdb->get_row($sql);
+		if (vtm_table_exists('CONFIG')) {
+			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CONFIG";
+			$vtmglobal['config'] = $wpdb->get_row($sql);
+		} else {
+			$vtmglobal['config']->PLACEHOLDER_IMAGE = '';
+			$vtmglobal['config']->ANDROID_LINK = '';
+			$vtmglobal['config']->HOME_DOMAIN_ID = 1;
+			$vtmglobal['config']->HOME_SECT_ID = 1;
+			$vtmglobal['config']->DEFAULT_GENERATION_ID = 1;
+			$vtmglobal['config']->ASSIGN_XP_BY_PLAYER = 'Y';
+			$vtmglobal['config']->USE_NATURE_DEMEANOUR = 'Y';
+			$vtmglobal['config']->DISPLAY_BACKGROUND_IN_PROFILE = 0;
+
+		}
 				
 		switch(get_option('vtm_web_pagewidth', 'wide')) {
 			case 'wide'  : $vtmglobal['config']->WEB_COLUMNS = 3; break;
@@ -925,7 +937,7 @@ function vtm_get_character_email($characterID) {
 			case 'narrow': $vtmglobal['config']->WEB_COLUMNS = 1; break;
 		}
         $vtmglobal['config']->WEB_PAGEWIDTH = get_option('vtm_web_pagewidth', 'wide');
-				
+		
 		return $vtmglobal['config'];
     }
 

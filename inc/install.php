@@ -8,7 +8,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.2"; 
-$vtm_character_db_version = "61"; 
+$vtm_character_db_version = "61b"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -1716,7 +1716,9 @@ function vtm_save_install_errors($table, $lasterror, $for_update = array()) {
 	if (empty($error) && count($for_update) > 0 ) {
 		$erroutput = "";
 		foreach ($for_update as $update) {
-			$erroutput .= $update . ".<br />";
+			if (!strstr($update, 'Created table')) {
+				$erroutput .= $update . ".<br />";
+			}
 		}
 		if (!empty($erroutput)) {
 			$erroutput = get_option('vtm_plugin_error') . "$table:'$erroutput'<br />\n";
@@ -1735,6 +1737,110 @@ function vtm_save_install_errors($table, $lasterror, $for_update = array()) {
 		update_option('vtm_plugin_error',  $erroutput);
 		return;
 	}
+}
+
+function vtm_factory_defaults() {
+	global $wpdb;
+	
+	// level 5 tables
+	$tables[] = array(
+		'CHARACTER_PM_ADDRESSBOOK',
+		'CHARACTER_PM_ADDRESS',
+		'MAIL_QUEUE',
+		'CHARACTER_GENERATION',
+		'CHARACTER_EXTENDED_BACKGROUND',
+		'CHARACTER_PROFILE',
+		'CHARACTER_COMBO_DISCIPLINE',
+		'CHARACTER_BACKGROUND',
+		'CHARACTER_SKILL',
+		'CHARACTER_MERIT',
+		'CHARACTER_DISCIPLINE_POWER',
+		'CHARACTER_PATH_POWER',
+		'CHARACTER_PATH',
+		'CHARACTER_DISCIPLINE',
+		'CHARACTER_RITUAL',
+		'CHARACTER_STAT',
+		'CHARACTER_TEMPORARY_STAT',
+		'CHARACTER_ROAD_OR_PATH',
+		'PENDING_FREEBIE_SPEND',
+		'PENDING_XP_SPEND',
+		'PLAYER_XP',
+		'CHARACTER_OFFICE',
+	);
+	// level 4 tables
+	$tables[] = array(
+		'PATH_POWER',
+		'CHARACTER',
+	);
+	// level 3 tables
+	$tables[] = array(
+		'COMBO_DISCIPLINE_PREREQUISITE',
+		'CLAN_DISCIPLINE',
+		'RITUAL',
+		'DISCIPLINE_POWER',
+		'PATH',
+		'ROAD_OR_PATH',
+	);
+	// level 2 tables
+	$tables[] = array(
+		'MAPDOMAIN',
+		'CONFIG',
+		'COMBO_DISCIPLINE',
+		'DISCIPLINE',
+		'MERIT',
+		'BACKGROUND',
+		'SKILL',
+		'STAT',
+		'CLAN',
+		'COST_MODEL_STEP',
+		'PLAYER',
+		'CHARGEN_TEMPLATE_MAXIMUM',
+		'CHARGEN_TEMPLATE_DEFAULTS',
+		'CHARGEN_TEMPLATE_OPTIONS',
+	);
+	// level 1 tables
+	$tables[] = array(
+		'PM_TYPE',
+		'MAIL_STATUS',
+		'SKILL_TYPE',
+		'CHARGEN_STATUS',
+		'CHARGEN_TEMPLATE',
+		'MAPOWNER',
+		'PROFILE_DISPLAY',
+		'EXTENDED_BACKGROUND',
+		'SECTOR',
+		'TEMPORARY_STAT',
+		'NATURE',
+		'GENERATION',
+		'SOURCE_BOOK',
+		'SECT',
+		'DOMAIN',
+		'COST_MODEL',
+		'CHARACTER_STATUS',
+		'CHARACTER_TYPE',
+		'TEMPORARY_STAT_REASON',
+		'PATH_REASON',
+		'XP_REASON',
+		'OFFICE',
+		'ST_LINK',
+		'PLAYER_STATUS',
+		'PLAYER_TYPE',
+	);
+	
+	foreach ($tables as $tablelist) {
+		foreach ($tablelist as $id => $table) {
+			$tablelist[$id] = VTM_TABLE_PREFIX . $table;
+		}
+		$list = implode(', ', $tablelist);
+		$sql = "DROP TABLE $list";
+		//echo "<p>SQL: $sql</p>";
+		$wpdb->query($sql);
+	}
+	
+    vtm_character_install();
+	vtm_character_install_data();
+	
+	echo "<p>Databases reset to factory defaults</p>";
 }
 
 ?>

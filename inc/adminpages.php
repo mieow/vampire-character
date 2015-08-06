@@ -21,6 +21,7 @@ require_once VTM_CHARACTER_URL . 'inc/adminpages/generation.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/tempstats.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/chargentemplates.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/sects.php';
+require_once VTM_CHARACTER_URL . 'inc/adminpages/skill_types.php';
 
 if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
@@ -222,29 +223,30 @@ function vtm_character_datatables() {
 		<h2>Database Tables</h2>
 		<div class="gvadmin_nav">
 			<ul>
-				<li><?php echo vtm_get_tablink('stat',   'Attributes and Stats'); ?></li>
-				<li><?php echo vtm_get_tablink('skill',  'Abilities'); ?></li>
-				<li><?php echo vtm_get_tablink('merit',  'Merits'); ?></li>
-				<li><?php echo vtm_get_tablink('flaw',   'Flaws'); ?></li>
-				<li><?php echo vtm_get_tablink('ritual', 'Rituals'); ?></li>
-				<li><?php echo vtm_get_tablink('book',   'Sourcebooks'); ?></li>
-				<li><?php echo vtm_get_tablink('clans',  'Clans'); ?></li>
-				<li><?php echo vtm_get_tablink('disc',   'Disciplines'); ?></li>
-				<li><?php echo vtm_get_tablink('bgdata', 'Backgrounds'); ?></li>
-				<li><?php echo vtm_get_tablink('sector', 'Sectors'); ?></li>
-				<li><?php echo vtm_get_tablink('question', 'Background Questions'); ?></li>
-				<li><?php echo vtm_get_tablink('costmodel', 'Cost Models'); ?></li>
-				<li><?php echo vtm_get_tablink('enlighten', 'Paths of Enlightenment'); ?></li>
-				<li><?php echo vtm_get_tablink('path',    'Paths of Magik'); ?></li>
+				<li><?php echo vtm_get_tablink('stat',        'Attributes and Stats'); ?></li>
+				<li><?php echo vtm_get_tablink('skill',       'Abilities'); ?></li>
+				<li><?php echo vtm_get_tablink('skill_type',  'Ability Categories'); ?></li>
+				<li><?php echo vtm_get_tablink('clans',       'Clans'); ?></li>
+				<li><?php echo vtm_get_tablink('disc',        'Disciplines'); ?></li>
+				<li><?php echo vtm_get_tablink('bgdata',      'Backgrounds'); ?></li>
 				<li><?php if (isset($vtmglobal['config']->USE_NATURE_DEMEANOUR) && $vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') echo vtm_get_tablink('nature',  'Nature/Demeanour'); ?></li>
-				<li><?php echo vtm_get_tablink('domain',  'Cities/Locations'); ?></li>
-				<li><?php echo vtm_get_tablink('sect',    'Affiliations'); ?></li>
-				<li><?php echo vtm_get_tablink('office',  'Offices'); ?></li>
-				<li><?php echo vtm_get_tablink('combo',   'Combination Disciplines'); ?></li>
-				<li><?php echo vtm_get_tablink('generation', 'Generation'); ?></li>
+				<li><?php echo vtm_get_tablink('merit',       'Merits'); ?></li>
+				<li><?php echo vtm_get_tablink('flaw',        'Flaws'); ?></li>
+				<li><?php echo vtm_get_tablink('ritual',      'Rituals'); ?></li>
+				<li><?php echo vtm_get_tablink('enlighten',   'Paths of Enlightenment'); ?></li>
+				<li><?php echo vtm_get_tablink('path',        'Paths of Magik'); ?></li>
+				<li><?php echo vtm_get_tablink('costmodel',   'Cost Models'); ?></li>
+				<li><?php echo vtm_get_tablink('book',        'Sourcebooks'); ?></li>
+				<li><?php echo vtm_get_tablink('question',    'Background Questions'); ?></li>
+				<li><?php echo vtm_get_tablink('sector',      'Sectors'); ?></li>
+				<li><?php echo vtm_get_tablink('domain',      'Cities/Locations'); ?></li>
+				<li><?php echo vtm_get_tablink('sect',        'Affiliations'); ?></li>
+				<li><?php echo vtm_get_tablink('office',      'Offices'); ?></li>
+				<li><?php echo vtm_get_tablink('combo',       'Combination Disciplines'); ?></li>
+				<li><?php echo vtm_get_tablink('generation',  'Generation'); ?></li>
+				<li><?php echo vtm_get_tablink('template',    'Character Templates'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapowner', 'Map Owners'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapdomain','Map Locations'); ?></li>
-				<li><?php echo vtm_get_tablink('template', 'Character Templates'); ?></li>
 			</ul>
 		</div>
 		<div class="gvadmin_content">
@@ -258,6 +260,9 @@ function vtm_character_datatables() {
 				break;
 			case 'skill':
 				vtm_render_skill_page("skill");
+				break;
+			case 'skill_type':
+				vtm_render_skill_types_page("skill_type");
 				break;
 			case 'merit':
 				vtm_render_meritflaw_page("merit");

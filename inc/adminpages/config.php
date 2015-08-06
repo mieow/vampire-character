@@ -149,6 +149,24 @@ function vtm_render_config_general() {
 					<?php
 				}
 			}
+			elseif (isset($_REQUEST['factory_defaults'])) {
+				?>
+				<form id='options_form' method='post'>
+				<p>ALL data, including characters, will be removed and the default
+				data set re-added. </p>
+				<input type="submit" name="confirm_factory_defaults" class="button-primary" value="Confirm" />
+				<input type="submit" name="cancel_factory_defaults" class="button-primary" value="Cancel" />
+				</form>
+				<?php
+			}
+			elseif (isset($_REQUEST['confirm_factory_defaults'])) {
+				vtm_factory_defaults();
+				?>
+				<form id='options_form' method='post'>
+				<input type="submit" name="return_factory_defaults" class="button-primary" value="Done" />
+				</form>
+				<?php
+			}
 			else {
 			
 			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
@@ -239,6 +257,10 @@ function vtm_render_config_general() {
 			<h3>Purge deleted characters</h3>
 			<p>Click this button to completely remove all deleted characters from the database.</p>
 			<input type="submit" name="purge_deleted" class="button-primary" value="Purge" />
+			<h3>Reset Database tables</h3>
+			<p>Click this button to completely remove and re-create all the database tables.</p>
+			<p>THIS WILL REMOVE ALL CHARACTERS, EXPERIENCE AND ANY DATA YOU HAVE ADDED TO THE DATA TABLES.</p>
+			<input type="submit" name="factory_defaults" class="button-primary" value="Reset to factory defaults" />
 		</form>
 		
 		
