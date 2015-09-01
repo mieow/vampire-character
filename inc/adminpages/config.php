@@ -20,6 +20,7 @@ function vtm_character_config() {
 				<li><?php echo vtm_get_tablink('skinning',  'Skinning'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo vtm_get_tablink('email', 'Email Options'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo vtm_get_tablink('pm', 'Messaging'); ?></li>
+				<li><?php echo vtm_get_tablink('database',  'Database'); ?></li>
 				<li><?php echo vtm_get_tablink('features',  'Features'); ?></li>
 			</ul>
 		</div>
@@ -52,6 +53,9 @@ function vtm_character_config() {
 				break;
 			case 'pm':
 				vtm_render_config_pm();
+				break;
+			case 'database':
+				vtm_render_config_database();
 				break;
 			default:
 				vtm_render_config_general();
@@ -105,68 +109,7 @@ function vtm_render_config_general() {
 				}
 				
 			}
-			elseif (isset($_REQUEST['purge_deleted'])) {
-				?>
-				<form id='options_form' method='post'>
-				<table>
-				<tr><th>ID</th><th>Character</th><th>Player</th><th>Deleted on</th><th>Select</th></tr>
-				<?php 
-				$list = vtm_listDeletedCharacters();
-				foreach ($list as $chID => $row) {
-					echo "<tr><td>$chID</td><td>" . vtm_formatOutput($row->NAME) . "</td>";
-					echo "<td>" . vtm_formatOutput($row->PLAYER) . "</td><td>{$row->LAST_UPDATED}</td><td>";
-					echo "<input type='checkbox' name='characters[{$chID}]' " . checked( 1, 1, 0) . ">";
-					echo "<input type='hidden'   name='names[{$chID}]' value='" . vtm_formatOutput($row->NAME) . "'>";
-					echo "</td></tr>";
-				}
-				?>
-				</table>
-				<input type="submit" name="comfirm_purge" class="button-primary" value="Confirm" />
-				<input type="submit" name="cancel_purge" class="button-primary" value="Cancel" />
-				</form>
-				<?php
-			}
-			elseif (isset($_REQUEST['comfirm_purge'])) {
-				if (isset($_REQUEST['characters'])) {
-					echo "<ul>";
-					foreach ($_REQUEST['characters'] as $chID => $selected) {
-						if ($selected) {
-							echo vtm_purge_character($chID, $_REQUEST['names'][$chID]);
-						}
-					}
-					?>
-					</ul>
-					<form id='options_form' method='post'>
-					<input type="submit" name="return_purge" class="button-primary" value="Done" />
-					</form>
-					<?php
-				} else {
-					?>
-					<p style='color:orange;'>No characters selected to purge</p>
-					<form id='options_form' method='post'>
-					<input type="submit" name="cancel_purge" class="button-primary" value="Return" />
-					</form>
-					<?php
-				}
-			}
-			elseif (isset($_REQUEST['factory_defaults'])) {
-				?>
-				<form id='options_form' method='post'>
-				<p>ALL data, including characters, will be removed and the default
-				data set re-added. </p>
-				<input type="submit" name="confirm_factory_defaults" class="button-primary" value="Confirm" />
-				<input type="submit" name="cancel_factory_defaults" class="button-primary" value="Cancel" />
-				</form>
-				<?php
-			}
-			elseif (isset($_REQUEST['confirm_factory_defaults'])) {
-				vtm_factory_defaults();
-				?>
-				<form id='options_form' method='post'>
-				<input type="submit" name="return_factory_defaults" class="button-primary" value="Done" />
-				</form>
-				<?php
-			}
+
 			else {
 			
 			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
@@ -175,11 +118,14 @@ function vtm_render_config_general() {
 
 		<form id='options_form' method='post'>
 			<table>
+			<!---
 			<tr>
 				<td>URL to Android XML Output</td>
 				<td><input type="text" name="androidlink" value="<?php print $options[0]->ANDROID_LINK; ?>" size=60 /></td>
 				<td>Page where android app connects to for character sheet output.</td>
-			</tr><tr>
+			</tr>
+			--->
+			<tr>
 				<td>URL to Profile Placeholder image</td>
 				<td><input type="text" name="placeholder" value="<?php print $options[0]->PLACEHOLDER_IMAGE; ?>" size=60 /></td>
 				<td>This image is used in place of a character portrait on the profile page.</td>
@@ -254,16 +200,7 @@ function vtm_render_config_general() {
 			</table>
 			<input type="submit" name="save_options" class="button-primary" value="Save Options" />
 			
-			<h3>Purge deleted characters</h3>
-			<p>Click this button to completely remove all deleted characters from the database.</p>
-			<input type="submit" name="purge_deleted" class="button-primary" value="Purge" />
-			<h3>Reset Database tables</h3>
-			<p>Click this button to completely remove and re-create all the database tables.</p>
-			<p>THIS WILL REMOVE ALL CHARACTERS, EXPERIENCE AND ANY DATA YOU HAVE ADDED TO THE DATA TABLES.</p>
-			<input type="submit" name="factory_defaults" class="button-primary" value="Reset to factory defaults" />
 		</form>
-		
-		
 		
 	<?php 
 	}
@@ -967,6 +904,102 @@ function vtm_render_config_pm() {
 		</form>
 		
 	<?php 
+}
+
+function vtm_render_config_database() {	
+	global $wpdb;
+	
+		?>
+		<h3>Plugin Database Options</h3>
+		<?php 
+		
+			if (isset($_REQUEST['purge_deleted'])) {
+				?>
+				<form id='options_form' method='post'>
+				<table>
+				<tr><th>ID</th><th>Character</th><th>Player</th><th>Deleted on</th><th>Select</th></tr>
+				<?php 
+				$list = vtm_listDeletedCharacters();
+				foreach ($list as $chID => $row) {
+					echo "<tr><td>$chID</td><td>" . vtm_formatOutput($row->NAME) . "</td>";
+					echo "<td>" . vtm_formatOutput($row->PLAYER) . "</td><td>{$row->LAST_UPDATED}</td><td>";
+					echo "<input type='checkbox' name='characters[{$chID}]' " . checked( 1, 1, 0) . ">";
+					echo "<input type='hidden'   name='names[{$chID}]' value='" . vtm_formatOutput($row->NAME) . "'>";
+					echo "</td></tr>";
+				}
+				?>
+				</table>
+				<input type="submit" name="comfirm_purge" class="button-primary" value="Confirm" />
+				<input type="submit" name="cancel_purge" class="button-primary" value="Cancel" />
+				</form>
+				<?php
+			}
+			elseif (isset($_REQUEST['comfirm_purge'])) {
+				if (isset($_REQUEST['characters'])) {
+					echo "<ul>";
+					foreach ($_REQUEST['characters'] as $chID => $selected) {
+						if ($selected) {
+							echo vtm_purge_character($chID, $_REQUEST['names'][$chID]);
+						}
+					}
+					?>
+					</ul>
+					<form id='options_form' method='post'>
+					<input type="submit" name="return_purge" class="button-primary" value="Done" />
+					</form>
+					<?php
+				} else {
+					?>
+					<p style='color:orange;'>No characters selected to purge</p>
+					<form id='options_form' method='post'>
+					<input type="submit" name="cancel_purge" class="button-primary" value="Return" />
+					</form>
+					<?php
+				}
+			}
+			elseif (isset($_REQUEST['factory_defaults'])) {
+				?>
+				<form id='options_form' method='post'>
+				<p>ALL data, including characters, will be removed and the default
+				data set re-added. </p>
+				<input type="submit" name="confirm_factory_defaults" class="button-primary" value="Confirm" />
+				<input type="submit" name="cancel_factory_defaults" class="button-primary" value="Cancel" />
+				</form>
+				<?php
+			}
+			elseif (isset($_REQUEST['confirm_factory_defaults'])) {
+				vtm_factory_defaults();
+				?>
+				<form id='options_form' method='post'>
+				<input type="submit" name="return_factory_defaults" class="button-primary" value="Done" />
+				</form>
+				<?php
+			}
+			else {
+			
+		?>
+
+		<form id='database_form' method='post'>
+			<h3>Purge deleted characters</h3>
+			<p>Click this button to completely remove all deleted characters from the database.</p>
+			<input type="submit" name="purge_deleted" class="button-primary" value="Purge" />
+
+			<h3>[IF NO CHARACTERS ENTERED]Load pre-defined data</h3>
+			<p>You can optionally download and add pre-defined data for the Database tables.</p>
+			<input type="submit" name="load_data" class="button-primary" value="Download and install data" />
+
+			<h3>[IF PREVIOUSLY LOADED DATA AND NEW ZIP IS AVAILABLE]Update pre-defined data</h3>
+			<p>An update is available for the pre-defined Database table data.</p>
+			<input type="submit" name="update_data" class="button-primary" value="Download and install data" />
+
+			<h3>Reset Database tables</h3>
+			<p>Click this button to completely remove and re-create all the database tables.</p>
+			<p>THIS WILL REMOVE ALL CHARACTERS, EXPERIENCE AND ANY DATA YOU HAVE ADDED TO THE DATA TABLES.</p>
+			<input type="submit" name="factory_defaults" class="button-primary" value="Reset to factory defaults" />
+		</form>
+		
+	<?php 
+	}
 }
 
 function vtm_listDeletedCharacters() {

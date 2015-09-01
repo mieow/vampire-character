@@ -46,6 +46,15 @@ require_once VTM_CHARACTER_URL . 'inc/pm.php';
 // Only load code for admin pages if we are trying to look at them
 if (is_admin()) {
 	require_once VTM_CHARACTER_URL . 'inc/adminpages.php';
+	
+	// This external link is for optionally installing pre-defined
+	// character sheet data.  It is accessed by an admin user from 
+	// the Database tab on the Configuration page where they can 
+	// choose to download the below zip file into the plugin init/ 
+	// folder and load the data into the plugin database tables.
+	// The plugin works without loading in the data, although they 
+	// will then have to manually enter skills, etc.
+	define( 'VTM_DATA_VERSION',  'https://github.com/mieow/vampire-data/archive/vtm2.2-v1.0.zip');
 }
 
 // Admin includes that are used on the front of the site

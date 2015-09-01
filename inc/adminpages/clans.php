@@ -59,10 +59,10 @@ function vtm_render_clan_add_form($addaction) {
 		$nonclan_costmodel_id = $_REQUEST[$type . '_costmodel_nonclan'];
 		$role = $_REQUEST[$type . '_role'];
 
-		$clan_discipline1_id = $_REQUEST[$type . '_clan_disc1'];
-		$clan_discipline2_id = $_REQUEST[$type . '_clan_disc2'];
-		$clan_discipline3_id = $_REQUEST[$type . '_clan_disc3'];
-		$clan_discipline4_id = $_REQUEST[$type . '_clan_disc4'];
+		$clan_discipline1_id = isset($_REQUEST[$type . '_clan_disc1']) ? $_REQUEST[$type . '_clan_disc1'] : 0;
+		$clan_discipline2_id = isset($_REQUEST[$type . '_clan_disc2']) ? $_REQUEST[$type . '_clan_disc2'] : 0;
+		$clan_discipline3_id = isset($_REQUEST[$type . '_clan_disc3']) ? $_REQUEST[$type . '_clan_disc3'] : 0;
+		$clan_discipline4_id = isset($_REQUEST[$type . '_clan_disc4']) ? $_REQUEST[$type . '_clan_disc4'] : 0;
 		
 		$nextaction = $_REQUEST['action'];
 		
@@ -187,6 +187,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td colspan=3><input type="text" name="<?php print $type; ?>_clanpage" value="<?php print $clanpage; ?>" size=60 /></td>
 			<td>Clan Discipline 1: </td>
 			<td>
+				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc1">
 					<?php
 						foreach ($disciplines as $discipline) {
@@ -196,6 +197,9 @@ function vtm_render_clan_add_form($addaction) {
 						}
 					?>
 				</select>
+				<?php } else {
+					echo "Please add disciplines to the database";
+				} ?>
 			</td>
 		</tr>
 		<tr>
@@ -203,6 +207,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td colspan=3><input type="text" name="<?php print $type; ?>_flaw" value="<?php print vtm_formatOutput($clanflaw) ?>" size=60 /></td>
 			<td>Clan Discipline 2: </td>
 			<td>
+				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc2">
 					<?php
 						foreach ($disciplines as $discipline) {
@@ -212,6 +217,9 @@ function vtm_render_clan_add_form($addaction) {
 						}
 					?>
 				</select>
+				<?php } else {
+					echo "Please add disciplines to the database";
+				} ?>
 			</td>
 		</tr>
 		<tr>
@@ -219,6 +227,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td colspan=3><input type="text" name="<?php print $type; ?>_description" value="<?php print vtm_formatOutput($description); ?>" size=60 /></td>
 			<td>Clan Discipline 3: </td>
 			<td>
+				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc3">
 					<?php
 						foreach ($disciplines as $discipline) {
@@ -228,12 +237,16 @@ function vtm_render_clan_add_form($addaction) {
 						}
 					?>
 				</select>
+				<?php } else {
+					echo "Please add disciplines to the database";
+				} ?>
 			</td>
 		</tr>
 		<tr>
 			<td colspan=4>&nbsp;</td>
 			<td>Clan Discipline 4: </td>
 			<td>
+				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc4">
 					<option value='0' <?php selected($discipline->ID, $clan_discipline4_id); ?>>[Optional]</option>
 					<?php
@@ -244,6 +257,9 @@ function vtm_render_clan_add_form($addaction) {
 						}
 					?>
 				</select>
+				<?php } else {
+					echo "Please add disciplines to the database";
+				} ?>
 			</td>
 		</tr>
 		</table>
@@ -279,6 +295,10 @@ function vtm_clan_input_validation() {
 		if (empty($_REQUEST[$type . '_flaw']) || $_REQUEST[$type . '_flaw'] == "") {
 			$doaction = "fix-$type";
 			echo "<p style='color:red'>ERROR: Clan Flaw is missing</p>";
+		} 
+		if (!isset($_REQUEST[$type . 'clan_disc1'])) {
+			$doaction = "fix-$type";
+			echo "<p style='color:red'>ERROR: Please add disciplines to the database before saving a clan</p>";
 		} 
 				
 	}
