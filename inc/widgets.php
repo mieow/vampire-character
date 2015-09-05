@@ -326,163 +326,177 @@ function vtm_get_clan_link() {
 	*/
 	
 	//	Add function vtm_to widgets_init that'll load our widget.
-	add_action( 'widgets_init', 'SSC_load_widget' );
+	//add_action( 'widgets_init', 'SSC_load_widget' );
 	//  Register widget
-	function SSC_load_widget() {
-		register_widget('StuSolarCalc_Widget');	
+	//function SSC_load_widget() {
+	//	register_widget('StuSolarCalc_Widget');	
+	//}
+add_action( 'widgets_init', create_function( '', 'register_widget( "StuSolarCalc_Widget" );' ) );
+	
+class StuSolarCalc_Widget extends WP_Widget {
+	
+	/**	 * Register widget with WordPress.	 */
+	public function __construct() {
+		parent::__construct(
+	 		'solar', // Base ID
+			'Sunset/Sunrise Times', // Name
+			array( 'description' => __( 'A simple plug-in widget to allow the display of sunrise/set data.', 'text_domain' ), ) // Args
+		);
+	}	
+	
+	/*
+	function StuSolarCalc_Widget() {
+		// Widget settings. 
+		$widget_ops = array( 'classname' => 'solar', 
+			'description' => 'A simple plug-in widget to allow the display of sunrise/set data.');
+		// Widget control settings. 
+		$control_ops = array( 'width' => 300, 'height' => 350, 'id_base' => 'solar' );
+		// Create the widget. 
+		$this->WP_Widget( 'solar', 'Sunset/Sunrise Times', $widget_ops, $control_ops );
 	}
-	class StuSolarCalc_Widget extends WP_Widget {
-		function StuSolarCalc_Widget() {
-			/* Widget settings. */
-			$widget_ops = array( 'classname' => 'solar', 
-				'description' => 'A simple plug-in widget to allow the display of sunrise/set data.');
-			/* Widget control settings. */
-			$control_ops = array( 'width' => 300, 'height' => 350, 'id_base' => 'solar' );
-			/* Create the widget. */
-			$this->WP_Widget( 'solar', 'Sunset/Sunrise Times', $widget_ops, $control_ops );
-		}
+	*/
+	
+	function form($instance) {
+		// outputs the options form on admin
+		/* 	Variable list - Initialized to Glasgow, Scotland
+				lat = Your latitude
+				long = Your longitude
+				location = Your location name
+				offset = Your time offset from GMT for non-Daylight Savings Time
+				dst = True for Daylight Savings Time (on/off values for checkbox)
+				zenith = 90.83 or 90+50/60; Removed as variable 
+					adjust zenith in the $defaults below, but only if you know what you are doing!!!
+		*/
+		$defaults = array( 'lat' => '55.869725', 'long' => '-4.256573', 'location' => 'Glasgow, Scotland', 'offset' => '0', 'dst' => 'off');
+		$instance = wp_parse_args( (array) $instance, $defaults );
+		?>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'lat' ); ?>">Latitude (XX.XXXXX degrees):</label>
+			<input id="<?php echo $this->get_field_id( 'lat' ); ?>" name="<?php echo $this->get_field_name( 'lat' ); ?>" value="<?php echo $instance['lat']; ?>" style="width:100%;" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'long' ); ?>">Longitude (+/-XXX.XXXXX):</label>
+			<input id="<?php echo $this->get_field_id( 'long' ); ?>" name="<?php echo $this->get_field_name( 'long' ); ?>" value="<?php echo $instance['long']; ?>" style="width:100%;" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'offset' ); ?>">Offset from GMT (hours):</label>
+			<input id="<?php echo $this->get_field_id( 'offset' ); ?>" name="<?php echo $this->get_field_name( 'offset' ); ?>" value="<?php echo $instance['offset']; ?>" style="width:100%;" />
+		</p>
 		
-		function form($instance) {
-			// outputs the options form on admin
-			/* 	Variable list - Initialized to Glasgow, Scotland
-					lat = Your latitude
-					long = Your longitude
-					location = Your location name
-					offset = Your time offset from GMT for non-Daylight Savings Time
-					dst = True for Daylight Savings Time (on/off values for checkbox)
-					zenith = 90.83 or 90+50/60; Removed as variable 
-						adjust zenith in the $defaults below, but only if you know what you are doing!!!
-			*/
-			$defaults = array( 'lat' => '55.869725', 'long' => '-4.256573', 'location' => 'Glasgow, Scotland', 'offset' => '0', 'dst' => 'off');
-			$instance = wp_parse_args( (array) $instance, $defaults );
-			?>
-			<p>
-				<label for="<?php echo $this->get_field_id( 'lat' ); ?>">Latitude (XX.XXXXX degrees):</label>
-				<input id="<?php echo $this->get_field_id( 'lat' ); ?>" name="<?php echo $this->get_field_name( 'lat' ); ?>" value="<?php echo $instance['lat']; ?>" style="width:100%;" />
-			</p>
-			<p>
-				<label for="<?php echo $this->get_field_id( 'long' ); ?>">Longitude (+/-XXX.XXXXX):</label>
-				<input id="<?php echo $this->get_field_id( 'long' ); ?>" name="<?php echo $this->get_field_name( 'long' ); ?>" value="<?php echo $instance['long']; ?>" style="width:100%;" />
-			</p>
-			<p>
-				<label for="<?php echo $this->get_field_id( 'offset' ); ?>">Offset from GMT (hours):</label>
-				<input id="<?php echo $this->get_field_id( 'offset' ); ?>" name="<?php echo $this->get_field_name( 'offset' ); ?>" value="<?php echo $instance['offset']; ?>" style="width:100%;" />
-			</p>
-			
-			<p>
-				<label for="<?php echo $this->get_field_id( 'location' ); ?>">Location name:</label>
-				<input id="<?php echo $this->get_field_id( 'location' ); ?>" name="<?php echo $this->get_field_name( 'location' ); ?>" value="<?php echo $instance['location']; ?>" style="width:100%;" />
-			</p>
-			<p>
-				<label for="<?php echo $this->get_field_id( 'dst' ); ?>">Daylight Savings Time in Effect?</label>
-				<input class="checkbox" type="checkbox" <?php checked( $instance['dst'], 'on' ); ?> id="<?php echo $this->get_field_id( 'dst' ); ?>" name="<?php echo $this->get_field_name( 'dst' ); ?>" />
-			</p>
-												
-			<?php
-			
-			if ($instance['dst']=='on') {
-				$timeGMT = gmdate("H:i", time() + 3600*($instance['offset']+1));  //  with Daylight Savings Time
-			}
-			else{
-				$timeGMT = gmdate("H:i", time() + 3600*$instance['offset']);  //  without Daylight Savings Time
-			}
-			echo 'Current Time: ' . $timeGMT;
-			echo $instance['dst'];		
+		<p>
+			<label for="<?php echo $this->get_field_id( 'location' ); ?>">Location name:</label>
+			<input id="<?php echo $this->get_field_id( 'location' ); ?>" name="<?php echo $this->get_field_name( 'location' ); ?>" value="<?php echo $instance['location']; ?>" style="width:100%;" />
+		</p>
+		<p>
+			<label for="<?php echo $this->get_field_id( 'dst' ); ?>">Daylight Savings Time in Effect?</label>
+			<input class="checkbox" type="checkbox" <?php checked( $instance['dst'], 'on' ); ?> id="<?php echo $this->get_field_id( 'dst' ); ?>" name="<?php echo $this->get_field_name( 'dst' ); ?>" />
+		</p>
+											
+		<?php
+		
+		if ($instance['dst']=='on') {
+			$timeGMT = gmdate("H:i", time() + 3600*($instance['offset']+1));  //  with Daylight Savings Time
 		}
-	
-		function update($new_instance, $old_instance) {
-			// processes widget options to be saved
-			
-			$instance = $old_instance;
-			$instance['lat'] =  $new_instance['lat'];
-			$instance['long'] =  $new_instance['long'];
-			$instance['offset'] =  $new_instance['offset'];
-			$instance['dst'] =  $new_instance['dst'];
-			$instance['location'] = $new_instance['location'];
-			//$instance['zenith'] = $new_instance['zenith']; Removed as variable. Change only if you understand zenith.
-			return $instance;
-	
+		else{
+			$timeGMT = gmdate("H:i", time() + 3600*$instance['offset']);  //  without Daylight Savings Time
 		}
-		function widget($args, $instance) {
-			// Actual widget - displays a image file from a URL
-			extract($args);
-			echo $before_widget;
+		echo 'Current Time: ' . $timeGMT;
+		echo $instance['dst'];		
+	}
+
+	function update($new_instance, $old_instance) {
+		// processes widget options to be saved
+		
+		$instance = $old_instance;
+		$instance['lat'] =  $new_instance['lat'];
+		$instance['long'] =  $new_instance['long'];
+		$instance['offset'] =  $new_instance['offset'];
+		$instance['dst'] =  $new_instance['dst'];
+		$instance['location'] = $new_instance['location'];
+		//$instance['zenith'] = $new_instance['zenith']; Removed as variable. Change only if you understand zenith.
+		return $instance;
+
+	}
+	function widget($args, $instance) {
+		// Actual widget - displays a image file from a URL
+		extract($args);
+		echo $before_widget;
 /*			echo $before_title.'Daily Sunrise/Sunset'.$after_title;	
 */
-			$instance['offset'] = isset($instance['offset']) ? $instance['offset'] : 0;
-			$instance['lat'] = isset($instance['lat']) ? $instance['lat'] : 0;
-			$instance['long'] = isset($instance['long']) ? $instance['long'] : 0;
-			
-			if (isset($instance['dst']) && $instance['dst']=='on') {
-				$timeGMT =  gmdate("H:i", time() + 3600*($instance['offset']+1));  //  with Daylight Savings Time
-			}
-			else {
-				$timeGMT =  gmdate("H:i", time() + 3600*$instance['offset']);  //  without Daylight Savings Time
-			}
-			
-			$sunrisetime = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 90.83, $instance['offset']);
-			$sunsettime = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 90.83, $instance['offset']);
-			$civilstart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 96, $instance['offset']);  //  96 replaces $zenith
-			$civilend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 96, $instance['offset']);  //  96 replaces $zenith
-			$nautstart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 102, $instance['offset']);  //  102 replaces $zenith
-			$nautend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 102, $instance['offset']);  //  102 replaces $zenith
-			$astrostart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 108, $instance['offset']);  //  108 replaces $zenith
-			$astroend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 108, $instance['offset']);  //  108 replaces $zenith
+		$instance['offset'] = isset($instance['offset']) ? $instance['offset'] : 0;
+		$instance['lat'] = isset($instance['lat']) ? $instance['lat'] : 0;
+		$instance['long'] = isset($instance['long']) ? $instance['long'] : 0;
+		
+		if (isset($instance['dst']) && $instance['dst']=='on') {
+			$timeGMT =  gmdate("H:i", time() + 3600*($instance['offset']+1));  //  with Daylight Savings Time
+		}
+		else {
+			$timeGMT =  gmdate("H:i", time() + 3600*$instance['offset']);  //  without Daylight Savings Time
+		}
+		
+		$sunrisetime = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 90.83, $instance['offset']);
+		$sunsettime = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 90.83, $instance['offset']);
+		$civilstart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 96, $instance['offset']);  //  96 replaces $zenith
+		$civilend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 96, $instance['offset']);  //  96 replaces $zenith
+		$nautstart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 102, $instance['offset']);  //  102 replaces $zenith
+		$nautend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 102, $instance['offset']);  //  102 replaces $zenith
+		$astrostart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 108, $instance['offset']);  //  108 replaces $zenith
+		$astroend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 108, $instance['offset']);  //  108 replaces $zenith
 
-	        if ($timeGMT > $astroend) { 
-	        $setday = 'Night Time';     
-	        }     
-	        else if ($timeGMT >= $nautend) { 
-	        $setday = 'Astronomical Twilight';     
-	        }     
-	        else if ($timeGMT >= $civilend) {
-	        $setday = 'Nautical Twilight';   
-	        }   
-	        else if ($timeGMT > $sunsettime) {
-	        $setday = 'Civil Twilight';   
-	        }   
-	        else if ($timeGMT == $sunsettime) {
-	        $setday = 'SUNSET';   
-	        } 
-	        else if ($timeGMT > $sunrisetime) {
-	        $setday = 'Daylight';   
-	        } 
-	        else if ($timeGMT == $sunrisetime) {
-	        $setday = 'SUNRISE';   
-	        } 
-	        else if ($timeGMT >= $civilstart) {
-	        $setday = 'Civil Twilight';   
-	        }   
-	        else if ($timeGMT >= $nautstart) {
-	        $setday = 'Nautical Twilight';   
-	        } 
-	        else if ($timeGMT >= $astrostart) {
-	        $setday = 'Astronomical Twilight';   
-	        } 
-	        else  {
-	        $setday = 'Night Time';
-	        }
-			
+		if ($timeGMT > $astroend) { 
+		$setday = 'Night Time';     
+		}     
+		else if ($timeGMT >= $nautend) { 
+		$setday = 'Astronomical Twilight';     
+		}     
+		else if ($timeGMT >= $civilend) {
+		$setday = 'Nautical Twilight';   
+		}   
+		else if ($timeGMT > $sunsettime) {
+		$setday = 'Civil Twilight';   
+		}   
+		else if ($timeGMT == $sunsettime) {
+		$setday = 'SUNSET';   
+		} 
+		else if ($timeGMT > $sunrisetime) {
+		$setday = 'Daylight';   
+		} 
+		else if ($timeGMT == $sunrisetime) {
+		$setday = 'SUNRISE';   
+		} 
+		else if ($timeGMT >= $civilstart) {
+		$setday = 'Civil Twilight';   
+		}   
+		else if ($timeGMT >= $nautstart) {
+		$setday = 'Nautical Twilight';   
+		} 
+		else if ($timeGMT >= $astrostart) {
+		$setday = 'Astronomical Twilight';   
+		} 
+		else  {
+		$setday = 'Night Time';
+		}
+		
 /*		echo '<center>'."\n";
-		echo '<b>Current Time ' . $timeGMT . '</b><br />' . "\n";
-		echo 'Current Event ' . $setday . '<br />' .  "\n"; 
-		echo 'Astronomical Twilight starts ' . $astrostart . '<br />' . "\n";
-		echo 'Nautical Twilight starts ' . $nautstart . '<br />' . "\n";
-		echo 'Civil Twilight starts ' . $civilstart . '<br />' . "\n";
-		echo '<b>SUNRISE ' . $sunrisetime . "\n";
-		echo 'SUNSET ' . $sunsettime . '</b><br />' . "\n";
-		echo 'Civil Twilight ends ' . $civilend  . '<br />' . "\n";
-		echo 'Nautical Twilight ends ' . $nautend . '<br />' . "\n";
-		echo 'Astronomical Twilight ends ' . $astroend . '<br />' . "\n";			
+	echo '<b>Current Time ' . $timeGMT . '</b><br />' . "\n";
+	echo 'Current Event ' . $setday . '<br />' .  "\n"; 
+	echo 'Astronomical Twilight starts ' . $astrostart . '<br />' . "\n";
+	echo 'Nautical Twilight starts ' . $nautstart . '<br />' . "\n";
+	echo 'Civil Twilight starts ' . $civilstart . '<br />' . "\n";
+	echo '<b>SUNRISE ' . $sunrisetime . "\n";
+	echo 'SUNSET ' . $sunsettime . '</b><br />' . "\n";
+	echo 'Civil Twilight ends ' . $civilend  . '<br />' . "\n";
+	echo 'Nautical Twilight ends ' . $nautend . '<br />' . "\n";
+	echo 'Astronomical Twilight ends ' . $astroend . '<br />' . "\n";			
 */
 
-		echo '<span class="solar">';
-		echo 'Current Time - ' . $timeGMT . '<br />' . "\n";
-		echo 'Sunrise - ' . $sunrisetime . '<br />' . "\n";
-		echo 'Sunset - ' . $sunsettime . '' . "\n";
-		echo '</span>';
-		
-		echo $after_widget;
-		}
+	echo '<span class="solar">';
+	echo 'Current Time - ' . $timeGMT . '<br />' . "\n";
+	echo 'Sunrise - ' . $sunrisetime . '<br />' . "\n";
+	echo 'Sunset - ' . $sunsettime . '' . "\n";
+	echo '</span>';
+	
+	echo $after_widget;
 	}
+}
 ?>

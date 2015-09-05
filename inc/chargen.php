@@ -22,7 +22,7 @@ function vtm_default_chargen_settings() {
 		'abilities-max'        => 3,
 		'disciplines-points'   => 3,
 		'backgrounds-points'   => 5,
-		'virtues-free-dots'    => 'humanityonly',  // 'yes', 'no', 'humanityonly'
+		'virtues-free-dots'    => 'humanityvirtues',  // 'yes', 'no', 'humanityonly', 'humanityvirtues'
 		'virtues-points'       => 7,
 		'road-multiplier'      => 1,
 		'merits-max'           => 7,
@@ -3324,7 +3324,7 @@ function vtm_get_chargen_virtues($selectedpath) {
 	return $results;
 
 }
-function vtm_has_virtue_free_dot($selectedpath) {
+function vtm_has_virtue_free_dot($selectedpath, $stat = '') {
 	global $wpdb;
 	global $vtmglobal;
 
@@ -3332,6 +3332,33 @@ function vtm_has_virtue_free_dot($selectedpath) {
 		$freedot = 1;
 	elseif ($vtmglobal['settings']['virtues-free-dots'] == 'no')
 		$freedot = 0;
+	elseif ($vtmglobal['settings']['virtues-free-dots'] == 'humanityvirtues') {
+		if ($stat == 'courage') {
+			$freedot = 1;
+		}
+		else {
+			$humanityinfo = $wpdb->get_row($wpdb->prepare("SELECT ID, STAT1_ID, STAT2_ID FROM " . VTM_TABLE_PREFIX . "ROAD_OR_PATH WHERE NAME = %s", 'Humanity'));
+			
+			if ($stat == '') {
+				$stat1 = sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "STAT WHERE ID = %s", $humanityinfo->STAT1_ID)));
+				$stat2 = sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "STAT WHERE ID = %s", $humanityinfo->STAT2_ID)));
+				$freedot = array(
+					'courage' => 1,
+					$stat1 => 1,
+					$stat2 => 1
+				);
+			} else {
+				$statid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX . "STAT WHERE NAME = %s", $stat));
+				if ($statid == $humanityinfo->STAT1_ID || $statid == $humanityinfo->STAT2_ID) {
+					$freedot = 1;
+				} else {
+					$freedot = 0;
+				}
+				
+			}
+		}
+		
+	}
 	else {
 		$humanityid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX . "ROAD_OR_PATH WHERE NAME = %s", 'Humanity'));
 		if ($humanityid == $selectedpath)
@@ -3340,6 +3367,8 @@ function vtm_has_virtue_free_dot($selectedpath) {
 			$freedot = 0;
 	}
 
+	//echo "<li>stat: $stat</li>";
+	//print_r($freedot);
 	return $freedot;
 }
 
@@ -3939,7 +3968,12 @@ function vtm_render_chargen_section($saved, $isPST, $pdots, $sdots, $tdots, $fre
 			$level = isset($posted[$key]) ? $posted[$key] : (isset($saved[$key]->level_from) ? $saved[$key]->level_from : 0);  // currently selected or saved level
 			if (isset($templatefree[$key]))
 				$tpfree = $templatefree[$key]->LEVEL;
-			else
+			elseif (is_array($freedot)) {
+				if (isset($freedot[$key]))
+					$tpfree = 1;
+				else
+					$tpfree = 0;
+			} else
 				$tpfree = $freedot;
 			
 			$itemname = $item['ITEMNAME'];
@@ -6076,14 +6110,14 @@ function vtm_validate_virtues($usepost = 1) {
 		$total = 0;
 		$statfail = 0;
 		foreach  ($values as $key => $val) {
-			$level = $val - vtm_has_virtue_free_dot($selectedpath);
+			$level = $val - vtm_has_virtue_free_dot($selectedpath, $key);
 			$total += $level;
 			
 			if ($key != $statkey1 && $key != $statkey2 && $key != 'courage') {
 				$statfail = 1;
 			} 
 			elseif ($level == 0 && !isset($pendingfb[$key]) 
-				&& !isset($pendingxp[$key]) && vtm_has_virtue_free_dot($selectedpath) == 0) {
+				&& !isset($pendingxp[$key]) && vtm_has_virtue_free_dot($selectedpath, $key) == 0) {
 				$errormessages .= "<li>WARNING: Virtues must each have at least 1 dot</li>\n";
 				$complete = 0;
 			}
