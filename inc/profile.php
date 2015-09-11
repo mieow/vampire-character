@@ -146,6 +146,77 @@ function vtm_get_profile_content() {
 			}
 			$mycharacter->newsletter = $_POST['vtm_news_optin'];
 		}
+
+		// Set Portrait settings
+		if (isset($_POST['set_vtm_portrait'])) {
+			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+				array('PORTRAIT' => $_POST['vtm_portrait_set']),
+				array('CHARACTER_ID' => $characterID)
+			);
+			if (!$result && $result !== 0){
+				echo "<p style='color:red'>Could not save profile image location</p>";
+			} else {
+				$output .= "<p>Changed profile image location</p>";
+			}
+			$mycharacter->portrait = $_POST['vtm_portrait_set'];
+		}
+
+		
+		// Upload Portrait
+		//http://www.w3schools.com/php/php_file_upload.asp
+		// Check that the nonce is valid, and the user can edit this post.
+		if ( 
+			isset( $_POST['vtm_portrait_nonce']) 
+			&& wp_verify_nonce( $_POST['vtm_portrait_nonce'], 'vtm_portrait' )
+			// CHECK THAT USERS ARE ALLOWED TO UPLOAD THEIR OWN PORTRAITS
+		) {
+			
+			// check file type 
+			
+			// check file size
+			
+			
+			// check image dimensions
+			
+			// The nonce was valid and the user has the capabilities, it is safe to continue.
+
+			// These files need to be included as dependencies when on the front end.
+			require_once( ABSPATH . 'wp-admin/includes/image.php' );
+			require_once( ABSPATH . 'wp-admin/includes/file.php' );
+			require_once( ABSPATH . 'wp-admin/includes/media.php' );
+			
+			// Let WordPress handle the upload.
+			// Remember, 'my_image_upload' is the name of our file input in our form above.
+			$attachment_id = media_handle_upload( 'vtm_portrait', 0 );
+			
+			if ( is_wp_error( $attachment_id ) ) {
+				// There was an error uploading the image.
+				echo "<p style='color:red'>Could not upload portrait</p>";
+			} else {
+				// The image was uploaded successfully!
+				
+				// Check attributes
+				$upload_dir = wp_upload_dir();
+				$metadata = wp_get_attachment_metadata( $attachment_id ); // returns an array
+				print_r($metadata);
+				
+				// Delete attachment if it is the wrong size, etc
+				//wp_delete_attachment( $attachmentid, $force_delete );
+				
+				// make it sepia/black and white/painting?
+				// Imagick
+				
+				// Save path to character
+				$path = $upload_dir['baseurl']  . "/" . $metadata['file'];
+				
+				$output .= "<p>Uploaded portrait $path</p>";
+			}
+
+		} else {
+
+			// The security check failed, maybe show the user an error.
+		}
+		
 	} else {
 		$displayName = $mycharacter->name;
 	}
@@ -278,7 +349,8 @@ function vtm_get_profile_content() {
 	
 	$output .= "</table></td><td class=\"gvcol_2 gvcol_img\">\n";
 	// Portrait
-	$output .= "<img alt='Profile Image' src='" .  $mycharacter->portrait . "'>";
+
+	$output .= "<img alt='Profile Image' src='?vtm_get_portrait=$characterID'>";
 	
 	$output .= "</td></tr>";
 	$output .= "</table>";
@@ -338,7 +410,21 @@ function vtm_get_profile_content() {
 		$output .= "</td></tr>";
 
 		$output .= "</table></form>";
-		
+		if (get_option( 'vtm_user_set_image', '1'  == '1')) {
+			$output .= "<h4>Upload a Portrait image</h4>";
+			$output .= "Enter a web address to a profile image: <form id='portrait_set' method='post'>";
+			$output .= "	<input type='text' name='vtm_portrait_set' value='" . $mycharacter->portrait . "' size=60/>";
+			$output .= "	<input id='set_vtm_portrait' name='set_vtm_portrait' type='submit' value='Save' />";
+			$output .= "</form>";
+			if (get_option( 'vtm_user_upload_image', '0'  == '1')) {
+				$output .= "<p>OR</p>";
+				$output .= "Upload an profile image: <form id='portrait_upload' method='post' action='#' enctype='multipart/form-data'>";
+				$output .= "	<input type='file' name='vtm_portrait' id='vtm_portrait'  multiple='false' />";
+				$output .= wp_nonce_field( 'vtm_portrait', 'vtm_portrait_nonce' );
+				$output .= "	<input id='submit_vtm_portrait' name='submit_vtm_portrait' type='submit' value='Upload' />";
+				$output .= "</form>";
+			}
+		}
 		$output .= "<h4>Update Newsletter Settings:</h4>";
 		$output .= "<form name='NEWLETTER_UPDATE_FORM' method='post'>";
 		$output .= "<input type='radio' id='news_true' name='vtm_news_optin' value='Y' " .

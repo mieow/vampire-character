@@ -15,6 +15,7 @@ function vtm_character_config() {
 			<ul>
 				<li><?php echo vtm_get_tablink('general',   'General'); ?></li>
 				<li><?php echo vtm_get_tablink('pagelinks', 'Page Links'); ?></li>
+				<li><?php echo vtm_get_tablink('profile',   'Profile'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo vtm_get_tablink('maps', 'Map Options'); ?></li>
 				<li><?php echo vtm_get_tablink('chargen',   'Character Generation'); ?></li>
 				<li><?php echo vtm_get_tablink('skinning',  'Skinning'); ?></li>
@@ -52,6 +53,9 @@ function vtm_character_config() {
 				break;
 			case 'pm':
 				vtm_render_config_pm();
+				break;
+			case 'profile':
+				vtm_render_config_profile();
 				break;
 			default:
 				vtm_render_config_general();
@@ -965,6 +969,57 @@ function vtm_render_config_pm() {
 		</table>
 		<?php submit_button("Save Changes", "primary", "save_pm_button"); ?>
 		</form>
+		
+	<?php 
+}
+
+function vtm_render_config_profile() {	
+	global $wpdb;
+
+		?><h3>Character Profile Options</h3>
+		<form method="post" action="options.php">
+			<?php
+			settings_fields( 'vtm_profile_options_group' );
+			do_settings_sections('vtm_profile_options_group');
+			?>	
+			
+			<table>
+			<tr>
+				<td><label>Players can set their profile picture:</label></td>
+				<td><input type="checkbox" name="vtm_user_set_image" value="1" <?php checked( '1', get_option( 'vtm_user_set_image', '1' ) ); ?> /></td>
+			</tr>
+			<tr>
+				<td><label>Player can upload a profile picture to the Media Gallery:</label></td>
+				<td><input type="checkbox" name="vtm_user_upload_image" value="1" <?php checked( '1', get_option( 'vtm_user_upload_image', '0' ) ); ?> /></td>
+			</tr>
+			<tr>
+				<td><label>Maximum picture width for uploaded pictures (pixels)</label></td>
+				<td><input type="text" name="vtm_max_width" value="<?php echo get_option('vtm_max_width', '0'); ?>" /> (set to 0 for no limit)</td>
+			</tr>
+			<tr>
+				<td><label>Maximum picture height for uploaded pictures (pixels)</label></td>
+				<td><input type="text" name="vtm_max_height" value="<?php echo get_option('vtm_max_height', '0'); ?>"  /> (set to 0 for no limit)</td>
+			</tr>
+			<tr>
+				<td><label>Maximum picture filesize for uploaded pictures (bytes)</label></td>
+				<td><input type="text" name="vtm_max_size" value="<?php echo get_option('vtm_max_size', '0'); ?>" /> (set to 0 for no limit)</td>
+			</tr>
+			<tr>
+				<td>Image effect</td>
+				<td>
+				<select name="vtm_image_effect">
+					<option value="none" <?php echo selected( 'none', get_option('vtm_image_effect'), false );?>>None</option>
+					<option value="bw" <?php echo selected( 'bw', get_option('vtm_image_effect'), false );?>>Black and White</option>
+					<option value="sepia" <?php echo selected( 'sepia', get_option('vtm_image_effect'), false );?>>Sepia</option>
+					<option value="painting" <?php echo selected( 'painting', get_option('vtm_image_effect'), false );?>>Painting</option>
+				</select>
+				</td>
+			</tr>
+			</table>
+			<?php submit_button("Save Profile Options", "primary", "save_profile_button"); ?>
+		
+		</form>
+
 		
 	<?php 
 }

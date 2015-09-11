@@ -109,6 +109,13 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_email_options_group', 'vtm_smtp_pw' );
 	register_setting( 'vtm_email_options_group', 'vtm_smtp_auth' );
 	register_setting( 'vtm_email_options_group', 'vtm_smtp_secure' );
+
+	register_setting( 'vtm_profile_options_group', 'vtm_max_width' );
+	register_setting( 'vtm_profile_options_group', 'vtm_max_height' );
+	register_setting( 'vtm_profile_options_group', 'vtm_max_size' );
+	register_setting( 'vtm_profile_options_group', 'vtm_user_set_image' );
+	register_setting( 'vtm_profile_options_group', 'vtm_user_upload_image' );
+	register_setting( 'vtm_profile_options_group', 'vtm_image_effect' );
 	
 	register_setting( 'feedingmap_options_group', 'feedingmap_google_api' );  // google api key
 	register_setting( 'feedingmap_options_group', 'feedingmap_centre_lat' );  // centre point, latitude
