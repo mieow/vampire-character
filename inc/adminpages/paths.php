@@ -5,7 +5,7 @@ function vtm_render_paths_page(){
 
 
     $testListTable["path"] = new vtmclass_admin_path_table();
-	$doaction = vtm_enlighten_input_validation("path");
+	$doaction = vtm_path_input_validation("path");
 	
 	/* echo "<p>action: $doaction</p>"; */
 	
@@ -39,7 +39,7 @@ function vtm_render_path_add_form($type, $addaction) {
 	if ('fix-' . $type == $addaction) {
 		$name          = $_REQUEST[$type . "_name"];
 		$desc          = $_REQUEST[$type . "_desc"];
-		$discipline_id = $_REQUEST[$type . "_discipline"];
+		$discipline_id = isset($_REQUEST[$type . "_discipline"]) ? $_REQUEST[$type . "_discipline"] : 0;
 		$cost_model_id = $_REQUEST[$type . "_costmodel"];
 		$sourcebook_id = $_REQUEST[$type . "_sourcebook"];
 		$pagenum       = $_REQUEST[$type . "_pagenum"];
@@ -91,15 +91,20 @@ function vtm_render_path_add_form($type, $addaction) {
 			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=30 /></td>
 			<td>Discipline:</td>
 			<td>
+				<?php $disciplines = vtm_get_disciplines();
+				if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_discipline">
 					<?php
-						foreach (vtm_get_disciplines() as $discipline) {
+						foreach ($disciplines as $discipline) {
 							print "<option value='{$discipline->ID}' ";
 							selected($discipline->ID, $discipline_id);
 							echo ">" . vtm_formatOutput($discipline->NAME) . "</option>";
 						}
 					?>
 				</select>
+				<?php } else {
+					echo "Please add disciplines to the database";
+				} ?>
 			</td>
 			<td>Cost Model:  </td>
 			<td><select name="<?php print $type; ?>_costmodel">
@@ -149,6 +154,7 @@ function vtm_render_path_add_form($type, $addaction) {
 }
 
 function vtm_path_input_validation($type) {
+	$doaction = '';
 	
 	
 	if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit' && $_REQUEST['tab'] == $type)
@@ -171,6 +177,12 @@ function vtm_path_input_validation($type) {
 			$doaction = "fix-$type";
 			echo "<p style='color:red'>ERROR: Invalid sourcebook page number</p>";
 		} 
+		
+		// discipline is available in database
+		if (!isset($_REQUEST[$type . '_discipline'])) {
+			$doaction = "fix-$type";
+			echo "<p style='color:red'>ERROR: Associated discipline must be added to the database</p>";
+		}
 	
 	}
 	

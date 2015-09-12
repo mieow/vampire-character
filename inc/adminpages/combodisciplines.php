@@ -42,7 +42,7 @@ function vtm_render_combo_add_form($type, $addaction) {
 		$sourcebook    = $_REQUEST[$type . "_sourcebook"];
 		$pagenum       = $_REQUEST[$type . "_page_number"];
 		$xpcost        = $_REQUEST[$type . "_xp_cost"];
-		$prerequisites = $_REQUEST[$type . "_disc"];
+		$prerequisites = isset($_REQUEST[$type . "_disc"]) ? $_REQUEST[$type . "_disc"] : array();
 		$visible       = $_REQUEST[$type . "_visible"];
 		
 		$nextaction = $_REQUEST['action'];
@@ -132,22 +132,27 @@ function vtm_render_combo_add_form($type, $addaction) {
 			<table>
 			<?php
 				$col = 1;
-				foreach(vtm_get_disciplines() as $disc) {
+				$disciplines = vtm_get_disciplines();
+				if (count($disciplines) > 0) {
+					foreach(vtm_get_disciplines() as $disc) {
 
-					$prereq = (isset($prerequisites[$disc->ID]->DISCIPLINE_LEVEL) && $prerequisites[$disc->ID]->DISCIPLINE_LEVEL) 
-								? $prerequisites[$disc->ID]->DISCIPLINE_LEVEL 
-								: "0";
-				
-					if ($col == 1) echo "<tr>\n";
-					echo "<td>" . vtm_formatOutput($disc->NAME) . "</td>\n";
-					echo "<td><input type=\"number\" name=\"{$type}_disc[{$disc->ID}]\" value=\"{$prereq}\" size=4 /></td>\n";
+						$prereq = (isset($prerequisites[$disc->ID]->DISCIPLINE_LEVEL) && $prerequisites[$disc->ID]->DISCIPLINE_LEVEL) 
+									? $prerequisites[$disc->ID]->DISCIPLINE_LEVEL 
+									: "0";
 					
-					if ($col == 4) {
-						echo "</tr>\n";
-						$col = 1;
-					} else {
-						$col++;
+						if ($col == 1) echo "<tr>\n";
+						echo "<td>" . vtm_formatOutput($disc->NAME) . "</td>\n";
+						echo "<td><input type=\"number\" name=\"{$type}_disc[{$disc->ID}]\" value=\"{$prereq}\" size=4 /></td>\n";
+						
+						if ($col == 4) {
+							echo "</tr>\n";
+							$col = 1;
+						} else {
+							$col++;
+						}
 					}
+				} else {
+					echo "<tr><td>Please enter disciplines into the database for pre-requisites</td></tr>";
 				}
 			?>
 			</table>
@@ -243,23 +248,25 @@ class vtmclass_admin_combo_table extends vtmclass_MultiPage_ListTable {
 			$fail    = 0;
 			
 			// add the pre-requisites
-			foreach ($_REQUEST['combo_disc'] as $key => $value) {
-				if ($value > 0) {
-					$dataarray = array (
-						'COMBO_DISCIPLINE_ID' => $id,
-						'DISCIPLINE_ID'       => $key,
-						'DISCIPLINE_LEVEL'    => $value
-					);
-					
-					$wpdb->insert(VTM_TABLE_PREFIX . "COMBO_DISCIPLINE_PREREQUISITE",
-						$dataarray, array ('%d', '%d', '%d')
-					);
-					
-					if ($wpdb->insert_id == 0) {
-						$fail++;
-					} 
+			if (isset($_REQUEST['combo_disc']) && count($_REQUEST['combo_disc']) > 0) {
+				foreach ($_REQUEST['combo_disc'] as $key => $value) {
+					if ($value > 0) {
+						$dataarray = array (
+							'COMBO_DISCIPLINE_ID' => $id,
+							'DISCIPLINE_ID'       => $key,
+							'DISCIPLINE_LEVEL'    => $value
+						);
+						
+						$wpdb->insert(VTM_TABLE_PREFIX . "COMBO_DISCIPLINE_PREREQUISITE",
+							$dataarray, array ('%d', '%d', '%d')
+						);
+						
+						if ($wpdb->insert_id == 0) {
+							$fail++;
+						} 
+					}
+			
 				}
-		
 			}
 			if ($fail) {
 				echo "<p style='color:red'>Could not add Combination Discipline pre-requisites ({$_REQUEST['combo_name']})</p>";
@@ -394,15 +401,19 @@ class vtmclass_admin_combo_table extends vtmclass_MultiPage_ListTable {
 	function column_prerequisites($item) {
 	
 		$outarray = array();
-		$list = $this->prerequisites[$item->ID];
-		
-		if (count($list) > 0) {
-			foreach ($list as $row) {
-				array_push($outarray, $row->discipline . " " . $row->level);
+		if (count($this->prerequisites) > 0) {
+			$list = $this->prerequisites[$item->ID];
+			
+			if (count($list) > 0) {
+				foreach ($list as $row) {
+					array_push($outarray, $row->discipline . " " . $row->level);
+				}
 			}
+			
+			$out = count($outarray) > 0 ? implode(', ', $outarray) : "None";
+		} else {
+			$out = 'None';
 		}
-		
-		$out = count($outarray) > 0 ? implode(', ', $outarray) : "None";
 	
 		return vtm_formatOutput($out);
 	}

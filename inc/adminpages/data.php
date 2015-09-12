@@ -273,7 +273,7 @@ function vtm_render_ritual_add_form($addaction) {
 	/* echo "<p>Creating ritual form based on action $addaction</p>"; */
 
 	if ('fix-' . $type == $addaction) {
-		$id = $_REQUEST['ritual'];
+		$id = isset($_REQUEST['ritual']) ? $_REQUEST['ritual'] : 0;
 		$name = $_REQUEST[$type . '_name'];
 
 		$bookid = $_REQUEST[$type . '_sourcebook'];
@@ -283,7 +283,7 @@ function vtm_render_ritual_add_form($addaction) {
 		$desc = $_REQUEST[$type . '_desc'];
 	
 		$level = $_REQUEST[$type . '_level'];
-		$disciplineid = $_REQUEST[$type . '_disc'];
+		$disciplineid = isset($_REQUEST[$type . '_disc']) ? $_REQUEST[$type . '_disc'] : 0;
 		$dicepool = $_REQUEST[$type . '_dicepool'];
 		$diff = $_REQUEST[$type . '_difficulty'];
 		
@@ -363,15 +363,20 @@ function vtm_render_ritual_add_form($addaction) {
 		<tr>
 			<td>Discipline:  </td>
 			<td>
+				<?php $disciplines = vtm_get_disciplines();
+				if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_disc">
 					<?php
-						foreach (vtm_get_disciplines() as $disc) {
+						foreach ($disciplines as $disc) {
 							print "<option value='{$disc->ID}' ";
 							($disc->ID == $disciplineid) ? print "selected" : print "";
 							echo ">" . vtm_formatOutput($disc->NAME) . "</option>";
 						}
 					?>
 				</select>
+				<?php } else {
+					echo "Please add disciplines to the database";
+				} ?>
 			</td> 
 			<td>Level:  </td>
 			<td><input type="text" name="<?php print $type; ?>_level" value="<?php print $level; ?>" size=3 /></td> <!-- check sizes -->
@@ -609,7 +614,11 @@ function vtm_ritual_input_validation() {
 			echo "<p style='color:red'>ERROR: Experience point cost should greater than or equal to 0</p>";
 		}
 		
-		/* WARN if difficulty isn't level + 3 */
+		// No disciplines (indicates empty database)
+		if (!isset($_REQUEST[$type . '_disc'])) {
+			$doaction = "fix-$type";
+			echo "<p style='color:red'>ERROR: Associated discipline must be added to the database</p>";
+		}
 		
 	}
 	
