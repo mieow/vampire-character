@@ -80,7 +80,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 
 	// Show posts on homepage
 	function add_vtmnews_to_query( $query ) {
-	  if ( is_home() && $query->is_main_query() ) {
+	  if ( is_home() && $query->is_main_query() && get_option( 'vtm_news_blogroll', '0' ) == '1') {
 		$query->set( 'post_type', array('vtmpost', 'post') );
 	  }
 	  return $query;

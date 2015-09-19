@@ -78,6 +78,7 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_options_group', 'vtm_signin_columns' );
 	//register_setting( 'vtm_options_group', 'vtm_web_columns' );
 	register_setting( 'vtm_options_group', 'vtm_web_pagewidth' );
+	register_setting( 'vtm_options_group', 'vtm_news_blogroll' );
 
 	register_setting( 'vtm_features_group', 'vtm_feature_temp_stats' );
 	register_setting( 'vtm_features_group', 'vtm_feature_maps' );

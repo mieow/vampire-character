@@ -540,6 +540,17 @@ function vtm_render_config_skinning() {
 				<td><input type="text" name="vtm_signin_columns" value="<?php echo get_option('vtm_signin_columns'); ?>" /></td>
 			</tr>
 		</table>
+		<?php } 
+		
+		if (get_option( 'vtm_feature_news', '0' ) == 1) {
+		?>
+		<h4>Newsletter Options</h4>
+		<table>
+			<tr>
+				<td>Add Newsletter posts to Wordpress blogroll:</td>
+				<td><input type="checkbox" name="vtm_news_blogroll" value="1" <?php checked( '1', get_option( 'vtm_news_blogroll', '0' ) ); ?> /></td>
+			</tr>
+		</table>
 		<?php } ?>
 		
 		<h4>Web Page Layout</h4>
