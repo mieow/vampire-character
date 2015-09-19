@@ -132,7 +132,7 @@ class vtmclass_character {
 			$this->char_status_comment   = stripslashes($result[0]->cstat_comment);
 			$this->path_of_enlightenment = stripslashes($result[0]->path);
 			$this->email        = $result[0]->email;
-			$this->newsletter   = $result[0]->newsletter;
+			$this->newsletter   = $result[0]->newsletter != '' ? $result[0]->newsletter : 'Y';
 		} else {
 			$this->name         = 'No character selected';
 			$this->clan         = '';
