@@ -66,6 +66,9 @@ function vtm_render_select_report($report) {
 
 function vtm_render_report($reporttable) {
 	
+	if ($reporttable == '')
+		return ;
+	
 	$reporttable->prepare_items(); 
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	?>
@@ -101,6 +104,7 @@ add_action( 'admin_init', 'vtm_report_redirect', 1 );
 
 
 function vtm_report_switch($report) {
+	$reportclass = "";
 	
 	switch ($report) {
 		case 'meritflaw_report':
