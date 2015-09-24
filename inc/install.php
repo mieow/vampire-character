@@ -8,11 +8,12 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.2"; 
-$vtm_character_db_version = "61b"; 
+$vtm_character_db_version = "61"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
     global $vtm_character_db_version;
+	global $wpdb;
 	
     if (get_option( 'vtm_character_db_version' ) != $vtm_character_db_version ||
 		get_option( 'vtm_character_version' ) != $vtm_character_version) {
@@ -23,8 +24,16 @@ function vtm_update_db_check() {
   
         $errors = vtm_character_update('before');
         vtm_character_install();
-		vtm_character_install_data();
+		vtm_character_install_data(VTM_CHARACTER_URL . "init");
         $errors += vtm_character_update('after');
+		
+		$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER");
+		if ($count == 0) {
+			$text = "<p>Go to the Vampire Character Manager Configuration page to 
+					load advanced initial data into the plugin database tables
+					from an external website.</p>";
+			vtm_add_admin_notice($text);
+		}
 				
 		if (!$errors) {
 			update_option( "vtm_character_version", $vtm_character_version );
@@ -1078,7 +1087,7 @@ function vtm_character_install() {
 	//vtm_add_admin_notice("SQl error: " . $wpdb->last_error);
 }
 
-function vtm_character_install_data() {
+function vtm_character_install_data($initdatapath) {
 	global $wpdb;
 	
 	$wpdb->show_errors();
@@ -1150,7 +1159,7 @@ function vtm_character_install_data() {
 	}
 	
 	// LOAD UP THE INITIAL TABLE DATA
-	$datalist = glob(VTM_CHARACTER_URL . "init/*.csv");
+	$datalist = glob("$initdatapath/*.csv");
 	foreach ($datalist as $datafile) {
 		$temp = explode(".", basename($datafile));
 		$tablename = $temp[1];
@@ -1838,7 +1847,6 @@ function vtm_factory_defaults() {
 	}
 	
     vtm_character_install();
-	vtm_character_install_data();
 	
 	echo "<p>Databases reset to factory defaults</p>";
 }

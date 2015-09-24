@@ -309,6 +309,22 @@ add_filter( 'the_content', 'vtm_edit_character_content_filter' );
 
 function vtm_get_edit_character_content() {
 
+	if (count(vtm_get_clans()) == 0) {
+		return "<div class='vtm_error'><p>No clans have been defined in the database</p></div>";
+	}
+	if (count(vtm_listRoadsOrPaths()) == 0) {
+		return "<div class='vtm_error'><p>No Paths of Enlightenment have been defined in the database</p></div>";
+	}
+	if (count(vtm_listPlayers("","")) == 0) {
+		return "<div class='vtm_error'><p>No players have been added to the database</p></div>";
+	}
+/* 	if (count(vtm_listSkills("","")) == 0) {
+		return "<div class='vtm_error'><p>No abilities have been defined in the database</p></div>";
+	}
+	if (count(vtm_get_backgrounds()) == 0) {
+		return "<div class='vtm_error'><p>No backgrounds have been defined in the database</p></div>";
+	}
+ */
 	$output = "";
 	$submitted = 0;
 
@@ -363,8 +379,8 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$characterSectId           = $_POST['charSect'];
 			$characterWordpressName    = $_POST['charWordPress'];
 			$characterVisible          = $_POST['charVisible'];
-			$characterNatureId         = $_POST['charNature'];
-			$characterDemeanourId      = $_POST['charDemeanour'];
+			$characterNatureId         = isset($_POST['charNature']) ? $_POST['charNature'] : 0;
+			$characterDemeanourId      = isset($_POST['charDemeanour']) ? $_POST['charDemeanour'] : 0;
 
 			$characterHarpyQuote       = $_POST['charHarpyQuote'];
 			$characterPortraitURL      = $_POST['charPortraitURL'];
@@ -580,12 +596,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$output .= "<input type='text' maxlength=3 name='charRoadOrPathRating' value='" . $characterRoadOrPathRating . "' />";
 		}
 		
-		$output .= "</td></tr>\n";		
-		if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') {
+		$output .= "</td></tr>\n";
+		$natures = vtm_get_natures();
+		if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y' && count($natures) > 0) {
 			$output .= "<tr><td>Nature</td><td>";
 			$output .= "<select name = 'charNature'>";
 			$output .= "<option value='0'>[Select]</option>";
-			foreach (vtm_get_natures() as $nature) {
+			foreach ($natures as $nature) {
 				$output .= "<option value='" . $nature->ID . "' ";
 				if ($nature->ID == $characterNatureId) {
 					$output .= "SELECTED";
@@ -595,7 +612,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$output .= "</select></td></tr><tr><td>Demeanour</td><td>";
 			$output .= "<select name = 'charDemeanour'>";
 			$output .= "<option value='0'>[Select]</option>";
-			foreach (vtm_get_natures() as $nature) {
+			foreach ($natures as $nature) {
 				$output .= "<option value='" . $nature->ID . "' ";
 				if ($nature->ID == $characterDemeanourId) {
 					$output .= "SELECTED";
@@ -739,26 +756,29 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 		$output .= "</table>\n";
 		$output .= "<input type='HIDDEN' name='maxOldSkillCount' value='" . $skillCount . "' />";
 
-		$output .= "<table id='gvid_uctskn'><tr><td colspan=4><h4>New Abilities</h4></td></tr>$head";
-
-		$skillBlock = "";
 		$skills = vtm_listSkills("", "Y");
-		foreach ($skills as $skill) {
-			$skillBlock .= "<option value='" . $skill->id . "'>" . vtm_formatOutput($skill->name) . "</option>";
+		if (count($skills) > 0){
+			$output .= "<table id='gvid_uctskn'><tr><td colspan=4><h4>New Abilities</h4></td></tr>$head";
+			$skillBlock = "";
+			foreach ($skills as $skill) {
+				$skillBlock .= "<option value='" . $skill->id . "'>" . vtm_formatOutput($skill->name) . "</option>";
+			}
+
+			for ($i = 0; $i < 20; ) {
+				$skillName = "skill" . $skillCount;
+				$output .= "<tr><td><select name='" . $skillName . "SID'>" . $skillBlock . "</select></td>"
+					. "<td>" . vtm_printSelectCounter($skillName, "", 1, 10) . "</td>"
+					. "<td><input type='text' name='" . $skillName . "Comment' /></td>"
+					. "<td></td></tr>";
+
+				$i++;
+				$skillCount++;
+			}
+			$output .= "</table><input type='HIDDEN' name='maxNewSkillCount' value='" . $skillCount . "' /><hr />$jumpto";
+		} else {
+			$output .= "<p>No abilities defined in the database</p>";
 		}
-
-		for ($i = 0; $i < 20; ) {
-			$skillName = "skill" . $skillCount;
-			$output .= "<tr><td><select name='" . $skillName . "SID'>" . $skillBlock . "</select></td>"
-				. "<td>" . vtm_printSelectCounter($skillName, "", 1, 10) . "</td>"
-				. "<td><input type='text' name='" . $skillName . "Comment' /></td>"
-				. "<td></td></tr>";
-
-			$i++;
-			$skillCount++;
-		}
-		$output .= "</table><input type='HIDDEN' name='maxNewSkillCount' value='" . $skillCount . "' /><hr />$jumpto";
-
+		
 		/*******************************************************************************************/
 		/*******************************************************************************************/
 
@@ -834,48 +854,54 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						ORDER BY background.name";
 
 		$characterBackgrounds = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-
-		$output .= "<table id='gvid_uctba'>$head";
-		$i = 0;
-		$backgroundCount = 0;
-		$arr = array();
-		foreach($characterBackgrounds as $characterBackground) {
-			$output .= "<tr>";
-
-			$backgroundName = "background" . $backgroundCount;
-			$output .= "<td>" . vtm_formatOutput($characterBackground->name) . "</td>"
-				. "<td>" . vtm_printSelectCounter($backgroundName, $characterBackground->level, 1, 10) . "</td>"
-				. "<td><input type='text' name='"     . $backgroundName . "Comment' value='" . vtm_formatOutput($characterBackground->comment)  . "' /></td>"
-				. "<td><input type='checkbox' name='" . $backgroundName . "Delete' value='"  . $characterBackground->cbackgroundid . "' />"
-				.     "<input type='HIDDEN' name='"   . $backgroundName . "ID' value='"      . $characterBackground->cbackgroundid . "' /></td>";
-
-			$i++;
-			$backgroundCount++;
-			$output .= "</tr>";
-		}
-
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldBackgroundCount' value='" . $backgroundCount . "' /></td></tr>";
-
-		$backgroundBlock = "";
 		$backgrounds = vtm_listBackgrounds("", "Y");
-		foreach ($backgrounds as $background) {
-			$backgroundBlock .= "<option value='" . $background->id . "'>" . vtm_formatOutput($background->name) . "</option>";
-		}
 
-		for ($i = 0; $i < 6; ) {
-			$output .= "<tr>";
-			$backgroundName = "background" . $backgroundCount;
-			$output .= "<td><select name='" . $backgroundName . "SID'>" . $backgroundBlock . "</select></td>"
-				. "<td>" . vtm_printSelectCounter($backgroundName, "", 1, 10) . "</td>"
-				. "<td><input type='text' name='"     . $backgroundName . "Comment' /></td>"
-				. "<td></td>";
+		if (count($backgrounds) > 0) {
+			$output .= "<table id='gvid_uctba'>$head";
+			$i = 0;
+			$backgroundCount = 0;
+			$arr = array();
+			foreach($characterBackgrounds as $characterBackground) {
+				$output .= "<tr>";
 
-			$i++;
-			$backgroundCount++;
-			$output .= "</tr>";
+				$backgroundName = "background" . $backgroundCount;
+				$output .= "<td>" . vtm_formatOutput($characterBackground->name) . "</td>"
+					. "<td>" . vtm_printSelectCounter($backgroundName, $characterBackground->level, 1, 10) . "</td>"
+					. "<td><input type='text' name='"     . $backgroundName . "Comment' value='" . vtm_formatOutput($characterBackground->comment)  . "' /></td>"
+					. "<td><input type='checkbox' name='" . $backgroundName . "Delete' value='"  . $characterBackground->cbackgroundid . "' />"
+					.     "<input type='HIDDEN' name='"   . $backgroundName . "ID' value='"      . $characterBackground->cbackgroundid . "' /></td>";
+
+				$i++;
+				$backgroundCount++;
+				$output .= "</tr>";
+			}
+
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldBackgroundCount' value='" . $backgroundCount . "' /></td></tr>";
+
+			$backgroundBlock = "";
+			foreach ($backgrounds as $background) {
+				$backgroundBlock .= "<option value='" . $background->id . "'>" . vtm_formatOutput($background->name) . "</option>";
+			}
+
+			for ($i = 0; $i < 6; ) {
+				$output .= "<tr>";
+				$backgroundName = "background" . $backgroundCount;
+				$output .= "<td><select name='" . $backgroundName . "SID'>" . $backgroundBlock . "</select></td>"
+					. "<td>" . vtm_printSelectCounter($backgroundName, "", 1, 10) . "</td>"
+					. "<td><input type='text' name='"     . $backgroundName . "Comment' /></td>"
+					. "<td></td>";
+
+				$i++;
+				$backgroundCount++;
+				$output .= "</tr>";
+			}
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewBackgroundCount' value='" . $backgroundCount . "' /></td></tr>";
+			$output .= "</table>";
+		} else {
+			$output .= "<p>No backgrounds have been defined in the database</p>";
 		}
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewBackgroundCount' value='" . $backgroundCount . "' /></td></tr>";
-		$output .= "</table><hr />$jumpto";
+		
+		$output .= "<hr />$jumpto";
 
 		/*******************************************************************************************/
 
@@ -893,41 +919,45 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						ORDER BY merit.name";
 
 		$characterMerits = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-
-		$output .= "<table id='gvid_uctme'>$head";
-		$meritCount = 0;
-		$arr = array();
-		foreach($characterMerits as $characterMerit) {
-			$meritName = "merit" . $meritCount;
-			$output .= "<tr><td>" . vtm_formatOutput($characterMerit->name) . " (" . $characterMerit->value . ")</td>"
-				. "<td>" . vtm_printSelectCounter($meritName, $characterMerit->level, -7, 7) . "</td>"
-				. "<td><input type='text' name='"     . $meritName . "Comment' value='" . vtm_formatOutput($characterMerit->comment)  . "' /></td>"
-				. "<td><input type='checkbox' name='" . $meritName . "Delete' value='"  . $characterMerit->cmeritid . "' />"
-				.     "<input type='HIDDEN' name='"   . $meritName . "ID' value='"      . $characterMerit->cmeritid . "' /></td></tr>";
-
-			$i++;
-			$meritCount++;
-		}
-
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldMeritCount' value='" . $meritCount . "' /></td></tr>";
-
-		$meritBlock = "";
 		$merits = vtm_listMerits("", "Y");
-		foreach ($merits as $merit) {
-			$meritBlock .= "<option value='" . $merit->id . "'>" . vtm_formatOutput($merit->name) . " (" . $merit->value . ")</option>";
-		}
+		if (count($merits) > 0) {
+			$output .= "<table id='gvid_uctme'>$head";
+			$meritCount = 0;
+			$arr = array();
+			foreach($characterMerits as $characterMerit) {
+				$meritName = "merit" . $meritCount;
+				$output .= "<tr><td>" . vtm_formatOutput($characterMerit->name) . " (" . $characterMerit->value . ")</td>"
+					. "<td>" . vtm_printSelectCounter($meritName, $characterMerit->level, -7, 7) . "</td>"
+					. "<td><input type='text' name='"     . $meritName . "Comment' value='" . vtm_formatOutput($characterMerit->comment)  . "' /></td>"
+					. "<td><input type='checkbox' name='" . $meritName . "Delete' value='"  . $characterMerit->cmeritid . "' />"
+					.     "<input type='HIDDEN' name='"   . $meritName . "ID' value='"      . $characterMerit->cmeritid . "' /></td></tr>";
 
-		for ($i = 0; $i < 6; $i++) {
-			$meritName = "merit" . $meritCount;
-			$output .= "<tr><td><select name='" . $meritName . "SID'>" . $meritBlock . "</select></td>"
-				. "<td>" . vtm_printSelectCounter($meritName, "", -7, 7) . "</td>"
-				. "<td><input type='text' name='"     . $meritName . "Comment' /></td>"
-				. "<td></td></tr>";
+				$i++;
+				$meritCount++;
+			}
 
-			$meritCount++;
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldMeritCount' value='" . $meritCount . "' /></td></tr>";
+
+			$meritBlock = "";
+			foreach ($merits as $merit) {
+				$meritBlock .= "<option value='" . $merit->id . "'>" . vtm_formatOutput($merit->name) . " (" . $merit->value . ")</option>";
+			}
+
+			for ($i = 0; $i < 6; $i++) {
+				$meritName = "merit" . $meritCount;
+				$output .= "<tr><td><select name='" . $meritName . "SID'>" . $meritBlock . "</select></td>"
+					. "<td>" . vtm_printSelectCounter($meritName, "", -7, 7) . "</td>"
+					. "<td><input type='text' name='"     . $meritName . "Comment' /></td>"
+					. "<td></td></tr>";
+
+				$meritCount++;
+			}
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewMeritCount' value='" . $meritCount . "' /></td></tr>";
+			$output .= "</table>";
+		} else {
+			$output .= "<p>No merits or flaws have been defined in the database</p>";
 		}
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewMeritCount' value='" . $meritCount . "' /></td></tr>";
-		$output .= "</table><hr />$jumpto";
+		$output .= "<hr />$jumpto";
 
 		/*******************************************************************************************/
 
@@ -943,38 +973,43 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						ORDER BY combo_discipline.name";
 
 		$characterComboDisciplines = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-
-		$output .= "<table id='gvid_uctcd'>$head";
-
-		$comboDisciplineCount = 0;
-		$arr = array();
-		foreach($characterComboDisciplines as $characterComboDiscipline) {
-			$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
-			$output .= "<tr><td>" . vtm_formatOutput($characterComboDiscipline->name) . "</td>"
-				. "<td>Learned<input type='HIDDEN' name='" . $comboDisciplineName . "' value='0' /></td>"
-				. "<td><input type='text' name='"     . $comboDisciplineName . "Comment' value='" . vtm_formatOutput($characterComboDiscipline->comment)  . "' /></td>"
-				. "<td><input type='checkbox' name='" . $comboDisciplineName . "Delete' value='"  . $characterComboDiscipline->ccombo_disciplineid . "' />"
-				.     "<input type='HIDDEN' name='"   . $comboDisciplineName . "ID' value='"      . $characterComboDiscipline->ccombo_disciplineid . "' /></td></tr>";
-
-			$comboDisciplineCount++;
-		}
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldComboDisciplineCount' value='" . $comboDisciplineCount . "' /></td></tr>";
-
-		$comboDisciplineBlock = "";
 		$comboDisciplines = vtm_listComboDisciplines("Y");
-		foreach ($comboDisciplines as $comboDiscipline) {
-			$comboDisciplineBlock .= "<option value='" . $comboDiscipline->id . "'>" .vtm_formatOutput( $comboDiscipline->name) . "</option>";
+
+		if (count($comboDisciplines) > 0) {
+			$output .= "<table id='gvid_uctcd'>$head";
+
+			$comboDisciplineCount = 0;
+			$arr = array();
+			foreach($characterComboDisciplines as $characterComboDiscipline) {
+				$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
+				$output .= "<tr><td>" . vtm_formatOutput($characterComboDiscipline->name) . "</td>"
+					. "<td>Learned<input type='HIDDEN' name='" . $comboDisciplineName . "' value='0' /></td>"
+					. "<td><input type='text' name='"     . $comboDisciplineName . "Comment' value='" . vtm_formatOutput($characterComboDiscipline->comment)  . "' /></td>"
+					. "<td><input type='checkbox' name='" . $comboDisciplineName . "Delete' value='"  . $characterComboDiscipline->ccombo_disciplineid . "' />"
+					.     "<input type='HIDDEN' name='"   . $comboDisciplineName . "ID' value='"      . $characterComboDiscipline->ccombo_disciplineid . "' /></td></tr>";
+
+				$comboDisciplineCount++;
+			}
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldComboDisciplineCount' value='" . $comboDisciplineCount . "' /></td></tr>";
+
+			$comboDisciplineBlock = "";
+			foreach ($comboDisciplines as $comboDiscipline) {
+				$comboDisciplineBlock .= "<option value='" . $comboDiscipline->id . "'>" .vtm_formatOutput( $comboDiscipline->name) . "</option>";
+			}
+
+			$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
+			$output .= "<tr><td><select name='" . $comboDisciplineName . "SID'>" . $comboDisciplineBlock . "</select></td>"
+				. "<td><select name='" . $comboDisciplineName . "'><option value='-100'>Not Learned</option><option value='1'>Learned</option></select></td>"
+				. "<td><input type='text' name='" . vtm_formatOutput($comboDisciplineName) . "Comment' /></td>"
+				. "<td></td></tr>";
+			$comboDisciplineCount++;
+
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewComboDisciplineCount' value='" . $comboDisciplineCount . "' /></td></tr>";
+			$output .= "</table>";
+		} else {
+			$output .= "<p>No combination discipines have been defined in the database</p>";
 		}
-
-		$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
-		$output .= "<tr><td><select name='" . $comboDisciplineName . "SID'>" . $comboDisciplineBlock . "</select></td>"
-			. "<td><select name='" . $comboDisciplineName . "'><option value='-100'>Not Learned</option><option value='1'>Learned</option></select></td>"
-			. "<td><input type='text' name='" . vtm_formatOutput($comboDisciplineName) . "Comment' /></td>"
-			. "<td></td></tr>";
-		$comboDisciplineCount++;
-
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewComboDisciplineCount' value='" . $comboDisciplineCount . "' /></td></tr>";
-		$output .= "</table><hr />$jumpto";
+		$output .= "<hr />$jumpto";
 
 		/*******************************************************************************************/
 		/*******************************************************************************************/
@@ -994,41 +1029,47 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						ORDER BY disname, path.name";
 
 		$characterPaths = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-
-		$output .= "<table id='gvid_uctpa'>$head";
-
-		$pathCount = 0;
-		$arr = array();
-		foreach($characterPaths as $characterPath) {
-			$pathName = "path" . $pathCount;
-			$output .= "<tr><td>" . vtm_formatOutput($characterPath->name) . " (" . vtm_formatOutput(substr($characterPath->disname, 0, 5))  .")</td>"
-				. "<td>" . vtm_printSelectCounter($pathName, $characterPath->level, 0, 10) . "</td>"
-				. "<td><input type='text' name='"     . $pathName . "Comment' value='" . vtm_formatOutput($characterPath->comment)  . "' /></td>"
-				. "<td><input type='checkbox' name='" . $pathName . "Delete' value='"  . $characterPath->cpathid . "' />"
-				.     "<input type='HIDDEN' name='"   . $pathName . "ID' value='"      . $characterPath->cpathid . "' /></td></tr>";
-
-			$i++;
-			$pathCount++;
-		}
-
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldPathCount' value='" . $pathCount . "' /></td></tr>";
-
-		$pathBlock = "";
 		$paths = vtm_listPaths("Y");
-		foreach ($paths as $path) {
-			$pathBlock .= "<option value='" . $path->id . "'>" . vtm_formatOutput($path->name) . " (" . vtm_formatOutput(substr($path->disname, 0, 5))  .")</option>";
+
+		if (count($paths) > 0) {
+			$output .= "<table id='gvid_uctpa'>$head";
+
+			$pathCount = 0;
+			$arr = array();
+			foreach($characterPaths as $characterPath) {
+				$pathName = "path" . $pathCount;
+				$output .= "<tr><td>" . vtm_formatOutput($characterPath->name) . " (" . vtm_formatOutput(substr($characterPath->disname, 0, 5))  .")</td>"
+					. "<td>" . vtm_printSelectCounter($pathName, $characterPath->level, 0, 10) . "</td>"
+					. "<td><input type='text' name='"     . $pathName . "Comment' value='" . vtm_formatOutput($characterPath->comment)  . "' /></td>"
+					. "<td><input type='checkbox' name='" . $pathName . "Delete' value='"  . $characterPath->cpathid . "' />"
+					.     "<input type='HIDDEN' name='"   . $pathName . "ID' value='"      . $characterPath->cpathid . "' /></td></tr>";
+
+				$i++;
+				$pathCount++;
+			}
+
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldPathCount' value='" . $pathCount . "' /></td></tr>";
+
+			$pathBlock = "";
+			foreach ($paths as $path) {
+				$pathBlock .= "<option value='" . $path->id . "'>" . vtm_formatOutput($path->name) . " (" . vtm_formatOutput(substr($path->disname, 0, 5))  .")</option>";
+			}
+
+			for ($i = 0; $i < 2; $i++) {
+				$pathName = "path" . $pathCount;
+				$output .= "<tr><td><select name='" . $pathName . "SID'>" . $pathBlock . "</select></td>"
+					. "<td>" . vtm_printSelectCounter($pathName, "", 0, 10) . "</td>"
+					. "<td><input type='text' name='"     . $pathName . "Comment' /></td>"
+					. "<td></td></tr>";
+				$pathCount++;
+			}
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewPathCount' value='" . $pathCount . "' /></td></tr>";
+			$output .= "</table>";
+		} else {
+			$output .= "<p>No paths have been defined in the database</p>";
 		}
 
-		for ($i = 0; $i < 2; $i++) {
-			$pathName = "path" . $pathCount;
-			$output .= "<tr><td><select name='" . $pathName . "SID'>" . $pathBlock . "</select></td>"
-				. "<td>" . vtm_printSelectCounter($pathName, "", 0, 10) . "</td>"
-				. "<td><input type='text' name='"     . $pathName . "Comment' /></td>"
-				. "<td></td></tr>";
-			$pathCount++;
-		}
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewPathCount' value='" . $pathCount . "' /></td></tr>";
-		$output .= "</table><hr />$jumpto";
+		$output .= "<hr />$jumpto";
 
 		/*******************************************************************************************/
 		/*******************************************************************************************/
@@ -1049,41 +1090,46 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						ORDER BY disname, level, ritual.name";
 
 		$characterRituals = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-
-		$output .= "<table id='gvid_uctri'>$head";
-
-		$ritualCount = 0;
-		$arr = array();
-		foreach($characterRituals as $characterRitual) {
-			$ritualName = "ritual" . $ritualCount;
-			$output .= "<tr><td>" . vtm_formatOutput($characterRitual->name) . " (" . vtm_formatOutput(substr($characterRitual->disname, 0, 5))  . " " . $characterRitual->ritlevel .")</td>"
-				. "<td>Learned<input type='HIDDEN' name='" . $ritualName . "' value='0' /></td>"
-				. "<td><input type='text' name='"     . $ritualName . "Comment' value='" . vtm_formatOutput($characterRitual->comment)  . "' /></td>"
-				. "<td><input type='checkbox' name='" . $ritualName . "Delete' value='"  . $characterRitual->critualid . "' />"
-				.     "<input type='HIDDEN' name='"   . $ritualName . "ID' value='"      . $characterRitual->critualid . "' /></td></tr>";
-
-			$i++;
-			$ritualCount++;
-		}
-
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldRitualCount' value='" . $ritualCount . "' /></td></tr>";
-
-		$ritualBlock = "";
 		$rituals = vtm_listRituals("Y");
-		foreach ($rituals as $ritual) {
-			$ritualBlock .= "<option value='" . $ritual->id . "'>" . vtm_formatOutput($ritual->name) . " (" . vtm_formatOutput(substr($ritual->disname, 0, 5))  . " " . $ritual->level . ")</option>";
-		}
 
-		for ($i = 0; $i < 5; $i++) {
-			$ritualName = "ritual" . $ritualCount;
-			$output .= "<tr><td><select name='" . $ritualName . "SID'>" . $ritualBlock . "</select></td>"
-				. "<td><select name='" . $ritualName . "'><option value='-100'>Not Learned</option><option value='1'>Learned</option></select></td>"
-				. "<td><input type='text' name='"     . $ritualName . "Comment' /></td>"
-				. "<td></td></tr>";
-			$ritualCount++;
+		if (count($rituals) > 0) {
+			$output .= "<table id='gvid_uctri'>$head";
+
+			$ritualCount = 0;
+			$arr = array();
+			foreach($characterRituals as $characterRitual) {
+				$ritualName = "ritual" . $ritualCount;
+				$output .= "<tr><td>" . vtm_formatOutput($characterRitual->name) . " (" . vtm_formatOutput(substr($characterRitual->disname, 0, 5))  . " " . $characterRitual->ritlevel .")</td>"
+					. "<td>Learned<input type='HIDDEN' name='" . $ritualName . "' value='0' /></td>"
+					. "<td><input type='text' name='"     . $ritualName . "Comment' value='" . vtm_formatOutput($characterRitual->comment)  . "' /></td>"
+					. "<td><input type='checkbox' name='" . $ritualName . "Delete' value='"  . $characterRitual->critualid . "' />"
+					.     "<input type='HIDDEN' name='"   . $ritualName . "ID' value='"      . $characterRitual->critualid . "' /></td></tr>";
+
+				$i++;
+				$ritualCount++;
+			}
+
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxOldRitualCount' value='" . $ritualCount . "' /></td></tr>";
+
+			$ritualBlock = "";
+			foreach ($rituals as $ritual) {
+				$ritualBlock .= "<option value='" . $ritual->id . "'>" . vtm_formatOutput($ritual->name) . " (" . vtm_formatOutput(substr($ritual->disname, 0, 5))  . " " . $ritual->level . ")</option>";
+			}
+
+			for ($i = 0; $i < 5; $i++) {
+				$ritualName = "ritual" . $ritualCount;
+				$output .= "<tr><td><select name='" . $ritualName . "SID'>" . $ritualBlock . "</select></td>"
+					. "<td><select name='" . $ritualName . "'><option value='-100'>Not Learned</option><option value='1'>Learned</option></select></td>"
+					. "<td><input type='text' name='"     . $ritualName . "Comment' /></td>"
+					. "<td></td></tr>";
+				$ritualCount++;
+			}
+			$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewRitualCount' value='" . $ritualCount . "' /></td></tr>";
+			$output .= "</table>";
+		} else {
+			$output .= "<p>No rituals have been defined in the database</p>";
 		}
-		$output .= "<tr style='display:none'><td colspan=4><input type='HIDDEN' name='maxNewRitualCount' value='" . $ritualCount . "' /></td></tr>";
-		$output .= "</table><hr />$jumpto";
+		$output .= "<hr />$jumpto";
 
 		/*******************************************************************************************/
 		/*******************************************************************************************/
@@ -1102,52 +1148,57 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						ORDER BY office.ordering, office.name, domain.name";
 
 		$characterOffices = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-
-		$output .= "<table id='gvid_uctof'><tr><th>Office name</th>
-												<th>Domain</th>
-												<th>Status</th>
-												<th>Comment</th>
-												<th>Delete</th></tr>";
-
-		$officeCount = 0;
-		$arr = array();
-		foreach($characterOffices as $characterOffice) {
-			$officeName = "office" . $officeCount;
-			$output .= "<tr><td>" . vtm_formatOutput($characterOffice->name) . "</td>"
-				. "<td>" . vtm_formatOutput($characterOffice->domainname) . "</td>"
-				. "<td>In office<input type='HIDDEN' name='" . $officeName . "' value='0' /></td>"
-				. "<td><input type='text' name='"     . $officeName . "Comment' value='" . vtm_formatOutput($characterOffice->comment)  . "' /></td>"
-				. "<td><input type='checkbox' name='" . $officeName . "Delete' value='"  . $characterOffice->cofficeid . "' />"
-				.     "<input type='HIDDEN' name='"   . $officeName . "ID' value='"      . $characterOffice->cofficeid . "' /></td></tr>";
-			$i++;
-			$officeCount++;
-		}
-
-		$output .= "<tr style='display:none'><td colspan=5><input type='HIDDEN' name='maxOldOfficeCount' value='" . $officeCount . "' /></td></tr>";
-
-		$officeBlock = "";
 		$offices = vtm_listOffices("Y");
-		foreach ($offices as $office) {
-			$officeBlock .= "<option value='" . $office->ID . "'>" . vtm_formatOutput($office->name) . "</option>";
-		}
 
-		$domainBlock = "";
-		$domains = vtm_listDomains();
-		foreach ($domains as $domain) {
-			$domainBlock .= "<option value='" . $domain->ID ."'>" . vtm_formatOutput($domain->name) . "</option>";
-		}
+		if (count($offices) > 0) {
+			$output .= "<table id='gvid_uctof'><tr><th>Office name</th>
+													<th>Domain</th>
+													<th>Status</th>
+													<th>Comment</th>
+													<th>Delete</th></tr>";
 
-		for ($i = 0; $i < 2; $i++) {
-			$officeName = "office" . $officeCount;
-			$output .= "<tr><td><select name='" . $officeName . "OID'>" . $officeBlock . "</select></td>"
-				. "<td><select name='" . $officeName . "CID'>" . $domainBlock . "</select></td>"
-				. "<td><select name='" . $officeName . "'><option value='-100'>Not in office</option><option value='1'>In office</option></select></td>"
-				. "<td><input type='text' name='"     . $officeName . "Comment' /></td>"
-				. "<td></td></tr>";
-			$officeCount++;
+			$officeCount = 0;
+			$arr = array();
+			foreach($characterOffices as $characterOffice) {
+				$officeName = "office" . $officeCount;
+				$output .= "<tr><td>" . vtm_formatOutput($characterOffice->name) . "</td>"
+					. "<td>" . vtm_formatOutput($characterOffice->domainname) . "</td>"
+					. "<td>In office<input type='HIDDEN' name='" . $officeName . "' value='0' /></td>"
+					. "<td><input type='text' name='"     . $officeName . "Comment' value='" . vtm_formatOutput($characterOffice->comment)  . "' /></td>"
+					. "<td><input type='checkbox' name='" . $officeName . "Delete' value='"  . $characterOffice->cofficeid . "' />"
+					.     "<input type='HIDDEN' name='"   . $officeName . "ID' value='"      . $characterOffice->cofficeid . "' /></td></tr>";
+				$i++;
+				$officeCount++;
+			}
+
+			$output .= "<tr style='display:none'><td colspan=5><input type='HIDDEN' name='maxOldOfficeCount' value='" . $officeCount . "' /></td></tr>";
+
+			$officeBlock = "";
+			foreach ($offices as $office) {
+				$officeBlock .= "<option value='" . $office->ID . "'>" . vtm_formatOutput($office->name) . "</option>";
+			}
+
+			$domainBlock = "";
+			$domains = vtm_listDomains();
+			foreach ($domains as $domain) {
+				$domainBlock .= "<option value='" . $domain->ID ."'>" . vtm_formatOutput($domain->name) . "</option>";
+			}
+
+			for ($i = 0; $i < 2; $i++) {
+				$officeName = "office" . $officeCount;
+				$output .= "<tr><td><select name='" . $officeName . "OID'>" . $officeBlock . "</select></td>"
+					. "<td><select name='" . $officeName . "CID'>" . $domainBlock . "</select></td>"
+					. "<td><select name='" . $officeName . "'><option value='-100'>Not in office</option><option value='1'>In office</option></select></td>"
+					. "<td><input type='text' name='"     . $officeName . "Comment' /></td>"
+					. "<td></td></tr>";
+				$officeCount++;
+			}
+			$output .= "<tr style='display:none'><td colspan=5><input type='HIDDEN' name='maxNewOfficeCount' value='" . $officeCount . "' /></td></tr>";
+			$output .= "</table>";
+		} else {
+			$output .= "<p>No offices have been defined in the database</p>";
 		}
-		$output .= "<tr style='display:none'><td colspan=5><input type='HIDDEN' name='maxNewOfficeCount' value='" . $officeCount . "' /></td></tr>";
-		$output .= "</table><hr />$jumpto";
+		$output .= "<hr />$jumpto";
 
 		/*******************************************************************************************/
 		/*******************************************************************************************/
@@ -1188,8 +1239,8 @@ function vtm_processCharacterUpdate($characterID) {
 	$characterStatusComment    = $_POST['charStatusComment'];
 	$characterVisible          = $_POST['charVisible'];
 	$characterWordPress        = $_POST['charWordPress'];
-	$characterNature           = $_POST['charNature'];
-	$characterDemeanour        = $_POST['charDemeanour'];
+	$characterNature           = isset($_POST['charNature']) ? $_POST['charNature'] : 0;
+	$characterDemeanour        = isset($_POST['charDemeanour']) ? $_POST['charDemeanour'] : 0;
 			
 	if (get_magic_quotes_gpc()) {
 		$characterHarpyQuote = stripslashes($_POST['charHarpyQuote']);
@@ -1337,8 +1388,8 @@ function vtm_processCharacterUpdate($characterID) {
 		}
 	}
 
-	$maxOldSkillCount = $_POST['maxOldSkillCount'];
-	$maxSkillCount    = $_POST['maxNewSkillCount'];
+	$maxOldSkillCount = isset($_POST['maxOldSkillCount']) ? $_POST['maxOldSkillCount'] : 0;
+	$maxSkillCount    = isset($_POST['maxNewSkillCount']) ? $_POST['maxNewSkillCount'] : 0;
 	$skillCounter = 0;
 	$currentSkill = "";
 
@@ -1399,8 +1450,8 @@ function vtm_processCharacterUpdate($characterID) {
 		$disciplineCounter++;
 	}
 
-	$maxOldComboDisciplineCount = $_POST['maxOldComboDisciplineCount'];
-	$maxComboDisciplineCount    = $_POST['maxNewComboDisciplineCount'];
+	$maxOldComboDisciplineCount = isset($_POST['maxOldComboDisciplineCount']) ? $_POST['maxOldComboDisciplineCount'] : 0;
+	$maxComboDisciplineCount    = isset($_POST['maxNewComboDisciplineCount']) ? $_POST['maxNewComboDisciplineCount'] : 0;
 	$comboDisciplineCounter = 0;
 	$currentComboDiscipline = "";
 	while ($comboDisciplineCounter < $maxComboDisciplineCount) {
@@ -1429,8 +1480,8 @@ function vtm_processCharacterUpdate($characterID) {
 		$comboDisciplineCounter++;
 	}
 
-	$maxOldPathCount = $_POST['maxOldPathCount'];
-	$maxPathCount    = $_POST['maxNewPathCount'];
+	$maxOldPathCount = isset($_POST['maxOldPathCount']) ? $_POST['maxOldPathCount'] : 0;
+	$maxPathCount    = isset($_POST['maxNewPathCount']) ? $_POST['maxNewPathCount'] : 0;
 	$pathCounter = 0;
 	$currentPath = "";
 
@@ -1463,8 +1514,8 @@ function vtm_processCharacterUpdate($characterID) {
 		$pathCounter++;
 	}
 
-	$maxOldRitualCount = $_POST['maxOldRitualCount'];
-	$maxRitualCount    = $_POST['maxNewRitualCount'];
+	$maxOldRitualCount = isset($_POST['maxOldRitualCount']) ? $_POST['maxOldRitualCount'] : 0;
+	$maxRitualCount    = isset($_POST['maxNewRitualCount']) ? $_POST['maxNewRitualCount'] : 0;
 	$ritualCounter = 0;
 	$currentRitual = "";
 
@@ -1494,8 +1545,8 @@ function vtm_processCharacterUpdate($characterID) {
 		$ritualCounter++;
 	}
 
-	$maxOldBackgroundCount = $_POST['maxOldBackgroundCount'];
-	$maxBackgroundCount    = $_POST['maxNewBackgroundCount'];
+	$maxOldBackgroundCount = isset($_POST['maxOldBackgroundCount']) ? $_POST['maxOldBackgroundCount'] : 0;
+	$maxBackgroundCount    = isset($_POST['maxNewBackgroundCount']) ? $_POST['maxNewBackgroundCount'] : 0;
 	$backgroundCounter = 0;
 	$currentBackground = "";
 
@@ -1525,8 +1576,8 @@ function vtm_processCharacterUpdate($characterID) {
 		$backgroundCounter++;
 	}
 
-	$maxOldMeritCount = $_POST['maxOldMeritCount'];
-	$maxMeritCount    = $_POST['maxNewMeritCount'];
+	$maxOldMeritCount = isset($_POST['maxOldMeritCount']) ? $_POST['maxOldMeritCount'] : 0;
+	$maxMeritCount    = isset($_POST['maxNewMeritCount']) ? $_POST['maxNewMeritCount'] : 0;
 	$meritCounter = 0;
 	$currentMerit = "";
 
@@ -1556,8 +1607,8 @@ function vtm_processCharacterUpdate($characterID) {
 		$meritCounter++;
 	}
 
-	$maxOldOfficeCount = $_POST['maxOldOfficeCount'];
-	$maxOfficeCount    = $_POST['maxNewOfficeCount'];
+	$maxOldOfficeCount = isset($_POST['maxOldOfficeCount']) ? $_POST['maxOldOfficeCount'] : 0;
+	$maxOfficeCount    = isset($_POST['maxNewOfficeCount']) ? $_POST['maxNewOfficeCount'] : 0;
 	$officeCounter = 0;
 	$currentOffice = "";
 

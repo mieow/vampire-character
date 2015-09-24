@@ -1649,8 +1649,8 @@ function vtm_render_merit_spend_table($type, $list, $allxpdata, $columns, $xp_av
 	$grp = "";
 	$col = 0;
 	$rowoutput = "";
+	$id = 0;
 	if (count($list)>0) {
-		$id = 0;
 		foreach ($list as $merit) {
 		
 			// start column / new column

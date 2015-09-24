@@ -160,58 +160,80 @@ function vtm_get_profile_content() {
 			}
 			$mycharacter->portrait = $_POST['vtm_portrait_set'];
 		}
+		if (isset($_POST['clear_vtm_portrait'])) {
+			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+				array('PORTRAIT' => ''),
+				array('CHARACTER_ID' => $characterID)
+			);
+			$mycharacter->portrait = '';
+		}
 
 		
 		// Upload Portrait
-		//http://www.w3schools.com/php/php_file_upload.asp
 		// Check that the nonce is valid, and the user can edit this post.
 		if ( 
 			isset( $_POST['vtm_portrait_nonce']) 
 			&& wp_verify_nonce( $_POST['vtm_portrait_nonce'], 'vtm_portrait' )
-			// CHECK THAT USERS ARE ALLOWED TO UPLOAD THEIR OWN PORTRAITS
+			&& get_option('vtm_user_upload_image', '0') == '1'
 		) {
-			
+			//print_r($_FILES);
 			// check file type 
-			
-			// check file size
-			
-			
-			// check image dimensions
-			
-			// The nonce was valid and the user has the capabilities, it is safe to continue.
-
-			// These files need to be included as dependencies when on the front end.
-			require_once( ABSPATH . 'wp-admin/includes/image.php' );
-			require_once( ABSPATH . 'wp-admin/includes/file.php' );
-			require_once( ABSPATH . 'wp-admin/includes/media.php' );
-			
-			// Let WordPress handle the upload.
-			// Remember, 'my_image_upload' is the name of our file input in our form above.
-			$attachment_id = media_handle_upload( 'vtm_portrait', 0 );
-			
-			if ( is_wp_error( $attachment_id ) ) {
-				// There was an error uploading the image.
-				echo "<p style='color:red'>Could not upload portrait</p>";
-			} else {
-				// The image was uploaded successfully!
-				
-				// Check attributes
-				$upload_dir = wp_upload_dir();
-				$metadata = wp_get_attachment_metadata( $attachment_id ); // returns an array
-				print_r($metadata);
-				
-				// Delete attachment if it is the wrong size, etc
-				//wp_delete_attachment( $attachmentid, $force_delete );
-				
-				// make it sepia/black and white/painting?
-				// Imagick
-				
-				// Save path to character
-				$path = $upload_dir['baseurl']  . "/" . $metadata['file'];
-				
-				$output .= "<p>Uploaded portrait $path</p>";
+			if (strpos($_FILES['vtm_portrait']['type'], "image") !== 0) {
+				echo "<p style='color:red'>Uploaded file is not an image</p>";
 			}
+			elseif (get_option('vtm_max_size', '0') != 0 
+				&& $_FILES['vtm_portrait']['size'] > get_option('vtm_max_size', '0')) {
+				echo "<p style='color:red'>Uploaded file is greater than the maximum size of " . get_option('vtm_max_size', '0') ." bytes</p>";
+			}
+			else {
+				$image = new imagick($_FILES['vtm_portrait']['tmp_name']); 
+				$geo = $image->getImageGeometry();
+				$sizex=$geo['width'];
+				$sizey=$geo['height']; 
+				
+				if (get_option('vtm_max_width', '0') != 0 &&
+					$sizex > get_option('vtm_max_width', '0') ){
+					echo "<p style='color:red'>Uploaded image is wider than the maximum width of " . get_option('vtm_max_width', '0') ." pixels</p>";
+				}
+				elseif (get_option('vtm_max_height', '0') != 0 &&
+					$sizey > get_option('vtm_max_height', '0') ){
+					echo "<p style='color:red'>Uploaded image is taller than the maximum height of " . get_option('vtm_max_height', '0') ." pixels</p>";
+				} else {
+					
+					require_once( ABSPATH . 'wp-admin/includes/image.php' );
+					require_once( ABSPATH . 'wp-admin/includes/file.php' );
+					require_once( ABSPATH . 'wp-admin/includes/media.php' );
+					
+					// Let WordPress handle the upload.
+					// Remember, 'my_image_upload' is the name of our file input in our form above.
+					$attachment_id = media_handle_upload( 'vtm_portrait', 0 );
+					
+					if ( is_wp_error( $attachment_id ) ) {
+						// There was an error uploading the image.
+						echo "<p style='color:red'>Could not upload portrait</p>";
+					} else {
+						// The image was uploaded successfully!
+						
+						// Check attributes
+						$upload_dir = wp_upload_dir();
+						$metadata = wp_get_attachment_metadata( $attachment_id ); // returns an array
+						//print_r($metadata);
+						
+						// Save path to character
+						$portaitpath = $upload_dir['baseurl']  . "/" . $metadata['file'];
+						
+						$wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+							array ('PORTRAIT' => $portaitpath),
+							array ('CHARACTER_ID' => $characterID)
+						);
+						$mycharacter->portrait = $portaitpath;
+						
+						$output .= "<p>Uploaded portrait</p>";
+					}
 
+				}
+			}
+			
 		} else {
 
 			// The security check failed, maybe show the user an error.
@@ -377,6 +399,7 @@ function vtm_get_profile_content() {
 		$output .= "</tr>";
 		$output .= "</table></form>\n";
 
+		$output .= "</div><div class='vtmext_section vtmprofile'>";
 		$output .= "<h4>Update Email Address:</h4>";
 		$output .= "<form name=\"EMAIL_UPDATE_FORM\" method='post'>";
 
@@ -391,6 +414,7 @@ function vtm_get_profile_content() {
 		$output .= "</tr>";
 		$output .= "</table></form>\n";
 
+		$output .= "</div><div class='vtmext_section vtmprofile'>";
 		$output .= "<h4>Update Password:</h4>";
 		$output .= "<form name=\"PASSWORD_UPDATE_FORM\" method='post'>";
 
@@ -411,6 +435,7 @@ function vtm_get_profile_content() {
 
 		$output .= "</table></form>";
 		if (get_option( 'vtm_user_set_image', '1'  == '1')) {
+			$output .= "</div><div class='vtmext_section vtmprofile'>";
 			$output .= "<h4>Upload a Portrait image</h4>";
 			$output .= "Enter a web address to a profile image: <form id='portrait_set' method='post'>";
 			$output .= "	<input type='text' name='vtm_portrait_set' value='" . $mycharacter->portrait . "' size=60/>";
@@ -424,7 +449,12 @@ function vtm_get_profile_content() {
 				$output .= "	<input id='submit_vtm_portrait' name='submit_vtm_portrait' type='submit' value='Upload' />";
 				$output .= "</form>";
 			}
+			$output .= "<p>OR</p>";
+			$output .= "<form id='portrait_clear' method='post'>";
+			$output .= "	<input id='clear_vtm_portrait' name='clear_vtm_portrait' type='submit' value='Clear image' />";
+			$output .= "</form>";
 		}
+		$output .= "</div><div class='vtmext_section vtmprofile'>";
 		$output .= "<h4>Update Newsletter Settings:</h4>";
 		$output .= "<form name='NEWLETTER_UPDATE_FORM' method='post'>";
 		$output .= "<input type='radio' id='news_true' name='vtm_news_optin' value='Y' " .

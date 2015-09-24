@@ -1024,11 +1024,87 @@ function vtm_render_config_database() {
 			}
 			elseif (isset($_REQUEST['confirm_factory_defaults'])) {
 				vtm_factory_defaults();
+				vtm_character_install_data(VTM_CHARACTER_URL . "init");
 				?>
 				<form id='options_form' method='post'>
 				<input type="submit" name="return_factory_defaults" class="button-primary" value="Done" />
 				</form>
 				<?php
+			}
+			elseif (isset($_REQUEST['load_data'])) {
+				?>
+				<form id='options_form' method='post'>
+				<p>ALL data, including characters, will be removed and the new
+				data loaded in. </p>
+				<?php wp_nonce_field( 'vtm_load_data', 'vtm_load_data_nonce' ); ?>
+				<input type="submit" name="confirm_load_data" class="button-primary" value="Confirm" />
+				<input type="submit" name="cancel_load_data" class="button-primary" value="Cancel" />
+				</form>
+				<?php
+			}
+			elseif (isset($_REQUEST['confirm_load_data']) &&
+				wp_verify_nonce( $_POST['vtm_load_data_nonce'], 'vtm_load_data' )
+				) {
+					
+				$from = VTM_DATA_FILE;
+				$upload = wp_upload_dir();
+				$uploadto = $upload['path'] . "/init.zip";
+				$unzipto = $upload['path'] . "/" . VTM_DATA_NAME . "-" . VTM_DATA_VERSION;
+				//echo "<p>Upload to: $uploadto</p>";
+				//echo "<p>Unzip to: $unzipto</p>";
+
+				$access_type = get_filesystem_method();
+				//echo "<p>Access type: $access_type</p>";
+				if($access_type === 'direct') {
+					$creds = request_filesystem_credentials(site_url() . '/wp-admin/', '', false, false, array());
+
+					/* initialize the API */
+					if ( ! WP_Filesystem($creds) ) {
+						/* any problems and we exit */
+						return false;
+					}	
+
+					global $wp_filesystem;
+					
+					// fopen to get file from external URL
+					// and save it off in chunks (256b?)
+					echo '<p>Downloading data zip file</p>';
+					$file = fopen ($from, "rb");
+					if ($file) {
+						$newf = fopen ($uploadto, "wb");
+
+						if ($newf) {
+							while(!feof($file)) {
+								fwrite($newf, fread($file, 1024 * 8 ), 1024 * 8 );
+							}
+						} else {
+							echo "<p style='color:red'>Cannot binary write $uploadto</p>";
+						}
+					} else {
+						echo "<p style='color:red'>Cannot binary read $from</p>";
+					}
+					
+					// extract to init
+					echo '<p>Unzipping the data</p>';
+					$unzipfile = unzip_file($uploadto, $upload['path']);
+					if ( $unzipfile ) {
+						// install
+						echo '<p>Clearing all data from data tables</p>';
+						vtm_factory_defaults();
+						echo '<p>Installing ' . VTM_DATA_VERSION . ' data</p>';
+						vtm_character_install_data($unzipto);
+					} else {
+						echo 'There was an error unzipping the file.';       
+					}
+				} else {
+					echo "<p style='color:red'>Aborting as credentials are required to upload to this site.</p>";
+				}				
+				?>
+				<form id='options_form' method='post'>
+				<input type="submit" name="return_load_data" class="button-primary" value="Done" />
+				</form>
+				<?php
+				
 			}
 			else {
 			
@@ -1038,15 +1114,15 @@ function vtm_render_config_database() {
 			<h3>Purge deleted characters</h3>
 			<p>Click this button to completely remove all deleted characters from the database.</p>
 			<input type="submit" name="purge_deleted" class="button-primary" value="Purge" />
-
-			<h3>[IF NO CHARACTERS ENTERED]Load pre-defined data</h3>
+		<?php
+			$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER");
+			if ($count == 0) {
+		?>
+			<h3>Load pre-defined data</h3>
 			<p>You can optionally download and add pre-defined data for the Database tables.</p>
+			<p>Version: <?php echo VTM_DATA_VERSION;?></p>
 			<input type="submit" name="load_data" class="button-primary" value="Download and install data" />
-
-			<h3>[IF PREVIOUSLY LOADED DATA AND NEW ZIP IS AVAILABLE]Update pre-defined data</h3>
-			<p>An update is available for the pre-defined Database table data.</p>
-			<input type="submit" name="update_data" class="button-primary" value="Download and install data" />
-
+		<?php } ?>
 			<h3>Reset Database tables</h3>
 			<p>Click this button to completely remove and re-create all the database tables.</p>
 			<p>THIS WILL REMOVE ALL CHARACTERS, EXPERIENCE AND ANY DATA YOU HAVE ADDED TO THE DATA TABLES.</p>

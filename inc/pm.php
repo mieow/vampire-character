@@ -275,12 +275,14 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			
 			// remove extra metaboxes
 			$expected = array('submitdiv', 'slugdiv');
-			$postboxes = $wp_meta_boxes['vtmpm'];
-			foreach ($postboxes as $boxcontext => $boxinfo) {
-				foreach ($boxinfo as $boxpriority => $box) {
-					foreach ($box as $boxname => $boxdata) {
-						if (!in_array($boxdata['id'],$expected))
-							remove_meta_box( $boxdata['id'], 'vtmpm', $boxcontext );
+			if (isset($wp_meta_boxes['vtmpm'])) {
+				$postboxes = $wp_meta_boxes['vtmpm'];
+				foreach ($postboxes as $boxcontext => $boxinfo) {
+					foreach ($boxinfo as $boxpriority => $box) {
+						foreach ($box as $boxname => $boxdata) {
+							if (!in_array($boxdata['id'],$expected))
+								remove_meta_box( $boxdata['id'], 'vtmpm', $boxcontext );
+						}
 					}
 				}
 			}

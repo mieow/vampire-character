@@ -26,7 +26,7 @@
 global $wpdb;
 
 define( 'VTM_CHARACTER_URL', plugin_dir_path(__FILE__) );
-define( 'VTM_TABLE_PREFIX', $wpdb->prefix . "vtm_" );
+define( 'VTM_TABLE_PREFIX', $wpdb->prefix . "vtm_init_" );
 define( 'VTM_PLUGIN_URL',  plugins_url('vtm-character'));
 require_once VTM_CHARACTER_URL . 'inc/functions.php';
 require_once VTM_CHARACTER_URL . 'inc/printable.php';
@@ -55,7 +55,9 @@ if (is_admin()) {
 	// folder and load the data into the plugin database tables.
 	// The plugin works without loading in the data, although they 
 	// will then have to manually enter skills, etc.
-	define( 'VTM_DATA_VERSION',  'https://github.com/mieow/vampire-data/archive/vtm2.2-v1.0.zip');
+	define( 'VTM_DATA_NAME',    'vampire-data');
+	define( 'VTM_DATA_VERSION', 'vtm2.2-v1.0');
+	define( 'VTM_DATA_FILE',  'https://github.com/mieow/vampire-data/archive/' . VTM_DATA_VERSION . '.zip');
 }
 
 // Admin includes that are used on the front of the site

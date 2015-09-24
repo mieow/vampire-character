@@ -245,7 +245,7 @@ function vtm_get_chargen_content() {
 		if ($dataok) {
 			$vtmglobal['characterID'] = vtm_save_progress($laststep);
 			$progress[$laststep] = 1;
-			
+						
 		} else {
 			$step = $laststep;
 			$progress[$laststep] = 0;
@@ -267,12 +267,15 @@ function vtm_get_chargen_content() {
 	// output form to be filled in
 	//echo "<li>step: $step, function: {$flow[$step-1]['function']}</li>\n";
 	if ($step == 0)
-		$output .= vtm_render_choose_template();
+		$formoutput = vtm_render_choose_template();
 	else
-		$output .= call_user_func($vtmglobal['flow'][$step-1]['function'], $step, $chargenstatus == 'Submitted');
-
+		$formoutput = call_user_func($vtmglobal['flow'][$step-1]['function'], $step, $chargenstatus == 'Submitted');
+	$output .= $formoutput;
+	
 	// 3 buttons: Back, Check & Next
-	$output .= vtm_render_submit($step, count($vtmglobal['flow']), $chargenstatus);
+	if ($formoutput != 'No templates have been defined') {
+		$output .= vtm_render_submit($step, count($vtmglobal['flow']), $chargenstatus);
+	}
 	$output .= "</div></form>\n";
 	
 	return $output;
@@ -363,6 +366,7 @@ function vtm_render_basic_info($step, $submitted) {
 	global $vtmglobal;
 
 	$output = "";
+	$nodatafail = 0;
 	
 	$clans    = vtm_get_clans();
 	$natures  = vtm_get_natures();
@@ -500,7 +504,12 @@ function vtm_render_basic_info($step, $submitted) {
 			<td>\n";
 	if ($submitted) {
 		$output .= $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CLAN WHERE ID = %s", $priv_clan));
-	} else {
+	} 
+	elseif (count($clans) == 0) {
+		$nodatafail = 1;
+	}
+	else {
+		
 		$output .= "<select name='priv_clan'>\n";
 		foreach ($clans as $clan) {
 			$output .= "<option value='{$clan->ID}' " . selected( $clan->ID, $priv_clan, false) . ">" . vtm_formatOutput($clan->NAME) . "</option>\n";
@@ -542,7 +551,7 @@ function vtm_render_basic_info($step, $submitted) {
 	}
 	$output .= "</td></tr>\n";
 	
-	if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') {
+	if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y' && count($natures) > 0) {
 		$output .= "<tr><td class='vtmcol_key'>Nature*:</td><td>";
 		if ($submitted) {
 			$output .= vtm_formatOutput($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "NATURE WHERE ID = %s", $natureid)));
@@ -598,6 +607,10 @@ function vtm_render_basic_info($step, $submitted) {
 		$output .= "<textarea name='concept' rows='3' cols='50'>$concept</textarea>\n";
 	$output .= "</td></tr>
 		</table>\n";
+		
+	if ($nodatafail) {
+		$output = "Source data (e.g. clans) has not been setup. Character generation cannot continue";
+	}
 
 	return $output;
 }
@@ -1785,11 +1798,28 @@ function vtm_render_choose_template() {
 	global $wpdb;
 
 	$output = "";
-
-	$output .= "<h3>Choose a template</h3>\n";
 	
 	$sql = "SELECT ID, NAME, DESCRIPTION FROM " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE WHERE VISIBLE = 'Y' ORDER BY NAME";
 	$result = $wpdb->get_results($sql);
+	
+	// Check that character generation can go ahead - that we have enough data
+	if (count($result) == 0) {
+		return "<div class='vtm_error'><p>No character generation templates have been defined.</p></div>";
+	}
+	if (count(vtm_get_clans()) == 0) {
+		return "<div class='vtm_error'><p>No clans have been defined in the database</p></div>";
+	}
+	if (count(vtm_listRoadsOrPaths()) == 0) {
+		return "<div class='vtm_error'><p>No Paths of Enlightenment have been defined in the database</p></div>";
+	}
+	if (count(vtm_listSkills("","")) == 0) {
+		return "<div class='vtm_error'><p>No abilities have been defined in the database</p></div>";
+	}
+	if (count(vtm_get_backgrounds()) == 0) {
+		return "<div class='vtm_error'><p>No backgrounds have been defined in the database</p></div>";
+	}
+
+	$output .= "<h3>Choose a template</h3>\n";
 	
 	$output .= "<table>";
 	foreach ($result as $template) {
@@ -1798,13 +1828,12 @@ function vtm_render_choose_template() {
 		$output .= "<td>" . vtm_formatOutput($template->DESCRIPTION) . "</td></tr>";
 	}
 	$output .= "</table>";
-	
 	$ref = isset($_GET['reference']) ? $_GET['reference'] : '';
 	
 	$output .= "<p>Or, update a character: 
 		<label>Reference:</label> <input type='text' name='chargen_reference' value='$ref' size=30 ></p>\n";
 
-		return $output;
+	return $output;
 }
 
 function vtm_validate_chargen($laststep) {
@@ -2808,10 +2837,11 @@ function vtm_save_basic_info() {
 	$charstatus	= $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_STATUS WHERE NAME = 'Alive';");
 	$genstatus	= $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "CHARGEN_STATUS WHERE NAME = 'In Progress';");
 	$template	= $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE WHERE ID = %s;", $vtmglobal['templateID']));
+	$priv_clan  = isset($_POST['priv_clan']) ? $_POST['priv_clan'] : 0;
 	if (isset($_POST['pub_clan']) && $_POST['pub_clan'] > 0)
 		$pub_clan = $_POST['pub_clan'];
 	else
-		$pub_clan = $_POST['priv_clan'];
+		$pub_clan = $priv_clan;
 	
 	// Set defaults for new characters or get current values
 	if ($vtmglobal['characterID'] > 0) {
@@ -2848,7 +2878,7 @@ function vtm_save_basic_info() {
 	$dataarray = array (
 		'NAME'						=> $_POST['character'],
 		'PUBLIC_CLAN_ID'			=> $pub_clan,
-		'PRIVATE_CLAN_ID'			=> $_POST['priv_clan'],
+		'PRIVATE_CLAN_ID'			=> $priv_clan,
 		'GENERATION_ID'				=> $generationid,	// default from config, update later in backgrounds
 
 		'DATE_OF_BIRTH'				=> $dob,				// Set later in ext backgrounds
@@ -2925,7 +2955,11 @@ function vtm_save_basic_info() {
 		
 		}
 		
-	} else {
+	} 
+	elseif ($pub_clan == 0 || $priv_clan == 0) {
+		echo "<p style='color:red'><b>Error:</b>Character could not be added because no clans have been selected.</p>\n";
+	}
+	else {
 		$wpdb->insert(VTM_TABLE_PREFIX . "CHARACTER",
 					$dataarray,
 					array (

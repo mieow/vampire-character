@@ -1086,7 +1086,7 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 			$sqlLimit";
 	$sql = $wpdb->prepare($sql, $filterid, $filterid);	
 	
-	print "<p>SQL: $sql</p>";
+	//print "<p>SQL: $sql</p>";
 	
 	return $wpdb->get_results($sql);
 	
