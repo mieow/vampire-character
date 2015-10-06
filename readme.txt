@@ -1,31 +1,32 @@
-=== Vampire:the Masquerade Character Manager ===
+=== Vampire Character Manager ===
 Contributors: magent
-Tags: vampire, white wolf, masquerade, character, generation, roleplay
-Requires at least: 4.1
-Tested up to: 4.1
-Stable tag: 2.0
+Tags: vampire, character, generation, roleplay, rpg, lrp, larp
+Requires at least: 4.3.1
+Tested up to: 4.3.1
+Stable tag: 2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-For managing Vampire:the Masquerade character sheets for LARPs and on-line Vampire games.
+For managing characters for LARPs and online vampire games.
 
 == Description ==
 
-This WordPress plugin is intended to manage Vampire:the Masquerade character sheets for LARPs and online Vampire games.
+This WordPress plugin is intended to manage vampire character sheets for LARPs and online vampire games.
 
 Features are:
 * On-line character generation
-* Track and assign changes in Experience, Path of Enlightenment, Willpower and Bloodpool
+* Track and assign changes in Experience and other ratings
 * Output a PDF character for printing
 * Configure character generation rules using templates
 * Configure experience point and freebie point costs
-* Add/Edit data such as Abilities, Rituals, Clans, Merits/Flaws, etc 
+* Add/Edit character and source data
 * Storyteller approval of XP spends and character background updates
-* Display domain/feeding area map using Google API
-* Automatically list active characters and what their Status is
+* Display area map using Google API
+* Automatically list active characters and what their status is
 * Get reports (CSV and PDF) such as character activity
-* Pre-loaded with data for V20 edition
-* Send a character newsletter with XP totals and Storyteller message
+* In-character Private Messaging system
+* Send a newsletter with Experience point totals
+* Can send notification emails via Mail or SMTP
 
 == Installation ==
 
@@ -47,7 +48,7 @@ After installation, we recommend:
 
 We recommend the 'Allow Multiple Accounts' plugin by Scott Reilly to work around this issue.
 
-= How do I stop Storytellers having full admin access to the Wordpress site? =
+= How do I stop Storytellers/Narrators/Games Masters having full admin access to the Wordpress site? =
 
 Create a role for them called 'storyteller' with the 'manage_options' capability
 
@@ -55,7 +56,7 @@ Create a role for them called 'storyteller' with the 'manage_options' capability
 
 No.  The plugin works under the premise that each Wordpress login links to only 1 character.
 
-= Are there any other plugins you recommend for running a game of Vampire on Wordpress? =
+= Are there any other plugins you recommend for running a game of vampire on Wordpress? =
 
 These are the plugins I have used for the LARP(s) I have been involved in running.
 
@@ -68,18 +69,38 @@ These are the plugins I have used for the LARP(s) I have been involved in runnin
 
 You can try out character generation on the plugin website.
 
+= I have an idea for a great new feature! =
+
+Please email me at storyteller@plugin.gvlarp.com with your suggestion.
+
+= I found a problem with the plugin =
+
+Please email me at storyteller@plugin.gvlarp.com with information on the problem. Include
+exactly what you were doing when you saw the problem and a screen shot to demonstrate
+the issue.  Also include any error messages.
+
 == Screenshots ==
 
 1. View your character sheet
-2. Edit a character sheet (storyteller)
+2. Edit a character sheet
 3. PDF character sheet
 4. Spend Experience
 
 == Changelog ==
 
+= 2.3 =
+
+* Updates as a result of feedback from Wordpress.org plugin submission
+** Table data that may cause Copyright issues has been removed from initial data
+* ...
+
+= 2.2 =
+
+* Preparation for submitting to Wordpress.org
+
 = 2.1 =
 
-* updated newline encoding for FPDF lib files so that they didn't get corrupted when WP
+* Updated newline encoding for FPDF lib files so that they didn't get corrupted when WP
 unzipped them and put in double-newlines thereby breaking the PHP
 * Wordpress 4.2 WP_List_Tables class has changed and broke the plugin. Made custom class using old version of the WP code.
 
@@ -408,14 +429,14 @@ For example, display a list of character with Enmity towards your clan
 
 = office_block =
 
-List all the characters with an office (e.g Prince, Primogen)
+List all the characters with an office or position of power
 
 Options:
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * domain - domain character is an official in
 * office - specific office to display
 
-"The Prince of Glasgow is [office_block domain=Glasgow office=Prince]."
+"The ruler of Glasgow is [office_block domain=Glasgow office=Prince]."
 
 = spend_button =
 
