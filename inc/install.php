@@ -7,7 +7,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 
 global $vtm_character_version;
 global $vtm_character_db_version;
-$vtm_character_version = "2.2"; 
+$vtm_character_version = "2.3"; 
 $vtm_character_db_version = "61"; 
 
 function vtm_update_db_check() {
@@ -1091,7 +1091,53 @@ function vtm_character_install_data($initdatapath) {
 	global $wpdb;
 	
 	$wpdb->show_errors();
-	
+		
+	// LOAD UP THE INITIAL TABLE DATA
+	$datalist = glob("$initdatapath/*.csv");
+	//print_r($datalist);
+	foreach ($datalist as $datafile) {
+		$temp = explode(".", basename($datafile));
+		$tablename = $temp[1];
+		
+		//echo "<p>Table: $tablename</p>";
+		
+		$sql = "select ID from " . VTM_TABLE_PREFIX . $tablename;
+		$rows = count($wpdb->get_results($sql));
+		if (!$rows) {
+			$filehandle = fopen($datafile,"r");
+			
+			$i=0;
+			$data = array();
+			while(! feof($filehandle)) {
+				if ($i == 0) {
+					$headings = fgetcsv($filehandle,0,",");
+				} else {
+					$line = fgetcsv($filehandle,0,",");
+					if ($line > 0) {
+						$j=0;
+						foreach ($headings as $heading) {
+							$data[$i-1][$heading] = $line[$j];
+							$j++;
+						}
+					}
+				}
+				$i++;
+			}
+			fclose($filehandle);
+
+			$rowsadded = 0;
+			foreach ($data as $id => $entry) {
+				$rowsadded += $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
+			}
+			
+			if ($rowsadded == 0 && $rows > 0) {
+				echo "<p style='color:red'>No rows added for $tablename but $rows rows in source</p>";
+			}
+		} else {
+				echo "<p style='color:red'>Target table $tablename is not empty</p>";
+		}
+	}
+
 	// SET UP THE AVAILABLE PAGES
 	$data = array (
 		'editCharSheet' => array(	'VALUE' => 'editCharSheet',
@@ -1158,43 +1204,6 @@ function vtm_character_install_data($initdatapath) {
 		$result = $wpdb->get_results($wpdb->prepare($sql, $row->ID));
 	}
 	
-	// LOAD UP THE INITIAL TABLE DATA
-	$datalist = glob("$initdatapath/*.csv");
-	foreach ($datalist as $datafile) {
-		$temp = explode(".", basename($datafile));
-		$tablename = $temp[1];
-		
-		$sql = "select ID from " . VTM_TABLE_PREFIX . $tablename;
-		$rows = count($wpdb->get_results($sql));
-		if (!$rows) {
-			$filehandle = fopen($datafile,"r");
-			
-			$i=0;
-			$data = array();
-			while(! feof($filehandle)) {
-				if ($i == 0) {
-					$headings = fgetcsv($filehandle,0,",");
-				} else {
-					$line = fgetcsv($filehandle,0,",");
-					if ($line > 0) {
-						$j=0;
-						foreach ($headings as $heading) {
-							$data[$i-1][$heading] = $line[$j];
-							$j++;
-						}
-					}
-				}
-				$i++;
-			}
-			fclose($filehandle);
-
-			$rowsadded = 0;
-			foreach ($data as $id => $entry) {
-				$rowsadded += $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
-			}
-		}
-	}
-	
 }
 
 function vtm_character_update($beforeafter) {
@@ -1203,7 +1212,7 @@ function vtm_character_update($beforeafter) {
 	
 	$errors = 0;
 
-	$installed_version = get_site_option( "vtm_character_version", "1.9" );
+	$installed_version = get_site_option( "vtm_character_version", $vtm_character_version );
 	
 	switch ($installed_version) {
 		//--- FROM VERSION 1.9 -------------------------------------------------
@@ -1224,6 +1233,7 @@ function vtm_character_update($beforeafter) {
 			case "2.0" : $errors += vtm_character_update_1_11($beforeafter);
 			case "2.1" : $errors += vtm_character_update_2_0($beforeafter);
 			case "2.2" : $errors += vtm_character_update_2_0($beforeafter);
+			// 2.3: no updates to database
 		}
 	
 	}
@@ -1748,8 +1758,7 @@ function vtm_save_install_errors($table, $lasterror, $for_update = array()) {
 	}
 }
 
-function vtm_factory_defaults() {
-	global $wpdb;
+function vtm_define_tables() {
 	
 	// level 5 tables
 	$tables[] = array(
@@ -1835,6 +1844,14 @@ function vtm_factory_defaults() {
 		'PLAYER_STATUS',
 		'PLAYER_TYPE',
 	);
+
+	return $tables;
+}
+
+function vtm_factory_defaults() {
+	global $wpdb;
+	
+	$tables = vtm_define_tables();
 	
 	foreach ($tables as $tablelist) {
 		foreach ($tablelist as $id => $table) {
@@ -1849,6 +1866,96 @@ function vtm_factory_defaults() {
     vtm_character_install();
 	
 	echo "<p>Databases reset to factory defaults</p>";
+}
+
+function vtm_export_data($filepath, $dirname) {
+	global $wpdb;
+	global $wp_filesystem;	
+	
+	$creds = request_filesystem_credentials(site_url() . '/wp-admin/', '', false, false, array());
+	if ( ! WP_Filesystem($creds) ) {
+		return false;
+	}	
+	
+	$path = $filepath . "/$dirname";
+	if(!$wp_filesystem->is_dir($path)) {
+		$wp_filesystem->mkdir($path);
+	}
+	
+	$tables = vtm_define_tables();
+	
+	for ($i = 0 ; $i < count($tables) ; $i++) {
+		$lvl = count($tables) - $i;
+		$tablelist = $tables[$i];
+		for ($id = 0 ; $id < count($tablelist) ; $id++) {
+			$table = $tablelist[$id];
+			$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
+			
+			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "$table ORDER BY ID";
+			$contents = $wpdb->get_results($sql);
+			
+			$sql = "SHOW COLUMNS FROM " . VTM_TABLE_PREFIX . $table;
+			$info = $wpdb->get_results($sql);
+			foreach ($info as $index => $data) {
+				$headings[] = $data->Field;
+			}
+			
+			//echo "<li>$path/$filename</li>";
+			//print_r($contents);
+			//echo "</li>";
+			// Open CSV file
+			$file = fopen("$path/$filename","w");
+			// output headings
+			//print_r($headings);
+			fputcsv($file, $headings);
+			// output contents
+			if (count($contents) > 0) {
+				foreach ($contents as $data) {
+					foreach ($headings as $heading) {
+						$row[] = $data->$heading;
+					}
+					//echo "<li>row:";
+					//print_r($row);
+					//echo "<li>";
+					fputcsv($file, $row);
+					unset($row);
+				}
+			}
+			
+			// close file
+			fclose($file);
+			unset($headings);
+			
+		}
+	}
+	
+	// zip up directory
+	//create the archive
+	$zipfilename = "$filepath/$dirname.zip";
+	//echo "<p>Creating zip: $zipfilename</p>";
+	$zip = new ZipArchive();
+	$zip->open($zipfilename, ZipArchive::CREATE);
+	for ($i = 0 ; $i < count($tables) ; $i++) {
+		$lvl = count($tables) - $i;
+		$tablelist = $tables[$i];
+		for ($id = 0 ; $id < count($tablelist) ; $id++) {
+			$table = $tablelist[$id];
+			$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
+			//echo "<li>Adding file: $path/$filename, $dirname/$filename</li>";
+			$zip->addFile("$path/$filename", "$dirname/$filename");
+		}
+	}
+	$zip->close();
+	
+	return "$dirname.zip";
+}
+
+function vtm_is_valid_import_version($version) {
+	global $vtm_character_version;
+	
+	if ($version == "vtm-export-$vtm_character_version")
+		return 1;
+
 }
 
 ?>

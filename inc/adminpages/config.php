@@ -86,7 +86,7 @@ function vtm_render_config_general() {
 				$wpdb->show_errors();
 				$dataarray = array (
 					'PLACEHOLDER_IMAGE' => $_REQUEST['placeholder'],
-					'ANDROID_LINK' => $_REQUEST['androidlink'],
+					//'ANDROID_LINK' => $_REQUEST['androidlink'],
 					'HOME_DOMAIN_ID' => $_REQUEST['homedomain'],
 					'HOME_SECT_ID'   => $_REQUEST['homesect'],
 					'ASSIGN_XP_BY_PLAYER' => $_REQUEST['assignxp'],
@@ -1053,52 +1053,46 @@ function vtm_render_config_database() {
 				//echo "<p>Upload to: $uploadto</p>";
 				//echo "<p>Unzip to: $unzipto</p>";
 
-				$access_type = get_filesystem_method();
-				//echo "<p>Access type: $access_type</p>";
-				if($access_type === 'direct') {
-					$creds = request_filesystem_credentials(site_url() . '/wp-admin/', '', false, false, array());
+				$creds = request_filesystem_credentials(site_url() . '/wp-admin/', '', false, false, array());
 
-					/* initialize the API */
-					if ( ! WP_Filesystem($creds) ) {
-						/* any problems and we exit */
-						return false;
-					}	
+				/* initialize the API */
+				if ( ! WP_Filesystem($creds) ) {
+					/* any problems and we exit */
+					return false;
+				}	
 
-					global $wp_filesystem;
-					
-					// fopen to get file from external URL
-					// and save it off in chunks (256b?)
-					echo '<p>Downloading data zip file</p>';
-					$file = fopen ($from, "rb");
-					if ($file) {
-						$newf = fopen ($uploadto, "wb");
+				global $wp_filesystem;
+				
+				// fopen to get file from external URL
+				// and save it off in chunks (256b?)
+				echo '<p>Downloading data zip file</p>';
+				$file = fopen ($from, "rb");
+				if ($file) {
+					$newf = fopen ($uploadto, "wb");
 
-						if ($newf) {
-							while(!feof($file)) {
-								fwrite($newf, fread($file, 1024 * 8 ), 1024 * 8 );
-							}
-						} else {
-							echo "<p style='color:red'>Cannot binary write $uploadto</p>";
+					if ($newf) {
+						while(!feof($file)) {
+							fwrite($newf, fread($file, 1024 * 8 ), 1024 * 8 );
 						}
 					} else {
-						echo "<p style='color:red'>Cannot binary read $from</p>";
-					}
-					
-					// extract to init
-					echo '<p>Unzipping the data</p>';
-					$unzipfile = unzip_file($uploadto, $upload['path']);
-					if ( $unzipfile ) {
-						// install
-						echo '<p>Clearing all data from data tables</p>';
-						vtm_factory_defaults();
-						echo '<p>Installing ' . VTM_DATA_VERSION . ' data</p>';
-						vtm_character_install_data($unzipto);
-					} else {
-						echo 'There was an error unzipping the file.';       
+						echo "<p style='color:red'>Cannot binary write $uploadto</p>";
 					}
 				} else {
-					echo "<p style='color:red'>Aborting as credentials are required to upload to this site.</p>";
-				}				
+					echo "<p style='color:red'>Cannot binary read $from</p>";
+				}
+				
+				// extract to init
+				echo '<p>Unzipping the data</p>';
+				$unzipfile = unzip_file($uploadto, $upload['path']);
+				if ( $unzipfile ) {
+					// install
+					echo '<p>Clearing all data from data tables</p>';
+					vtm_factory_defaults();
+					echo '<p>Installing ' . VTM_DATA_VERSION . ' data</p>';
+					vtm_character_install_data($unzipto);
+				} else {
+					echo 'There was an error unzipping the file.';       
+				}
 				?>
 				<form id='options_form' method='post'>
 				<input type="submit" name="return_load_data" class="button-primary" value="Done" />
@@ -1106,17 +1100,127 @@ function vtm_render_config_database() {
 				<?php
 				
 			}
+			elseif (isset($_REQUEST['export_data'])) {
+				global $vtm_character_version;
+				$upload = wp_upload_dir();
+				//print_r($upload);
+				$link = vtm_export_data($upload['path'], "vtm-export-$vtm_character_version");
+				// provide link
+				$url = $upload['url'] . "/$link";
+				echo "<p>Download exported data: <a class='button-primary' href='$url'>$link</a>";
+				?>
+				<form id='options_form' method='post'>
+				<input type="submit" name="return_export_data" class="button-primary" value="Done" />
+				</form>
+				<?php
+			}
+			elseif (isset($_REQUEST['import_data'])) {
+				?>
+				<form id='options_form' name='import_data_form' method='post' enctype="multipart/form-data">
+				<input type='file' name='vtm_import' id='vtm_import'  multiple='false' />
+				<?php echo wp_nonce_field( 'vtm_import', 'vtm_import_nonce' ); ?>
+				<input type="submit" name="select_import_data" class="button-primary" value="Import" />
+				</form>
+				<?php
+			}
+			elseif (isset($_REQUEST['select_import_data'])
+				&& isset( $_POST['vtm_import_nonce'])
+				&& wp_verify_nonce( $_POST['vtm_import_nonce'], 'vtm_import' )) {
+
+				//print_r($_REQUEST);
+				//print_r($_FILES);
+				// check file type
+				if ($_FILES['vtm_import']['type'] !== 'application/zip') {
+					echo "<p style='color:red'>Uploaded file must be a zip file</p>";
+				}
+				else {
+					// put in upload directory
+					$uploadedfile = $_FILES['vtm_import'];
+					$upload_overrides = array( 'test_form' => false );
+					$movefile = wp_handle_upload( $uploadedfile, $upload_overrides );
+					
+					if ( $movefile && !isset( $movefile['error'] ) ) {
+						echo "<p>File has been uploaded</p>";
+						//var_dump( $movefile);
+					} else {
+						echo $movefile['error'];
+					}
+					
+					$creds = request_filesystem_credentials(site_url() . '/wp-admin/', '', false, false, array());
+					if ( ! WP_Filesystem($creds) ) {
+						return false;
+					}	
+					global $wp_filesystem;
+					
+					// create folder to unzip to 
+					$upload = wp_upload_dir();
+					$unzipto = $upload['path'] . "/" . basename($movefile['file'], ".zip");
+					if(!$wp_filesystem->is_dir($unzipto)) {
+						$wp_filesystem->mkdir($unzipto);
+					}
+					
+					//unzip 
+					$unzipfile = unzip_file($movefile['file'], $unzipto);
+					if ( $unzipfile && !is_wp_error( $unzipfile )) {
+						echo "<p>File has been uncompressed</p>";
+						
+						//check database format/version
+						$subfolder = glob("$unzipto/*");
+						$subfolder = $subfolder[0];
+						//print_r($subfolder);
+						
+						if (vtm_is_valid_import_version(basename($subfolder))) {
+							// install
+							echo '<p>Clearing all data from data tables</p>';
+							vtm_factory_defaults();
+							echo "<p>Installing data</p>";
+							vtm_character_install_data("$subfolder");
+								
+						} else {
+							echo "<p style='color:red'>Cannot import data as it was created with a different database version.</p>";       
+						}
+					
+					} else {
+						print_r($unzipfile);
+						echo "<p style='color:red'>There was an error unzipping the file to $unzipto.</p>";       
+					}
+					
+				}
+				
+
+				
+				?>
+				<form id='options_form' method='post'>
+				<input type="submit" name="return_load_data" class="button-primary" value="Done" />
+				</form>
+				<?php
+				// check database format/version 
+				
+				// install data
+			}
 			else {
+				$access_type = get_filesystem_method();			
 			
 		?>
 
 		<form id='database_form' method='post'>
+		<?php
+			if ($access_type == 'direct') {
+		?>
+			<h3>Export database data</h3>
+			<p>Click this button to download a copy of all the character and other data.</p>
+			<input type="submit" name="export_data" class="button-primary" value="Export" />
+			<h3>Import database data</h3>
+			<p>Click this button to import previously exported character and other data.</p>
+			<input type="submit" name="import_data" class="button-primary" value="Import" />
+		<?php } ?>
+
 			<h3>Purge deleted characters</h3>
 			<p>Click this button to completely remove all deleted characters from the database.</p>
 			<input type="submit" name="purge_deleted" class="button-primary" value="Purge" />
 		<?php
 			$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER");
-			if ($count == 0) {
+			if ($count == 0 && $access_type == 'direct') {
 		?>
 			<h3>Load pre-defined data</h3>
 			<p>You can optionally download and add pre-defined data for the Database tables.</p>
