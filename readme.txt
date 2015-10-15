@@ -27,6 +27,7 @@ Features are:
 * In-character Private Messaging system
 * Send a newsletter with Experience point totals
 * Can send notification emails via Mail or SMTP
+* Export and import the database to create and restore backups
 
 == Installation ==
 
@@ -92,7 +93,11 @@ the issue.  Also include any error messages.
 
 * Updates as a result of feedback from Wordpress.org plugin submission
 ** Table data that may cause Copyright issues has been removed from initial data
-* ...
+* Added In-character private messaging system
+* Added option in Character Generation template to correctly model virtues rules for non-Humanity paths
+* Players can set and/or upload character portraits
+* Option added to enable/disable news posts being added to the site blogroll
+* Export, import and reset database data from the Configuration page
 
 = 2.2 =
 
