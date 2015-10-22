@@ -694,6 +694,8 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 		$imagetype    = 'jpg';
 
 		$image = new Imagick();
+		
+		// SET BACKGROUND COLOUR
 
 		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
 		$draw = new ImagickDraw();
