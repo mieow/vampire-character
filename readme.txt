@@ -98,6 +98,14 @@ the issue.  Also include any error messages.
 * Players can set and/or upload character portraits
 * Option added to enable/disable news posts being added to the site blogroll
 * Export, import and reset database data from the Configuration page
+* Reports don't need to write out to tmp directory any more
+* Added additional tabs on data tables page and did some renaming to reduce potential copyright risk
+* Fixed bug with XP shortcode where sometimes output rows were missed
+* Added admin notices when plugin upgrade takes place with version number and error info 
+* Improved data table creation code so that it works better with dbDelta
+* Removed clan icons from images folder
+* On profile page, newsletter selection defaults to 'Y' if unset in db 
+* Cannot now choose the same discipline multiple times on clan data table
 
 = 2.2 =
 
