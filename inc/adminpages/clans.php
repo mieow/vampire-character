@@ -110,6 +110,7 @@ function vtm_render_clan_add_form($addaction) {
 	} else {
 	
 		/* defaults */
+		$id = "";
 		$name = "";
 		$description = "";
 		$iconlink = "";
@@ -279,6 +280,8 @@ function vtm_clan_input_validation() {
 		
 	//echo "<p>Requested action: " . $_REQUEST['action'] . ", " . $type . "_name: " . $_REQUEST[$type . '_name'];
 	
+	//print_r($_REQUEST);
+	
 	if (!empty($_REQUEST[$type . '_name'])){
 			
 		$doaction = $_REQUEST['action'] . "-" . $type;
@@ -288,18 +291,28 @@ function vtm_clan_input_validation() {
 			$doaction = "fix-$type";
 			echo "<p style='color:red'>ERROR: Description is missing</p>";
 		} 
-		if (empty($_REQUEST[$type . '_iconlink']) || $_REQUEST[$type . '_iconlink'] == "") {
-			$doaction = "fix-$type";
-			echo "<p style='color:red'>ERROR: Icon Link is missing</p>";
-		} 
+		//if (empty($_REQUEST[$type . '_iconlink']) || $_REQUEST[$type . '_iconlink'] == "") {
+		//	$doaction = "fix-$type";
+		//	echo "<p style='color:red'>ERROR: Icon Link is missing</p>";
+		//} 
 		if (empty($_REQUEST[$type . '_flaw']) || $_REQUEST[$type . '_flaw'] == "") {
 			$doaction = "fix-$type";
 			echo "<p style='color:red'>ERROR: Clan Flaw is missing</p>";
 		} 
-		if (!isset($_REQUEST[$type . 'clan_disc1'])) {
+		if (!isset($_REQUEST[$type . '_clan_disc1'])) {
 			$doaction = "fix-$type";
 			echo "<p style='color:red'>ERROR: Please add disciplines to the database before saving a clan</p>";
-		} 
+		} else {
+			if (
+				($_REQUEST[$type . '_clan_disc1'] == $_REQUEST[$type . '_clan_disc2']) ||
+				($_REQUEST[$type . '_clan_disc1'] == $_REQUEST[$type . '_clan_disc3']) ||
+				($_REQUEST[$type . '_clan_disc2'] == $_REQUEST[$type . '_clan_disc3'])
+			) {
+				$doaction = "fix-$type";
+				echo "<p style='color:red'>ERROR: Cannot choose the same clan discipline more than once</p>";
+			}
+			
+		}
 				
 	}
 	
@@ -669,17 +682,18 @@ function vtm_render_discipline_add_form($addaction) {
 	/* echo "<p>Creating form based on action $addaction</p>"; */
 
 	if ('fix-' . $type == $addaction) {
-		$id = $_REQUEST['discipline'];
+		$id = isset($_REQUEST['discipline']) ? $_REQUEST['discipline'] : "";
 		$name = $_REQUEST[$type . '_name'];
 
 		$description = $_REQUEST[$type . '_description'];
 		$visible = $_REQUEST[$type . '_visible'];
-		$sourcebook_id = $_REQUEST[$type . '_sourcebook_id'];
+		$sourcebook_id = isset($_REQUEST[$type . '_sourcebook_id']) ? $_REQUEST[$type . '_sourcebook_id'] : "";
 		$pagenum = $_REQUEST[$type . '_pagenum'];
 		
 		$nextaction = $_REQUEST['action'];
 		
-	} else if ('edit-' . $type == $addaction) {
+	} 
+	elseif ('edit-' . $type == $addaction) {
 		/* Get values from database */
 		$id   = $_REQUEST['discipline'];
 		
