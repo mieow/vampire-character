@@ -438,7 +438,7 @@ function vtm_render_template_data(){
 						<option value="yes" <?php selected($settings['virtues-free-dots'], "yes"); ?>>Each virtue gets an initial free dot</option>
 						<option value="no" <?php selected($settings['virtues-free-dots'], "no"); ?>>Virtues do not get an initial free dot</option>
 						<option value="humanityonly" <?php selected($settings['virtues-free-dots'], "humanityonly"); ?>>Only the path of Humanity get a free dot</option>
-						<option value="humanityvirtues" <?php selected($settings['virtues-free-dots'], "humanityonly"); ?>>Virtues from the path of Humanity get a free dot</option>
+						<option value="humanityvirtues" <?php selected($settings['virtues-free-dots'], "humanityvirtues"); ?>>Virtues from the path of Humanity get a free dot</option>
 					</select>
 				</td>
 			</tr>
