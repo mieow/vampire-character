@@ -3382,7 +3382,10 @@ function vtm_has_virtue_free_dot($selectedpath, $stat = '') {
 					$stat2 => 1
 				);
 			} else {
-				$statid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX . "STAT WHERE NAME = %s", $stat));
+				$statinfo = $wpdb->get_results("SELECT NAME, ID FROM " . VTM_TABLE_PREFIX . "STAT", OBJECT_K);
+				//print_r($statinfo);
+				$statinfo = vtm_sanitize_array($statinfo);
+				$statid = $statinfo[sanitize_key($stat)]->ID;
 				if ($statid == $humanityinfo->STAT1_ID || $statid == $humanityinfo->STAT2_ID) {
 					$freedot = 1;
 				} else {
@@ -3401,7 +3404,7 @@ function vtm_has_virtue_free_dot($selectedpath, $stat = '') {
 			$freedot = 0;
 	}
 
-	//echo "<li>stat: $stat</li>";
+	//echo "<li>setting: {$vtmglobal['settings']['virtues-free-dots']}, stat: $stat, pathid: $selectedpath, statid: $statid</li>";
 	//print_r($freedot);
 	return $freedot;
 }
@@ -4037,7 +4040,7 @@ function vtm_render_chargen_section($saved, $isPST, $pdots, $sdots, $tdots, $fre
 				}
 				
 				$output .= "<tr><td class='$class vtmcol_key'>" . vtm_formatOutput($itemname) . "</td>";
-				$output .= "<td class='$class vtmcol_dots vtmdot_" . (max($maxdot,$maxdots['default']) > 5 ? 10 : 5) . "'>";
+				$output .= "<td class='$class vtmcol_dots vtmdot_" . (max($maxdot,(isset($maxdots['default']) ? $maxdots['default'] : $maxdots)) > 5 ? 10 : 5) . "'>";
 				
 				$pending = isset($pendingfb[$key]->value) ? $pendingfb[$key]->value : 0 ;         // level bought with freebies
 				$pending = isset($pendingxp[$key]->value) ? $pendingxp[$key]->value : $pending ;  // level bought with xp
