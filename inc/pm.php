@@ -202,7 +202,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$title ="<span class='sub-title vtmpm_title $readclass'><a href='$link'>$subject</a></span>$pid";
 			
 			// add in row actions
-			$title .= vtm_pm_render_row_actions($post);
+			//$title .= vtm_pm_render_row_actions($post);
 			
 			echo $title;
 		}
@@ -401,7 +401,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		echo "<option value='0:0:0'>[Select recipient]</option>";
 		$addrcount = 0;
 		foreach ($addressbook as $address) {
-			if ($vtmglobal['characterID'] != $address->CHARACTER_ID) {
+			if ($characterID != $address->CHARACTER_ID) {
 				$title = $address->charactername;
 				if ($address->charactername != $address->NAME)
 					$title .= ": " . $address->NAME;
@@ -427,7 +427,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 		}
 		echo "</select>";
-		$link = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses');
+		$link = admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses');
 		if (($addrcount + count($extra)) == 0) {
 			echo "There is no one in your <a href='$link'>Addressbook</a>. Please add someone to select them as a recipient.";
 		} else {
@@ -456,7 +456,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		echo "</select>";
 		echo "Select how you are contacting the recipient. ";
 		if (count($myaddresses) == 0) {
-			$link = admin_url('edit.php?post_type=vtmpm&page=vtmpm_mydetails');
+			$link = admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails');
 			echo "You will need to add your <a href='$link'>Contact Details</a> if you want additional options.";
 		}
 		echo "</p>";
@@ -640,7 +640,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			if (vtm_isST()) {
 			?><tr>
 				<td>Character Name:</td>
-				<td>
+				<td colspan=3>
 					<select name="<?php print $type; ?>_charid">
 						<?php
 							foreach (vtm_get_characters() as $ch) {
@@ -1659,16 +1659,16 @@ $viewlink";
 		$toaddr   = vtm_pm_getaddrfromcode($tocode);
 		$fromaddr = vtm_pm_getaddrfromcode($fromcode);
 		
-		$toaddr   = empty($toaddr) ? $tocode . ' unavailable' : $toaddr;
-		$fromaddr = empty($fromaddr) ? $fromcode . ' unavailable' : $fromaddr;
+		$toaddr   = empty($toaddr) ? $tocode . 'unavailable' : $toaddr;
+		$fromaddr = empty($fromaddr) ? $fromcode . 'unavailable' : $fromaddr;
 
 		// User has from address in their addressbook?
 		// If not, give them a link to add it 
 		if ($fromcode != 'postoffice' &&
 			!vtm_pm_isinaddrbook($fromcode, $characterID) &&
 			!vtm_pm_iscoderemoved($fromcode)) {
-			$addlink = admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses&code='.$fromcode.
-				"&from=$fromchid&type=$fromtype");
+			$addlink = admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses&amp;code='.$fromcode.
+				"&amp;from=$fromchid&amp;type=$fromtype");
 			$fromaddrlink = "<a href='$addlink' title='Add to address book'>$fromaddr</a>";
 		} 
 		elseif ($fromcode == 'postoffice' && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == 0) {
@@ -1701,7 +1701,7 @@ $viewlink";
 			$fromfull = "$wordpressid ($fromaddr)";
 		}
 		// don't have an address link for your own posts
-		elseif ($ispmowner) {
+		elseif ($ispmowner || vtm_isST()) {
 			$fromfull = "$fromch ($fromaddr)";
 		}
 		// otherwise
@@ -2040,8 +2040,8 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 			return vtm_formatOutput($item->NAME);
 		} else {
 			$actions = array(
-				'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
-				'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
+				'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
+				'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
 		   );
 			
 			return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
@@ -2056,8 +2056,8 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
     }
     function column_charactername($item){
 		$actions = array(
-			'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
-			'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s&amp">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
+			'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
+			'delete'    => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s">Delete</a>','vtmpm', $_REQUEST['page'],'delete',$item->ID),
 		);
 
 		return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
@@ -2270,7 +2270,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 			if ($item->PM_CODE != '') {
 				$linkurl = add_query_arg('code',$item->PM_CODE,$linkurl);
 			}
-			$actions['message'] = sprintf('<a href="%s">Send Message</a>',$linkurl);
+			$actions['message'] = sprintf('<a href="%s">Send Message</a>',vtm_formatOutput($linkurl));
 		}
 
 		

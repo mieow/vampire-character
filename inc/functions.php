@@ -1353,7 +1353,7 @@ function vtm_pm_link($linktext, $args) {
 		
 		if (isset($vtmglobal['characterID']) && $characterID ==	$vtmglobal['characterID'] ) {
 			// don't add a contact link for your own character
-			return $linktext;
+			return vtm_formatOutput($linktext, 1);
 		}
 		
 		// work out the code
@@ -1364,7 +1364,7 @@ function vtm_pm_link($linktext, $args) {
 			$address = vtm_get_default_address($characterID);
 			
 			if (!isset($address->PM_CODE))
-				return $linktext;
+				return vtm_formatOutput($linktext, 1);
 		
 			$code = $address->PM_CODE;
 			$type = $address->PM_TYPE_ID;
@@ -1384,7 +1384,7 @@ function vtm_pm_link($linktext, $args) {
 		
 	}
 	
-	return $linktext;
+	return vtm_formatOutput($linktext, 1);
 }
 
 function  vtm_get_characterID_from_pm_code($code) {

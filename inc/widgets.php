@@ -89,12 +89,12 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 				}
 				if ( isset( $instance[ 'addressbook_link' ] ) && !vtm_isST() ) { 
 					?>
-					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&page=vtmpm_addresses'); ?>">Addressbook</a></li>
+					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses'); ?>">Addressbook</a></li>
 					<?php 
 				}
 				if ( isset( $instance[ 'addresses_link' ] ) ) { 
 					?>
-					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&page=vtmpm_mydetails'); ?>">Contact Details</a></li>
+					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails'); ?>">Contact Details</a></li>
 					<?php 
 				}
 			}?>

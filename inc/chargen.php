@@ -2035,12 +2035,12 @@ function vtm_save_freebies() {
 				if ($bought[$type][$key] < $row->LEVEL) {
 					if (!isset($current[$type][$key]) || (isset($current[$type][$key]) && $current[$type][$key]->level_from < $row->LEVEL)) {
 						$bought[$type][$key] = $row->LEVEL;
-						echo "<li>New bought level for $type $key is {$bought[$type][$key]}</li>";
+						//echo "<li>New bought level for $type $key is {$bought[$type][$key]}</li>";
 					}
 				} 
 			} 
 			elseif (!isset($current[$type][$key])) {
-				echo "<li>Adding $type $key to level {$row->LEVEL}</li>";
+				//echo "<li>Adding $type $key to level {$row->LEVEL}</li>";
 				$bought[$type][$key] = $row->LEVEL;
 			}
 		}
@@ -2049,7 +2049,7 @@ function vtm_save_freebies() {
 	foreach ($bought as $type => $items) {
 		foreach ($items as $key => $levelto) {
 			if (isset($templatefree[$type][$key]->LEVEL))
-				$freelevel = $templatefreekey[$key]->LEVEL;
+				$freelevel = $templatefree[$type][$key]->LEVEL;
 			else
 				$freelevel = 0;
 			$currlevel  = isset($current[$type][$key]->level_from)  ? $current[$type][$key]->level_from  : 0;

@@ -360,14 +360,17 @@ function vtm_get_profile_content() {
 			}
 			$output .= "<br />";
 		}
+		$output .= "<br />";
 	}
 	// and post office, if enabled
 	if (get_option( 'vtm_feature_pm', '0' ) == '1' && is_user_logged_in()) {
+		$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Contact:</td>
+			<td class=\"gvcol_2 gvcol_val\">";
 		$output .= "<strong>" . vtm_pm_link(vtm_formatOutput(get_option( 'vtm_pm_ic_postoffice_location' )), array('code' => '', 'characterID' => $characterID)) . 
 			"</strong>";
 		$output .= "<br />";
+		$output .= "</td></tr>";
 	}
-	$output .= "</td></tr>";
 	
 	$output .= "</table></td><td class=\"gvcol_2 gvcol_img\">\n";
 	// Portrait
@@ -438,13 +441,13 @@ function vtm_get_profile_content() {
 			$output .= "</div><div class='vtmext_section vtmprofile'>";
 			$output .= "<h4>Upload a Portrait image</h4>";
 			$output .= "Enter a web address to a profile image: <form id='portrait_set' method='post'>";
-			$output .= "	<input type='text' name='vtm_portrait_set' value='" . $mycharacter->portrait . "' size=60/>";
+			$output .= "	<input type='text' name='vtm_portrait_set' value='" . $mycharacter->portrait . "' size=60 />";
 			$output .= "	<input id='set_vtm_portrait' name='set_vtm_portrait' type='submit' value='Save' />";
 			$output .= "</form>";
 			if (get_option( 'vtm_user_upload_image', '0'  == '1')) {
 				$output .= "<p>OR</p>";
 				$output .= "Upload an profile image: <form id='portrait_upload' method='post' action='#' enctype='multipart/form-data'>";
-				$output .= "	<input type='file' name='vtm_portrait' id='vtm_portrait'  multiple='false' />";
+				$output .= "	<input type='file' name='vtm_portrait' id='vtm_portrait' />";
 				$output .= wp_nonce_field( 'vtm_portrait', 'vtm_portrait_nonce' );
 				$output .= "	<input id='submit_vtm_portrait' name='submit_vtm_portrait' type='submit' value='Upload' />";
 				$output .= "</form>";
