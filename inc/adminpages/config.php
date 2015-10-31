@@ -100,7 +100,8 @@ function vtm_render_config_general() {
 					array (
 						'ID' => $configid
 					),
-					array('%s', '%s', '%d', '%d', '%s', '%s', '%d', '%d')
+					//array('%s', '%s', '%d', '%d', '%s', '%s', '%d', '%d')
+					array('%s', '%d', '%d', '%s', '%s', '%d', '%d')
 				);		
 				
 				if ($result) 
