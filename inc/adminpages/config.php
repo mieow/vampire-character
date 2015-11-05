@@ -1144,8 +1144,11 @@ function vtm_render_config_database() {
 				//print_r($_REQUEST);
 				//print_r($_FILES);
 				// check file type
-				if ($_FILES['vtm_import']['type'] !== 'application/zip') {
-					echo "<p style='color:red'>Uploaded file must be a zip file</p>";
+				if ($_FILES['vtm_import']['type'] !== 'application/zip' &&
+					$_FILES['vtm_import']['type'] !== 'application/x-zip-compressed' &&
+					$_FILES['vtm_import']['type'] !== 'application/x-zip'
+					) {
+					echo "<p style='color:red'>Uploaded file must be a zip file: {$_FILES['vtm_import']['type']}</p>";
 				}
 				else {
 					// put in upload directory

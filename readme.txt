@@ -62,7 +62,7 @@ No.  The plugin works under the premise that each Wordpress login links to only 
 These are the plugins I have used for the LARP(s) I have been involved in running.
 
 * Members, by Justin Tadlock - useful for adding additional roles for Clans, Storytellers, etc
-* User Access Manager, by Alexander Schneider - useful for controlling page access for groups of users cased on Clan, Sect, etc.
+* User Access Manager, by Alexander Schneider - useful for controlling page access for groups of users based on Roles.
 * Download Monitor, by Barry Kooij & Mike Jolley - useful for tracking and formatting download links for house rules, etc.
 * Events Made Easy, by Franky Van Liedekerke - organising recurring events and deadlines
 
@@ -93,6 +93,8 @@ the issue.  Also include any error messages.
 
 * Updates as a result of feedback from Wordpress.org plugin submission
 ** Table data that may cause Copyright issues has been removed from initial data
+** Removed clan icons from images folder 
+** plugin name changed to vampire-character
 * Added In-character private messaging system
 * Added option in Character Generation template to correctly model virtues rules for non-Humanity paths
 * Players can set and/or upload character portraits
@@ -103,7 +105,6 @@ the issue.  Also include any error messages.
 * Fixed bug with XP shortcode where sometimes output rows were missed
 * Added admin notices when plugin upgrade takes place with version number and error info 
 * Improved data table creation code so that it works better with dbDelta
-* Removed clan icons from images folder
 * On profile page, newsletter selection defaults to 'Y' if unset in db 
 * Cannot now choose the same discipline multiple times on clan data table
 
@@ -299,9 +300,6 @@ placeholder image, option to change Display Name/Password)
 
 == Upgrade Notice ==
 
-= 2.0 =
-Upgrade to this version as the name of the plugin has changed from 'gvlarp-character'
-to 'vtm-character'.
 
 == Shortcodes ==
 
@@ -470,7 +468,9 @@ Displays useful links:
 * Character Sheet
 * Character Profile
 * Spend Experience
-* Box for entering path to a private messaging/mail inbox
+* Character Inbox (x unread)
+* Addressbook
+* Contact Details
 
 = Character Background Widget =
 
