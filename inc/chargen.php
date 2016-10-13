@@ -3362,6 +3362,8 @@ function vtm_has_virtue_free_dot($selectedpath, $stat = '') {
 	global $wpdb;
 	global $vtmglobal;
 
+	//echo "DEBUG: SETTING: {$vtmglobal['settings']['virtues-free-dots']}";
+	
 	if ($vtmglobal['settings']['virtues-free-dots'] == 'yes')
 		$freedot = 1;
 	elseif ($vtmglobal['settings']['virtues-free-dots'] == 'no')
