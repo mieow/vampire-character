@@ -119,6 +119,8 @@ function vtm_render_config_general() {
 			
 			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
 			$options = $wpdb->get_results($sql);
+			
+			//print_r($options);
 		?>
 
 		<form id='options_form' method='post'>
@@ -541,17 +543,6 @@ function vtm_render_config_skinning() {
 				<td><input type="text" name="vtm_signin_columns" value="<?php echo get_option('vtm_signin_columns'); ?>" /></td>
 			</tr>
 		</table>
-		<?php } 
-		
-		if (get_option( 'vtm_feature_news', '0' ) == 1) {
-		?>
-		<h4>Newsletter Options</h4>
-		<table>
-			<tr>
-				<td>Add Newsletter posts to Wordpress blogroll:</td>
-				<td><input type="checkbox" name="vtm_news_blogroll" value="1" <?php checked( '1', get_option( 'vtm_news_blogroll', '0' ) ); ?> /></td>
-			</tr>
-		</table>
 		<?php } ?>
 		
 		<h4>Web Page Layout</h4>
@@ -693,10 +684,8 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 		$drawheight   = 32;
 		$drawmargin   = 1;
 		$imagetype    = 'jpg';
-
-		$image = new Imagick();
 		
-		// SET BACKGROUND COLOUR
+		$image = new Imagick();
 
 		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
 		$draw = new ImagickDraw();
@@ -1144,11 +1133,8 @@ function vtm_render_config_database() {
 				//print_r($_REQUEST);
 				//print_r($_FILES);
 				// check file type
-				if ($_FILES['vtm_import']['type'] !== 'application/zip' &&
-					$_FILES['vtm_import']['type'] !== 'application/x-zip-compressed' &&
-					$_FILES['vtm_import']['type'] !== 'application/x-zip'
-					) {
-					echo "<p style='color:red'>Uploaded file must be a zip file: {$_FILES['vtm_import']['type']}</p>";
+				if ($_FILES['vtm_import']['type'] !== 'application/zip') {
+					echo "<p style='color:red'>Uploaded file must be a zip file</p>";
 				}
 				else {
 					// put in upload directory
