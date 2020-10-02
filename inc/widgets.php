@@ -17,7 +17,10 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		parent::__construct(
 	 		'vtmplugin_widget', // Base ID
 			'Character Login Widget', // Name
-			array( 'description' => __( 'For login/logout and useful links', 'text_domain' ), ) // Args
+			array(
+				'description' => __( 'For login/logout and useful links', 'text_domain' ),
+				'customize_selective_refresh' => true,
+			) // Args
 		);
 	}
 	/**	 * Front-end display of widget.	 *
@@ -173,7 +176,12 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 }
  // class Foo_Widget
 // register Foo_Widget widget
-add_action( 'widgets_init', create_function( '', 'register_widget( "vtmclass_plugin_widget" );' ) );
+//add_action( 'widgets_init', create_function( '', 'register_widget( "vtmclass_plugin_widget" );' ) );
+function vtmclass_register_widgets() {
+	register_widget( "vtmclass_plugin_widget" );
+}
+add_action( 'widgets_init', 'vtmclass_register_widgets' );
+
 
 class vtmclass_Plugin_Background_Widget extends WP_Widget {
 	/**	 * Register widget with WordPress.	 */
@@ -181,7 +189,8 @@ class vtmclass_Plugin_Background_Widget extends WP_Widget {
 		parent::__construct(
 	 		'vtmplugin_background_widget', // Base ID
 			'Character Background Widget', // Name
-			array( 'description' => __( 'Percentage background complete', 'text_domain' ), ) // Args
+			array( 'description' => __( 'Percentage background complete', 'text_domain' ),
+				'customize_selective_refresh' => true, ) // Args
 		);
 	}
 	/**	 * Front-end display of widget.	 *
@@ -257,7 +266,13 @@ class vtmclass_Plugin_Background_Widget extends WP_Widget {
 }
  // class Foo_Widget
 // register Foo_Widget widget
-add_action( 'widgets_init', create_function( '', 'register_widget( "vtmclass_Plugin_Background_Widget" );' ) );
+//add_action( 'widgets_init', create_function( '', 'register_widget( "vtmclass_Plugin_Background_Widget" );' ) );
+function vtmclass_plugin_background_register_widgets() {
+	register_widget( "vtmclass_Plugin_Background_Widget" );
+}
+
+add_action( 'widgets_init', 'vtmclass_plugin_background_register_widgets' );
+
 
 function vtm_get_clan_link() {
 	global $wpdb;
@@ -331,7 +346,11 @@ function vtm_get_clan_link() {
 	//function SSC_load_widget() {
 	//	register_widget('StuSolarCalc_Widget');	
 	//}
-add_action( 'widgets_init', create_function( '', 'register_widget( "StuSolarCalc_Widget" );' ) );
+//add_action( 'widgets_init', create_function( '', 'register_widget( "StuSolarCalc_Widget" );' ) );
+function StuSolarCalc_register_widgets() {
+	register_widget( "StuSolarCalc_Widget" );
+}
+add_action( 'widgets_init', 'StuSolarCalc_register_widgets' );
 	
 class StuSolarCalc_Widget extends WP_Widget {
 	
@@ -340,7 +359,8 @@ class StuSolarCalc_Widget extends WP_Widget {
 		parent::__construct(
 	 		'solar', // Base ID
 			'Sunset/Sunrise Times', // Name
-			array( 'description' => __( 'A simple plug-in widget to allow the display of sunrise/set data.', 'text_domain' ), ) // Args
+			array( 'description' => __( 'A simple plug-in widget to allow the display of sunrise/set data.', 'text_domain' ), 
+				'customize_selective_refresh' => true,) // Args
 		);
 	}	
 	

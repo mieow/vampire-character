@@ -32,8 +32,9 @@ function vtm_get_loggedinclan($characterID) {
 				AND chara.PUBLIC_CLAN_ID = pubclan.ID
 				AND chara.PRIVATE_CLAN_ID = privclan.ID";
 	$result = $wpdb->get_results($wpdb->prepare($sql, $characterID));
-	
-	if (count($result) == 0) {
+		
+	if (vtm_count($result) == 0) {
+		$result[0] = new stdClass();
 		$result[0]->priv = '';
 		$result[0]->pub = '';
 	}
@@ -933,6 +934,7 @@ function vtm_print_character_details($atts, $content=null) {
 						   priv_clan.name priv_clan,
 						   chara.date_of_birth,
 						   chara.date_of_embrace,
+						   IFNULL(cgen.APPR_DATE,playxp.XP_AWARDED) approval_date,
 						   gen.name gen,
 						   gen.bloodpool,
 						   gen.blood_per_round,
@@ -944,7 +946,20 @@ function vtm_print_character_details($atts, $content=null) {
 						   path_totals.path_value,
 						   chara.ID,
 						   chara.last_updated
-					FROM " . $table_prefix . "CHARACTER chara,
+					FROM " . $table_prefix . "CHARACTER chara
+						LEFT JOIN (
+							SELECT CHARACTER_ID, MIN(DATE_OF_APPROVAL) AS APPR_DATE
+							FROM " . $table_prefix . "CHARACTER_GENERATION
+							GROUP BY CHARACTER_ID
+						) cgen
+						ON cgen.CHARACTER_ID = chara.ID
+						LEFT JOIN (
+							SELECT CHARACTER_ID, MIN(AWARDED) AS XP_AWARDED
+							FROM " . $table_prefix . "PLAYER_XP
+							GROUP BY CHARACTER_ID
+						) playxp
+						ON playxp.CHARACTER_ID = chara.ID
+						,
 						 " . $table_prefix . "CLAN pub_clan,
 						 " . $table_prefix . "CLAN priv_clan,
 						 " . $table_prefix . "GENERATION gen,
@@ -964,9 +979,10 @@ function vtm_print_character_details($atts, $content=null) {
 					  AND chara.road_or_path_id     = path.id
 					  AND chara.id                  = path_totals.character_id";
 
+	//print $wpdb->prepare($sql, $character);
 	$character_details = $wpdb->get_row($wpdb->prepare($sql, $character));
 	
-	if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y' && count($character_details) > 0) {
+	if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y' && vtm_count($character_details) > 0) {
 			
 		$sql = "SELECT 
 					natures.name as nature,
@@ -986,7 +1002,7 @@ function vtm_print_character_details($atts, $content=null) {
 		
 	}
 
-	if (count($character_details) > 0) {
+	if (vtm_count($character_details) > 0) {
 		if ($group == "") {
 			$output  = "<table class='gvplugin' id=\"" . vtm_get_shortcode_id("gvid_cdb") . "\"><tr><td class=\"gvcol_1 gvcol_key\">Character Name</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($character_details->char_name) . "</td></tr>";
 			$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Public Clan</td><td class=\"gvcol_2 gvcol_val\">"           . vtm_formatOutput($character_details->pub_clan)        . "</td></tr>";
@@ -1003,6 +1019,7 @@ function vtm_print_character_details($atts, $content=null) {
 			$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Road or Path name</td><td class=\"gvcol_2 gvcol_val\">"     . vtm_formatOutput($character_details->path_name)       . "</td></tr>";
 			$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Road or Path rating</td><td class=\"gvcol_2 gvcol_val\">"   . $character_details->path_value      . "</td></tr>";
 			$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Last Updated</td><td class=\"gvcol_2 gvcol_val\">"          . $character_details->last_updated    . "</td></tr>";
+			$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Character Creation Date</td><td class=\"gvcol_2 gvcol_val\">"       . $character_details->approval_date . "</td></tr>";
 			
 			if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') {
 				
@@ -1341,5 +1358,167 @@ function vtm_print_spend_button($atts, $content=null) {
 }
 add_shortcode('spend_button', 'vtm_print_spend_button');
 
+function vtm_print_inbox_summary($atts, $content=null) {
+	$character = vtm_establishCharacter('');
+	$characterID = vtm_establishCharacterID($character);
+	
+	$output = "";
+	
+	if (get_option( 'vtm_feature_pm', '0' ) == 0) return "<p>Private nessaging feature disabled</p>";
+	if (!is_user_logged_in()) return "<p>You must be logged in to view this content</p>";
+	
+	//get_posts(...)?
+	//https://codex.wordpress.org/Template_Tags/get_posts
+	
+	// Option to list latest x posts
+	extract(shortcode_atts(array (
+		"list" => 5,		// <number of posts>
+		), $atts)
+	);
+	
+	if (!isset($_REQUEST["vtmpmtab"]) || (isset($_REQUEST["vtmpmtab"]) && $_REQUEST["vtmpmtab"] == "unread"))
+		$vtmtab = "unread";
+	elseif ($_REQUEST["vtmpmtab"] == "sent") {
+		$vtmtab = "sent";
+	}
+	else {
+		$vtmtab = "all";
+	}
+	
+	
+	$newmsgurl = admin_url('post-new.php?post_type=vtmpm');
+	$inboxurl  = admin_url('edit.php?post_type=vtmpm');
+	$thispage = get_page_link();
+	$taboutput = "<p>
+		<a href='$thispage?vtmpmtab=unread'>Unread</a> | 
+		<a href='$thispage?vtmpmtab=read'>Read</a> | 
+		<a href='$thispage?vtmpmtab=sent'>Sent</a> | 
+		<a href='$newmsgurl'>Write New Message</a>
+		</p>";
+		
+	if (vtm_isST() && empty($characterID)) {
+		$meta_query = array();
+	} 
+	elseif ($vtmtab == "sent") {
+		$output .= $taboutput;
+		$meta_query = array(
+				array(
+					'key'=>'_vtmpm_from_characterID',
+					'value'=> "$characterID",
+					'compare'=>'==',
+				),
+		);
+	}
+	else {
+		$output .= $taboutput;
+		$meta_query = array(
+				array(
+					'key'=>'_vtmpm_to_characterID',
+					'value'=> "$characterID",
+					'compare'=>'==',
+				),
+		);
+		if ($vtmtab == "unread") {
+			$meta_query[] = array(
+					'key'=>'_vtmpm_to_status',
+					'value'=> "unread",
+					'compare'=>'==',
+				);
+		} else {
+			$meta_query[] = array(
+					'key'=>'_vtmpm_to_status',
+					'value'=> "read",
+					'compare'=>'==',
+				);
+		}
+	}
+	
+	$args = array(
+		'posts_per_page'   => $list + 1, // need the extra +1 to generate the "More.." link
+		'orderby'          => 'date',
+		'order'            => 'DESC',
+		'post_type'        => 'vtmpm',
+		'post_status'      => 'publish',
+		'meta_query'       => $meta_query
+	);
+	$posts_array = get_posts( $args );
+	
+	
+	$allpm = array();
+	foreach ($posts_array as $post) {
+		
+		$postID = $post->ID;
+		$status = get_post_meta( $postID, '_vtmpm_to_status', true );
+				
+		$title = get_the_title($post);
+		if (empty($title)) {$title = "[No Subject]";}
+		
+		$fromid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
+		$authorid = get_post_field( 'post_author', $postID );
+		
+		$pm = array(
+			"title" => $title,
+			"from" => vtm_formatOutput(vtm_pm_getchfromid($fromid)),
+			"to"   => vtm_formatOutput(vtm_pm_getchfromid(get_post_meta( $postID, '_vtmpm_to_characterID', true ))),
+			"authorch" => vtm_formatOutput(vtm_pm_getchfromauthid($authorid)),
+			"status" => $status,
+			"class" => $status == 'unread' ? "vtm_pmunread" : "",
+			"permalink" => get_the_permalink($post),
+			"date" => get_the_date('', $postID)
+		);
+		
+		$allpm[] = $pm;
+
+	}
+	
+
+
+	$heading = "<tr><th>Title</th>";
+	$heading .= "<th>From</th>";
+	if (vtm_isST() || $vtmtab == "sent") {
+		$heading .= "<th>To</th>";
+		$cols = 6;
+	} else {
+		$cols = 5;
+	}
+	$heading .= "<th>Date</th><th>Status</th></tr>\n"; 
+	
+	$output .= "<div><table>";
+	$output .= $heading;
+	if (count($allpm) == 0) {
+		$output .= "<tr><td colspan='$cols'>No messages to display</td></tr>";
+	} else {
+		$count = 0;
+		foreach ($allpm as $pm) {
+			$output .= "<tr>";
+			$output .= "<td><a href='{$pm["permalink"]}'>{$pm["title"]}</a></td>";
+			$output .= "<td>{$pm["from"]}</td>";
+			if (vtm_isST() || $vtmtab == "sent") {
+				$output .= "<td>{$pm["to"]}</td>";
+			}
+			$output .= "<td>{$pm["date"]}</td>";
+			$output .= "<td>{$pm["status"]}</td>";
+			$output .= "</tr>\n";
+			
+			$count++;
+			if ($count == $list) {
+				if (count($allpm) > $list)
+					$output .= "<tr><td colspan='$cols'><a href='" . admin_url('edit.php?post_type=vtmpm') . "'>More...</a></td></tr>";
+				break;
+			}
+		}
+	}
+	$output .= "</table>";
+	$output .= "</div>\n";
+	
+	
+	// TAB - NEW MESSAGES
+	$output .= "";
+
+	
+	
+	return $output;
+}
+add_shortcode('inbox_summary', 'vtm_print_inbox_summary');
 
 ?>

@@ -325,7 +325,8 @@ function vtm_get_viewcharacter_content() {
 	$content .= $divder;
 
 	$rituals = $mycharacter->rituals;
-	$majikpaths  = $mycharacter->paths;
+	$majikpaths_primary  = $mycharacter->primary_paths;
+	$majikpaths_secondary  = $mycharacter->secondary_paths;
 
 	$c_tableleft = "<table><tr><td><h4>Rituals</h4></td></tr>";
 	$c_tableleft .= "<tr>";
@@ -345,20 +346,31 @@ function vtm_get_viewcharacter_content() {
 	$c_tableleft .= "</tr></table>";
 	$c_tableright = "<table><tr><td><h4>Paths</h4></td></tr>";
 	$c_tableright .= "<tr>";
-	if (count($majikpaths) > 0) {
+	
+	if (count($majikpaths_primary)>0) {
 		$c_tableright .= "<td><table>\n";
-		foreach ($majikpaths as $discipline => $paths) {
-			$c_tableright .= "<tr><td colspan=2><strong>" . vtm_formatOutput($discipline) . "</strong></td></tr>\n";
-			foreach ($paths as $path => $info) {
-				if ($info[0] > 0)
-					$c_tableright .= "<tr><td class='vtmcol_key_wide'>" . vtm_formatOutput($path) . "</td><td class='vtmdot_5'>" . vtm_numberToDots(5, $info[0]) . "</td></tr>";
+		for ($i=0;$i<count($disciplines);$i++) {
+			$discipline = $disciplines[$i]->name;
+			// Does this discipline have paths associated with it?
+			if (isset($majikpaths_primary[$discipline])) {
+				$c_tableright .= "<tr><td colspan=2><strong>" . vtm_formatOutput($discipline) . "</strong></td></tr>\n";
+				foreach ($majikpaths_primary[$discipline] as $path => $info) {
+					$c_tableright .= "<tr><td class='vtmcol_key_wide'>" . vtm_formatOutput($path) . " (Primary)</td><td class='vtmdot_5'>" . vtm_numberToDots(5, $info[0]) . "</td></tr>";
+				}
+				if (isset($majikpaths_secondary[$discipline])) {
+					foreach ($majikpaths_secondary[$discipline] as $path => $info) {
+						$c_tableright .= "<tr><td class='vtmcol_key_wide'>" . vtm_formatOutput($path) . "</td><td class='vtmdot_5'>" . vtm_numberToDots(5, $info[0]) . "</td></tr>";
+					}
+				}
 			}
 		}
 		$c_tableright .= "</table></td>";
+
 	} else {
-		$c_tableright .= "&nbsp;";
+				$c_tableright .= "&nbsp;";
 	}
 	$c_tableright .= "</tr></table>";
+	
 
 	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "

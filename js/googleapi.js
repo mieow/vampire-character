@@ -48,7 +48,7 @@ function vtm_loadScript() {
 
 	var script = document.createElement("script");
 	script.type = "text/javascript";
-	script.src = "http://maps.googleapis.com/maps/api/js?key=" + apikey + "&sensor=false&callback=vtm_initialize";
+	script.src = "//maps.googleapis.com/maps/api/js?key=" + apikey + "&callback=vtm_initialize";
 	document.body.appendChild(script);
 }
 

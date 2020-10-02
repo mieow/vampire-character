@@ -6,7 +6,7 @@
 //	* Uppercase
 
 // TO DO:
-//	* Use CSS to change Publish to Send Message?
+//	* Change Publish to Send Message?
 
 // Register Custom Post Type
 function vtm_PM_post_type() {
@@ -111,7 +111,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Display extra columns on the List Messages screen
 	// --------------------------------------------
 	function vtm_pm_custom_columns( $column, $post_id ) {
-		global $current_user;
 		global $vtmglobal;
 
 		$info = vtm_pm_getpostmeta($post_id);
@@ -133,10 +132,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			echo "$status";
 			break;
 	    case "vtmfrom":
-			echo $info['FromFull'];
+			echo vtm_formatOutput($info['FromFull'], 1);
 			break;
 	    case "vtmto":
-			echo $info['ToFull'];
+			echo vtm_formatOutput($info['ToFull']);
 			break;
 		}
 	}
@@ -173,7 +172,6 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 	// Replace the title with your custom title
 	function vtm_pm_replace_title_row($column_name, $post_ID) {
-		global $current_user;
 
 		if ($column_name == 'subject') {
 			
@@ -188,7 +186,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 			
 			if (get_post_status( $post_ID ) == 'publish') {
-				get_currentuserinfo();
+				$current_user = wp_get_current_user();
 				if (get_post_field( 'post_author', $post_ID ) == $current_user->ID) {
 					$readclass = "read";
 				} else {
@@ -274,7 +272,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			global $wp_meta_boxes;
 			
 			// remove extra metaboxes
-			$expected = array('submitdiv', 'slugdiv');
+			//$expected = array('submitdiv', 'slugdiv');
+			$expected = array('slugdiv');
 			if (isset($wp_meta_boxes['vtmpm'])) {
 				$postboxes = $wp_meta_boxes['vtmpm'];
 				foreach ($postboxes as $boxcontext => $boxinfo) {
@@ -294,6 +293,16 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				'vtm_pm_metabox_callback',
 				'vtmpm',
 				'special',
+				'high'
+			);
+			
+			// add our Send metabox
+			add_meta_box(
+				'submitdiv',
+				'V:tM Messages',
+				'vtm_pm_metabox_send_callback',
+				'vtmpm',
+				'side',
 				'high'
 			);
 			
@@ -322,7 +331,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$addressbook = vtm_get_pm_addressbook();
 		$myaddresses = vtm_get_pm_addresses();
-		
+				
 		$characterID = isset($vtmglobal['characterID']) ? $vtmglobal['characterID'] : 0;
 
 		$tochid   = get_post_meta( $post->ID, '_vtmpm_to_characterID', true );
@@ -389,15 +398,13 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 		}
 		
-		$status = get_post_meta( $post->ID, 'vtmpm_status', true );
-		echo "<p>Status: $status</p>";
 		//echo "<p>To: $to</p>";
 		//echo "<p>From: $from</p>";
 		
 				
 		echo "<p>";
 		//print_r($addressbook);
-		echo "<label>To: </label><select name='vtm_pm_to'>";
+		echo "<label><strong>To:</strong> </label><select name='vtm_pm_to'>";
 		echo "<option value='0:0:0'>[Select recipient]</option>";
 		$addrcount = 0;
 		foreach ($addressbook as $address) {
@@ -434,7 +441,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			echo "Select a message recipient from your <a href='$link'>Addressbook</a>";
 		}
 		echo "<br />";
-		echo "<label>From: </label><select name='vtm_pm_from'>";
+		echo "<label><strong>From:</strong> </label><select name='vtm_pm_from'>";
 		echo "<option value='$fromchid:postoffice:0'>Yourself with no return address</option>";
 		echo "<option value='anonymous:postoffice:0'>Anonymous with no return address</option>";
 		
@@ -461,12 +468,157 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		}
 		echo "</p>";
 		if (isset($replytolink)) {
-			echo "<p><label>Replying to: </label><a href='$replytolink'>$replytotitle</a></p>";
+			echo "<p><label><strong>Replying to:</strong> </label><a href='$replytolink'>$replytotitle</a></p>";
 		}
-		echo "<p>Click 'Publish' when you are ready to send your message. A copy of the message will be
-		sent to the Storytellers.</p>";
 		
 		//print_r($addressbook);
+	}
+	// Display the Meta Box
+	// --------------------------------------------
+	function vtm_pm_metabox_send_callback($post, $args = array()) {
+		global $vtmglobal;
+		
+		$post_type = $post->post_type;
+		$post_type_object = get_post_type_object($post_type);
+		$can_publish = current_user_can($post_type_object->cap->publish_posts);
+
+		echo "<p>A copy of the message will be sent to the Storytellers.</p>";
+		
+?>
+<div class="submitbox" id="submitpost">
+
+<div class="misc-pub-section misc-pub-post-status">
+<?php _e( 'Message Status:' ) ?> <span id="post-status-display"><?php
+
+		switch ( $post->post_status ) {
+			case 'private':
+				_e('Privately Published');
+				break;
+			case 'publish':
+				_e('Published');
+				break;
+			case 'future':
+				_e('Scheduled');
+				break;
+			case 'pending':
+				_e('Pending Review');
+				break;
+			case 'draft':
+			case 'auto-draft':
+				_e('Draft');
+				break;
+		}
+?>
+</span> (<?php echo get_post_meta( $post->ID, 'vtmpm_status', true );?>)
+</div><!-- .misc-pub-section -->
+
+<div id="minor-publishing">
+
+<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
+<div style="display:none;">
+<?php submit_button( __( 'Save' ), '', 'save' ); ?>
+</div>
+		
+
+<div id="minor-publishing-actions">
+<div id="save-action">
+<?php if ( 'publish' != $post->post_status && 
+	'future' != $post->post_status && 
+	'pending' != $post->post_status ) { ?>
+<input <?php if ( 'private' == $post->post_status ) { ?>style="display:none"<?php } ?> type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save Draft'); ?>" class="button" />
+<span class="spinner"></span>
+<?php } elseif ( 'pending' == $post->post_status && $can_publish ) { ?>
+<input type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save as Pending'); ?>" class="button" />
+<span class="spinner"></span>
+<?php } ?>
+</div>
+<?php 
+// Preview
+if ( is_post_type_viewable( $post_type_object ) ) : ?>
+<div id="preview-action">
+<?php
+$preview_link = esc_url( get_preview_post_link( $post ) );
+if ( 'publish' == $post->post_status ) {
+	$preview_button = __( 'Preview Changes' );
+} else {
+	$preview_button = __( 'Preview' );
+}
+?>
+<a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview-<?php echo (int) $post->ID; ?>" id="post-preview"><?php echo $preview_button; ?></a>
+<input type="hidden" name="wp-preview" id="wp-preview" value="" />
+</div>
+<?php endif; // public post type ?>
+<?php
+/**
+ * Fires before the post time/date setting in the Publish meta box.
+ *
+ * @since 4.4.0
+ *
+ * @param WP_Post $post WP_Post object for the current post.
+ */
+		do_action( 'post_submitbox_minor_actions', $post );
+?>
+<div class="clear"></div>
+</div><!-- #minor-publishing-actions -->
+
+<div id="misc-publishing-actions">
+
+<?php
+
+/**
+ * Fires after the post time/date setting in the Publish meta box.
+ *
+ * @since 2.9.0
+ * @since 4.4.0 Added the `$post` parameter.
+ *
+ * @param WP_Post $post WP_Post object for the current post.
+ */
+do_action( 'post_submitbox_misc_actions', $post );
+?>
+</div>
+<div class="clear"></div>
+</div>
+
+<div id="major-publishing-actions">
+<?php
+/**
+ * Fires at the beginning of the publishing actions section of the Publish meta box.
+ *
+ * @since 2.7.0
+ */
+do_action( 'post_submitbox_start' );
+?>
+<div id="delete-action">
+<?php
+if ( current_user_can( "delete_post", $post->ID ) ) {
+	if ( !EMPTY_TRASH_DAYS )
+		$delete_text = __('Delete Permanently');
+	else
+		$delete_text = __('Move to Trash');
+	?>
+<a class="submitdelete deletion" href="<?php echo get_delete_post_link($post->ID); ?>"><?php echo $delete_text; ?></a><?php
+} ?>
+</div>
+
+<div id="publishing-action">
+<span class="spinner"></span>
+<?php
+if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) {
+	?>
+	<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Publish') ?>" />
+	<?php submit_button( __( 'Send' ), 'primary large', 'publish', false ); ?>
+<?php
+} else { ?>
+		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
+		<input name="save" type="submit" class="button button-primary button-large" id="publish" value="<?php esc_attr_e( 'Update' ) ?>" />
+<?php
+} ?>
+</div>
+<div class="clear"></div>
+</div>
+</div>
+		
+<?php
 	}
 	
 	// Add the extra page/menu items
@@ -488,9 +640,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Display the address book
 	// --------------------------------------------
 	function vtmpm_render_address_book() {
-		global $current_user;
 		global $vtmglobal;
-		get_currentuserinfo();
+		$current_user = wp_get_current_user();
 		$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 
 		echo "<h3>Addressbook</h3>";
@@ -514,7 +665,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			
 			vtm_render_pm_addressbook_add_form('address', $doaction);
 			
-			$testListTable->prepare_items($vtmglobal['characterID']);
+			$testListTable->prepare_items();
 			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 			$current_url = remove_query_arg( 'action', $current_url );
 			?>
@@ -532,9 +683,8 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Display the My Addresses page
 	// --------------------------------------------
 	function vtmpm_render_my_details (){
-		global $current_user;
 		global $vtmglobal;
-		get_currentuserinfo();
+		$current_user = wp_get_current_user();
 		$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 
 		echo "<h3>My Contact Details</h3>";
@@ -560,7 +710,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			
 			vtm_render_pm_address_add_form('address', $doaction);
 			
-			$testListTable->prepare_items($vtmglobal['characterID']);
+			$testListTable->prepare_items();
 			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 			$current_url = remove_query_arg( 'action', $current_url );
 			?>
@@ -1011,23 +1161,19 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					// Send email to recipient
 					$subject = "You have a new message: " . $post->post_title;
 					$email   = vtm_get_character_email($recipientID);
-					$body    = "Hello $recipient,
-	
-You have a new message from $from: $viewlink
-
-";
+					$body    = "<p>Hello $recipient,</p>
+					<p>You have a new message from $from: <a href='$viewlink'>$viewlink</a></p>";
 				
 					vtm_send_email($email, $subject, $body);
 					
 					// Send email (with contents) to STs
 					$subject = "Message sent from $from ({$meta['Author']}) to $recipient";
 					$email = get_option( 'vtm_replyto_address', get_option( 'vtm_chargen_email_from_address', get_bloginfo('admin_email') ) );
-					$body = "Subject: " . $post->post_title . "
+					$body = "<p><strong>Subject</strong>: " . $post->post_title . "</p>
+					" . apply_filters('the_content', $post->post_content) . "
+					<p>View message on the site: <a href='$viewlink'>$viewlink</a></p>";
 				
-" . $post->post_content . "
-
-$viewlink";
-				vtm_send_email($email, $subject, $body);
+					vtm_send_email($email, $subject, $body);
 				
 				}
 			}
@@ -1037,8 +1183,7 @@ $viewlink";
 			// Actually trash the message if user is an ST 
 			// or it was a draft post
 			if (!vtm_isST() && $old_status != 'draft') {
-				global $current_user;
-				get_currentuserinfo();
+				$current_user = wp_get_current_user();
 				$msg = "Trashed!?";
 				// was this a message the logged in user sent?
 				if ($post->post_author == $current_user->ID) {
@@ -1108,8 +1253,7 @@ $viewlink";
 			$type = 'post';
 		}
 		if ( 'vtmpm' == $type && !vtm_isST() && $query->is_main_query() ) {
-			global $current_user;
-			get_currentuserinfo();
+			$current_user = wp_get_current_user();
 			$chid = vtm_pm_getchidfromauthid($current_user->ID);
 			
 			$tostatus   = get_query_var('tostatus');
@@ -1160,8 +1304,7 @@ $viewlink";
 	add_action('pre_get_posts','vtm_pm_search_filter');
 	
 /* 	function vtm_pm_get_basic_metaquery() {
-		global $current_user;
-		get_currentuserinfo();
+		$current_user = wp_get_current_user();
 		$chid = vtm_pm_getchidfromauthid($current_user->ID);
 		
 		return array(
@@ -1218,8 +1361,7 @@ $viewlink";
 		if (vtm_isST())
 			return $views;
 		
-		global $current_user;
-		get_currentuserinfo();
+		$current_user = wp_get_current_user();
 		$chid = vtm_pm_getchidfromauthid($current_user->ID);
 
 		$post_type = get_query_var('post_type');
@@ -1531,15 +1673,15 @@ $viewlink";
 					<header class="entry-header">
 					<<?php echo $subjecthtag; ?> class="entry-title"><?php echo get_the_title($postID); ?></<?php echo $subjecthtag; ?>>
 					<div class="vtm_pmhead">
-						<span>To: <?php echo $info['ToFull']; ?></span>
-						<span>From: <?php echo $info['FromFull']; ?></span>
-						<span>Sent: <?php echo get_the_time( get_option( 'date_format' ) ); ?></span>
+						<span class="vtm_pmhead_to">To: <?php echo vtm_formatOutput($info['ToFull']); ?></span>
+						<span class="vtm_pmhead_from">From: <?php echo vtm_formatOutput($info['FromFull']); ?></span>
+						<span class="vtm_pmhead_sent">Sent: <?php echo get_the_time( get_option( 'date_format' ) ); ?></span>
+						<span class="vtm_pmhead_subject">Subject: <?php echo get_the_title($postID); ?></span>
 					</div>
 					</header>
 		<?php
 	}
 	function vtm_pm_render_pmfoot($postID) {
-		global $current_user;
 		global $vtmglobal;
 		
 		$dellink = get_delete_post_link(get_the_ID());
@@ -1547,7 +1689,7 @@ $viewlink";
 		$replylink = add_query_arg('post_type','vtmpm',$replylink );
 		$inboxlink = admin_url('edit.php?post_type=vtmpm');
 		
-		get_currentuserinfo();
+		$current_user = wp_get_current_user();
 		$meta = vtm_pm_getpostmeta($postID);
 		$post = get_post( $postID );
 		
@@ -1572,10 +1714,22 @@ $viewlink";
 						<div class="vtm_pmhistory">
 						<?php 
 							$pid = get_post_meta( get_the_ID(), '_vtmpm_replyto_postid', true );;
+
 							while (isset($pid) && !empty($pid)) {
-								vtm_pm_render_pmhead($pid, 'strong');
+								$tochid = get_post_meta( $pid, '_vtmpm_to_characterID', true );
+								$fromchid = get_post_meta( $pid, '_vtmpm_from_characterID', true );
+
+								if ($vtmglobal['characterID'] == $tochid)
+									$pmclass = "vtm_pm_tome";
+								elseif ($vtmglobal['characterID'] == $fromchid)
+									$pmclass = "vtm_pm_fromme";
+								else
+									$pmclass = "";
+								print "<div class='$pmclass'>"; 
+								vtm_pm_render_pmhead($pid, 'h2');
 								vtm_pm_render_pmcontent($pid);
 								$pid =  get_post_meta( $pid, '_vtmpm_replyto_postid', true );
+								print "</div>";
 							}
 						
 						?>
@@ -1584,8 +1738,9 @@ $viewlink";
 		<?php
 	}
 	function vtm_pm_render_pmmsg() {
-		global $current_user;
-		get_currentuserinfo();
+		global $wpdb;
+		
+		$current_user = wp_get_current_user();
 		$postID = get_the_ID();
 		$chid = vtm_pm_getchidfromauthid($current_user->ID);
 		
@@ -1607,8 +1762,24 @@ $viewlink";
 				// mark post as read 
 				update_post_meta($postID, '_vtmpm_to_status', 'read' );
 			}
+			$totypeid   = get_post_meta( $postID, '_vtmpm_to_type', true );
+			$fromtypeid = get_post_meta( $postID, '_vtmpm_from_type', true );
+			if ($totypeid)
+				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = '%s'", $totypeid)));
+			elseif ($fromtypeid)
+				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = '%s'", $fromtypeid)));
+			else
+				$pmclass = "";
+			$tochid = get_post_meta( $postID, '_vtmpm_to_characterID', true );
+			$fromchid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
+			if ($tochid == $chid)
+				$pmclass .= " vtm_pm_tome";
+			elseif ($fromchid == $chid)	
+				$pmclass .= " vtm_pm_fromme";
+			
+			
 			?>
-				<div class="vtm_pmmsg">
+				<div class="vtm_pmmsg <?php echo $pmclass;?>">
 			<?php
 			vtm_pm_render_pmhead($postID, 'h1');
 			vtm_pm_render_pmcontent($postID);
@@ -1635,10 +1806,9 @@ $viewlink";
 		<?php 			
 	}	
 	function vtm_pm_getpostmeta($postID) {
-		global $current_user;
 		global $vtmglobal;
 		
-		get_currentuserinfo();
+		$current_user = wp_get_current_user();
 		if (!isset($vtmglobal['characterID'])) {
 			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 		}
@@ -1739,7 +1909,6 @@ $viewlink";
 	// Remove edit and quick edit for published pms from row
 	function vtm_pm_update_row_actions( $actions, $post ) {
 		global $current_screen;
-		global $current_user;
 		if( $current_screen->post_type == 'vtmpm' && get_post_status( $post->ID ) == 'publish') {
 			unset( $actions['mine'] );
 			unset( $actions['inline hide-if-no-js'] );
@@ -1747,7 +1916,7 @@ $viewlink";
 			if (!vtm_isST()) {
 				unset( $actions['edit'] );
 			
-				get_currentuserinfo();
+				$current_user = wp_get_current_user();
 				if ($post->post_author == $current_user->ID) {
 					// i.e. logged in user sent the message 
 					unset( $actions['trash'] );
@@ -2114,9 +2283,12 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
      }
 
         
-    function prepare_items($characterID) {
+    function prepare_items() {
         global $wpdb; 
+		global $vtmglobal;
         
+		$characterID = $vtmglobal['characterID'];
+		
         $columns = $this->get_columns();
         $hidden = array();
         $sortable = $this->get_sortable_columns();
@@ -2431,8 +2603,11 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
      }
 
         
-    function prepare_items($characterID) {
+    function prepare_items() {
         global $wpdb; 
+		global $vtmglobal;
+		
+		$characterID = $vtmglobal['characterID'];
         
         $columns = $this->get_columns();
         $hidden = array();
@@ -2491,5 +2666,6 @@ class vtmclass_pm_WP_Posts_List_Table extends WP_Posts_List_Table {
 	 
 		return $out;
 	}
+
 }
 ?>

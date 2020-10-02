@@ -89,15 +89,18 @@ function vtm_register_character_settings() {
 	
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_mustbeloggedin' );
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_showsecondaries' );
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_humanity' );
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_emailtag' ); 			// depreciated
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_name' ); 	// depreciated
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_address' ); 	// depreciated
 	
 	register_setting( 'vtm_pm_options_group', 'vtm_pm_mobile_prefix' );
 	register_setting( 'vtm_pm_options_group', 'vtm_pm_landline_prefix' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_telephone_digits' );
 	register_setting( 'vtm_pm_options_group', 'vtm_pm_postcode_prefix' );
 	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_location' );
 	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_enabled' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_send_to_dead_characters' );
 	
 	register_setting( 'vtm_email_options_group', 'vtm_emailtag' );
 	register_setting( 'vtm_email_options_group', 'vtm_email_debug' );
@@ -110,6 +113,11 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_email_options_group', 'vtm_smtp_pw' );
 	register_setting( 'vtm_email_options_group', 'vtm_smtp_auth' );
 	register_setting( 'vtm_email_options_group', 'vtm_smtp_secure' );
+	register_setting( 'vtm_email_options_group', 'vtm_email_signature' );
+	register_setting( 'vtm_email_options_group', 'vtm_email_font' );
+	register_setting( 'vtm_email_options_group', 'vtm_email_background' );
+	register_setting( 'vtm_email_options_group', 'vtm_email_textcolor' );
+	register_setting( 'vtm_email_options_group', 'vtm_email_linecolor' );
 
 	register_setting( 'vtm_profile_options_group', 'vtm_max_width' );
 	register_setting( 'vtm_profile_options_group', 'vtm_max_height' );
@@ -117,6 +125,7 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_profile_options_group', 'vtm_user_set_image' );
 	register_setting( 'vtm_profile_options_group', 'vtm_user_upload_image' );
 	register_setting( 'vtm_profile_options_group', 'vtm_image_effect' );
+	register_setting( 'vtm_profile_options_group', 'vtm_user_set_quote' );
 	
 	register_setting( 'feedingmap_options_group', 'feedingmap_google_api' );  // google api key
 	register_setting( 'feedingmap_options_group', 'feedingmap_centre_lat' );  // centre point, latitude

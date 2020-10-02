@@ -7,7 +7,6 @@ function vtm_character_config() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 	}
-			
 	?>
 	<div class="wrap">
 		<h2>Configuration</h2>
@@ -119,8 +118,6 @@ function vtm_render_config_general() {
 			
 			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
 			$options = $wpdb->get_results($sql);
-			
-			//print_r($options);
 		?>
 
 		<form id='options_form' method='post'>
@@ -389,16 +386,32 @@ function vtm_render_config_chargen() {
 		
 		settings_fields( 'vtm_chargen_options_group' );
 		do_settings_sections('vtm_chargen_options_group');
+		
 		?>
 
 		<table>
 		<tr>
-			<td><input type="checkbox" name="vtm_chargen_mustbeloggedin" value="1" <?php checked( '1', get_option( 'vtm_chargen_mustbeloggedin', '0' ) ); ?> /></td>
 			<td><label>User must be logged in</label></td>
+			<td><input type="checkbox" name="vtm_chargen_mustbeloggedin" value="1" <?php checked( '1', get_option( 'vtm_chargen_mustbeloggedin', '0' ) ); ?> /></td>
 		</tr>
 		<tr>
-			<td><input type="checkbox" name="vtm_chargen_showsecondaries" value="1" <?php checked( '1', get_option( 'vtm_chargen_showsecondaries', '0' ) ); ?> /></td>
 			<td><label>Show secondary Abilities in Abilities Character Generation Step</label></td>
+			<td><input type="checkbox" name="vtm_chargen_showsecondaries" value="1" <?php checked( '1', get_option( 'vtm_chargen_showsecondaries', '0' ) ); ?> /></td>
+		</tr>
+		<tr>
+			<td><label>Which path of enlightenment is 'Humanity'?</label></td>
+			<td>
+				<select name="vtm_chargen_humanity">
+					<?php
+						$path_id = get_option( 'vtm_chargen_humanity', '1' );
+						foreach (vtm_listRoadsOrPaths() as $path) {
+							print "<option value='{$path->ID}' ";
+							($path->ID == $path_id) ? print "selected" : print "";
+							echo ">" . vtm_formatOutput($path->name) . "</option>";
+						}
+					?>
+				</select>
+			</td>
 		</tr>
 		</table>
 		<?php submit_button("Save Character Generation Options", "primary", "save_chargen_button"); ?>
@@ -433,6 +446,12 @@ function vtm_render_config_email() {
 	$smtpauth   = get_option( 'vtm_smtp_auth',     'true' );
 	$smtpsecure = get_option( 'vtm_smtp_secure',   'ssl' );
 	$smtppw     = get_option( 'vtm_smtp_pw',       '' );
+	
+	$signature  = get_option( 'vtm_email_signature', '');
+	$font       = get_option( 'vtm_email_font', 'Arial');
+	$background = get_option( 'vtm_email_background', '#FFFFFF');
+	$textcolor  = get_option( 'vtm_email_textcolor', '#000000');
+	$linecolor  = get_option( 'vtm_email_linecolor', '#000000');
 	?>
 
 	<table>
@@ -463,6 +482,36 @@ function vtm_render_config_email() {
 		</td>
 	</tr>
 	</table>
+	
+	<h3>HTML Email Formatting Options</h3>
+	<table>
+	<tr>
+		<td>Background Color</td>
+		<td><input type="color" name="vtm_email_background" value="<?php echo $background; ?>" /></td>
+	</tr>
+	<tr>
+		<td>Line Color</td>
+		<td><input type="color" name="vtm_email_linecolor" value="<?php echo $linecolor; ?>" /></td>
+	</tr>
+	<tr>
+		<td>Text Color</td>
+		<td><input type="color" name="vtm_email_textcolor" value="<?php echo $textcolor; ?>" /></td>
+	</tr>
+	<tr>
+		<td>Font</td>
+		<td>
+			<select name="vtm_email_font">
+				<option value="arial"     <?php if ('arial' == $font)     echo "selected='selected'"; ?>>Arial</option>
+				<option value="tahoma"    <?php if ('tahoma' == $font)    echo "selected='selected'"; ?>>Tahoma</option>
+				<option value="trebuchet" <?php if ('trebuchet' == $font) echo "selected='selected'"; ?>>Trebuchet MS</option>
+				<option value="verdana"   <?php if ('verdana' == $font)   echo "selected='selected'"; ?>>Verdana</option>
+				<option value="courier"   <?php if ('courier' == $font)   echo "selected='selected'"; ?>>Courier New</option>
+				<option value="times"     <?php if ('times' == $font)     echo "selected='selected'"; ?>>Times New Roman</option>
+			</select>
+		</td>
+	</tr>
+	</table>
+	
 	<?php 
 	if ($method == 'smtp') {		
 		?>
@@ -527,55 +576,69 @@ function vtm_render_config_email() {
 function vtm_render_config_skinning() {	
 	global $wpdb;
 	
-		?><h3>Skinning</h3>
-		<form method="post" action="options.php">
-		<?php
+	?><h3>Skinning</h3>
+	<form method="post" action="options.php">
+	<?php
+	
+	settings_fields( 'vtm_options_group' );
+	do_settings_sections('vtm_options_group');
+	
+	if (get_option( 'vtm_feature_reports', '0' ) == 1) {
+	?>
+	<h4>Report Options</h4>
+	<table>
+		<tr>
+			<td>Extra columns for sign-in report (comma-separated):</td>
+			<td><input type="text" name="vtm_signin_columns" value="<?php echo get_option('vtm_signin_columns'); ?>" /></td>
+		</tr>
+	</table>
+	<?php } 
+	
+	if (get_option( 'vtm_feature_news', '0' ) == 1) {
+	?>
+	<h4>Newsletter Options</h4>
+	<table>
+		<tr>
+			<td>Add Newsletter posts to Wordpress blogroll:</td>
+			<td><input type="checkbox" name="vtm_news_blogroll" value="1" <?php checked( '1', get_option( 'vtm_news_blogroll', '0' ) ); ?> /></td>
+		</tr>
+	</table>
+	<?php } ?>
+	
+	<h4>Web Page Layout</h4>
+	<table>
+		<tr>
+			<!---
+			<td>Number of columns:</td>
+			<td>
+				<input type="radio" name="vtm_web_columns" value="1" <?php if (get_option('vtm_web_columns', 3) == 1) print "checked"; ?>>1 Column
+				<input type="radio" name="vtm_web_columns" value="3" <?php if (get_option('vtm_web_columns', 3) == 3) print "checked"; ?>>3 Columns	
+			</td>
+			--->
+			<td>Page width:</td>
+			<td>
+				<input type="radio" name="vtm_web_pagewidth" value="narrow" <?php if (get_option('vtm_web_pagewidth', 'wide') == 'narrow') print "checked"; ?> />
+				narrow (character sheet has 1 column and normal dots)<br />
+				<input type="radio" name="vtm_web_pagewidth" value="medium" <?php if (get_option('vtm_web_pagewidth', 'wide') == 'medium') print "checked"; ?>>
+				medium (character sheet has 3 columns and small dots)<br />
+				<input type="radio" name="vtm_web_pagewidth" value="wide"   <?php if (get_option('vtm_web_pagewidth', 'wide') == 'wide') print "checked"; ?>>
+				wide (character sheet has 3 columns and normal dots)<br />
+			</td>
+		</tr>
+	</table>
 		
-		settings_fields( 'vtm_options_group' );
-		do_settings_sections('vtm_options_group');
-		
-		if (get_option( 'vtm_feature_reports', '0' ) == 1) {
-		?>
-		<h4>Report Options</h4>
-		<table>
-			<tr>
-				<td>Extra columns for sign-in report (comma-separated):</td>
-				<td><input type="text" name="vtm_signin_columns" value="<?php echo get_option('vtm_signin_columns'); ?>" /></td>
-			</tr>
-		</table>
-		<?php } ?>
-		
-		<h4>Web Page Layout</h4>
-		<table>
-			<tr>
-				<!---
-				<td>Number of columns:</td>
-				<td>
-					<input type="radio" name="vtm_web_columns" value="1" <?php if (get_option('vtm_web_columns', 3) == 1) print "checked"; ?>>1 Column
-					<input type="radio" name="vtm_web_columns" value="3" <?php if (get_option('vtm_web_columns', 3) == 3) print "checked"; ?>>3 Columns	
-				</td>
-				--->
-				<td>Page width:</td>
-				<td>
-					<input type="radio" name="vtm_web_pagewidth" value="narrow" <?php if (get_option('vtm_web_pagewidth', 'wide') == 'narrow') print "checked"; ?> />
-					narrow (character sheet has 1 column and normal dots)<br />
-					<input type="radio" name="vtm_web_pagewidth" value="medium" <?php if (get_option('vtm_web_pagewidth', 'wide') == 'medium') print "checked"; ?>>
-					medium (character sheet has 3 columns and small dots)<br />
-					<input type="radio" name="vtm_web_pagewidth" value="wide"   <?php if (get_option('vtm_web_pagewidth', 'wide') == 'wide') print "checked"; ?>>
-					wide (character sheet has 3 columns and normal dots)<br />
-				</td>
-			</tr>
-		</table>
+	<?php 
+		$drawbgcolour = get_option('vtm_view_bgcolour', '#000000');
+		$drawborder   = get_option('vtm_view_dotlinewidth', '2');
+		$dot1colour   = get_option('vtm_dot1colour', get_option('vtm_view_dotcolour', '#FFFFFF'));
+		$dot2colour   = get_option('vtm_dot2colour', get_option('vtm_xp_dotcolour',   '#FF0000'));
+		$dot3colour   = get_option('vtm_dot3colour', get_option('vtm_pend_dotcolour', '#00FF00'));
+		$dot4colour   = get_option('vtm_dot4colour', get_option('vtm_chargen_freebie', '#0000FF'));
+	?>
+	
+	<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
 		
 		<h4>Web Page Graphics</h4>
-		<?php 
-			$drawbgcolour = get_option('vtm_view_bgcolour', '#000000');
-			$drawborder   = get_option('vtm_view_dotlinewidth', '2');
-			$dot1colour   = get_option('vtm_dot1colour', get_option('vtm_view_dotcolour', '#FFFFFF'));
-			$dot2colour   = get_option('vtm_dot2colour', get_option('vtm_xp_dotcolour',   '#FF0000'));
-			$dot3colour   = get_option('vtm_dot3colour', get_option('vtm_pend_dotcolour', '#00FF00'));
-			$dot4colour   = get_option('vtm_dot4colour', get_option('vtm_chargen_freebie', '#0000FF'));
-		?>
 		
 		<table>
 			<tr>
@@ -591,20 +654,22 @@ function vtm_render_config_skinning() {
 		</table>
 		<table>
 		<tr>
-		<td><img alt="empty dot1" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1empty.jpg'; ?>'></td>
-		<td><img alt="full dot1"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1full.jpg'; ?>'></td>
-		<td><img alt="dot2"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot2.jpg'; ?>'></td>
-		<td><img alt="dot3"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot3.jpg'; ?>'></td>
-		<td><img alt="dot4"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot4.jpg'; ?>'></td>
-		<td><img alt="crossclear" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/crossclear.jpg'; ?>'></td>
-		<td><img alt="box"        width=16 src='<?php echo VTM_PLUGIN_URL . '/images/webbox.jpg'; ?>'></td>
-		<td><img alt="checked"    width=16 src='<?php echo VTM_PLUGIN_URL . '/images/check.jpg'; ?>'></td>
-		<td><img alt="spacer"     width=16 src='<?php echo VTM_PLUGIN_URL . '/images/spacer.jpg'; ?>'></td>
-		<td><img alt="fill"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fill.jpg'; ?>'></td>
-		<td><img alt="arrow"      width=16 src='<?php echo VTM_PLUGIN_URL . '/images/arrowright.jpg'; ?>'></td>
-		<td><img alt="mail"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/mail.jpg'; ?>'></td>
+		<td><img alt="empty dot1" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="full dot1"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="dot2"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="dot3"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot3.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="dot4"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot4.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="crossclear" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/crossclear.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="box"        width=16 src='<?php echo VTM_PLUGIN_URL . '/images/webbox.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="checked"    width=16 src='<?php echo VTM_PLUGIN_URL . '/images/check.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="spacer"     width=16 src='<?php echo VTM_PLUGIN_URL . '/images/spacer.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="fill"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fill.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="arrow"      width=16 src='<?php echo VTM_PLUGIN_URL . '/images/arrowright.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="mail"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/mail.' . VTM_ICON_FORMAT; ?>'></td>
 		</tr>
 		</table>
+		
+	<?php } ?>
 
 		<h4>PDF Character Sheet Options</h4>
 		<table>
@@ -626,26 +691,32 @@ function vtm_render_config_skinning() {
 			</tr>
 			<tr>
 				<td>Character Sheet Footer</td><td><input type="text" name="vtm_pdf_footer" value="<?php echo get_option('vtm_pdf_footer'); ?>" size=30 /></td>
-				<td>Dot/Box Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_dotcolour" value="<?php echo get_option('vtm_pdf_dotcolour', '#000000'); ?>" /></td>
-				<td>Dot/Box Line Width (mm)</td><td><input type="text" name="vtm_pdf_dotlinewidth" value="<?php echo get_option('vtm_pdf_dotlinewidth', '1'); ?>" size=4 /></td>
+				<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
+					<td>Dot/Box Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_dotcolour" value="<?php echo get_option('vtm_pdf_dotcolour', '#000000'); ?>" /></td>
+					<td>Dot/Box Line Width (mm)</td><td><input type="text" name="vtm_pdf_dotlinewidth" value="<?php echo get_option('vtm_pdf_dotlinewidth', '1'); ?>" size=4 /></td>
+				<?php } else { ?>
+					<td>&nbsp;</td><td>&nbsp;</td>
+				<?php } ?>
 			</tr>
 		</table>
+		<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
 		<table>
 		<tr>
-		<td><img alt="empty dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/emptydot.jpg'; ?>'></td>
-		<td><img alt="full dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fulldot.jpg'; ?>'></td>
-		<td><img alt="xp dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/pdfxpdot.jpg'; ?>'></td>
-		<td><img alt="box dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/box.jpg'; ?>'></td>
-		<td><img alt="box2 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross1.jpg'; ?>'></td>
-		<td><img alt="box3 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross2.jpg'; ?>'></td>
-		<td><img alt="box4 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross3.jpg'; ?>'></td>
+		<td><img alt="empty dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/emptydot.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="full dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fulldot.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="xp dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/pdfxpdot.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="box dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/box.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="box2 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross1.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="box3 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross2.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="box4 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross3.' . VTM_ICON_FORMAT; ?>'></td>
 		</tr>
 		</table>
+		<?php } ?>
 		
-		<?php submit_button("Save General Options", "primary", "save_general_button"); ?>
+		<?php submit_button("Save Skinning Options", "primary", "save_skinning_button"); ?>
 		</form>
 		
-		<?php
+	<?php if (class_exists('Imagick') || extension_loaded('gd')) { 
 		
 		// Webpage dots
 		vtm_draw_dot("dot1empty", $dot1colour, $drawbgcolour, $drawborder, 0);
@@ -674,20 +745,27 @@ function vtm_render_config_skinning() {
 		vtm_draw_box("boxcross1", $drawcolour, $drawbgcolour, $drawborder, 1);
 		vtm_draw_box("boxcross2", $drawcolour, $drawbgcolour, $drawborder, 2);
 		vtm_draw_box("boxcross3", $drawcolour, $drawbgcolour, $drawborder, 3);
-		
+	}
 }
 
 function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1, $filldot = 0) {
 
+	$drawwidth    = 32;
+	$drawheight   = 32;
+	$drawmargin   = 1;
+	$imagetype    = VTM_ICON_FORMAT;
+	
 	if (class_exists('Imagick')) {
-		$drawwidth    = 32;
-		$drawheight   = 32;
-		$drawmargin   = 1;
-		$imagetype    = 'jpg';
-		
 		$image = new Imagick();
-
+		
+		// SET BACKGROUND COLOUR
+		//$image->setBackgroundColor(new ImagickPixel('transparent'));
+		//$image->setBackgroundColor(new ImagickPixel($drawbgcolour));
+		//$image->setBackgroundColor($drawbgcolour);
+ 
 		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
+		$image->setImageFormat($imagetype);
+		//$image->newImage($drawwidth, $drawheight, new ImagickPixel('none'), $imagetype);
 		$draw = new ImagickDraw();
 		$draw->setStrokeColor($drawcolour);
 		$draw->setStrokeWidth($drawborder);
@@ -695,6 +773,7 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 			$draw->setFillColor($drawcolour);
 		else
 			$draw->setFillColor($drawbgcolour);
+			//$draw->setFillColor('transparent');
 		$draw->circle( ceil($drawwidth / 2), ceil($drawheight / 2), ceil($drawwidth / 2), $drawborder + $drawmargin);
 		
 		if ($filldot) {
@@ -703,18 +782,50 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 		}
 		
 		$image->drawImage($draw);
-		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
+		if (!$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype)) {	
+			echo "<p style='color:red'>ERROR: could not save " . VTM_CHARACTER_URL . "images/{$name}." . $imagetype . "</p>";
+		} else {
+			//echo "<p style='color:red'>Saved '" . VTM_CHARACTER_URL . "images/{$name}." . $imagetype . "' with $drawcolour, $drawbgcolour</p>";
+		}
+		
 
 		$image = "";
+	} 
+	elseif (extension_loaded('gd')) {
+		
+		$image = imagecreatetruecolor ( $drawwidth , $drawheight );
+		$rgbcolor = vtm_hex2rgb($drawcolour);
+		$rgbbackground = vtm_hex2rgb($drawbgcolour);
+		
+		$background = imagecolorallocate($image, $rgbbackground[0], $rgbbackground[1], $rgbbackground[2]);
+		$color = imagecolorallocate($image, $rgbcolor[0], $rgbcolor[1], $rgbcolor[2]);
+		imagefill($image, 0, 0, $background);
+		
+		if ($fill) {
+			imagefilledellipse($image, ceil($drawwidth / 2), ceil($drawheight / 2), $drawheight-2 , $drawheight-2, $color);
+		} else {
+			imagefilledellipse($image, ceil($drawwidth / 2), ceil($drawheight / 2), $drawheight-2 , $drawheight-2, $color);
+			imagefilledellipse($image, ceil($drawwidth / 2), ceil($drawheight / 2), $drawheight-($drawborder*2)-2 , $drawheight-($drawborder*2)-2, $background);
+		}
+		
+		if ($filldot) {
+			imagefilledellipse($image, ceil($drawwidth / 2), ceil($drawheight / 2), $drawheight-$drawborder-10 , $drawheight-$drawborder-10, $color);
+		}
+
+		switch (VTM_ICON_FORMAT) {
+			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+		}
+		imagedestroy($image);
 	}
 }
 function vtm_draw_box($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) {
-	if (class_exists('Imagick')) {
-		$drawwidth    = 32;
-		$drawheight   = 32;
-		$drawmargin   = 1;
-		$imagetype    = 'jpg';
+	$drawwidth    = 32;
+	$drawheight   = 32;
+	$drawmargin   = 1;
+	$imagetype    = VTM_ICON_FORMAT;
 
+	if (class_exists('Imagick')) {
 		$image = new Imagick();
 		
 		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
@@ -736,15 +847,40 @@ function vtm_draw_box($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) 
 
 		$image = "";
 	}
+	elseif (extension_loaded('gd')) {
+					
+		$image = imagecreatetruecolor ( $drawwidth , $drawheight );
+		$rgbcolor = vtm_hex2rgb($drawcolour);
+		$rgbbackground = vtm_hex2rgb($drawbgcolour);
+		$background = imagecolorallocate($image, $rgbbackground[0], $rgbbackground[1], $rgbbackground[2]);
+		$color = imagecolorallocate($image, $rgbcolor[0], $rgbcolor[1], $rgbcolor[2]);
+		imagefill($image, 0, 0, $background);
+
+		imagefilledrectangle ( $image , 1 , 1 , $drawwidth - 1, $drawheight - 1 , $color );
+		imagefilledrectangle ( $image , $drawborder+1 , $drawborder+1 , $drawwidth - $drawborder -1, $drawheight - $drawborder - 1 , $background );
+		
+		imagesetthickness($image, $drawborder);
+		if ($crosses >= 1)
+			imageline ( $image , 1, $drawheight - 1, $drawwidth - 1, 1 , $color );
+		if ($crosses >= 2)
+			imageline ( $image , 1, 1, $drawwidth - 1, $drawheight - 1 , $color );
+		if ($crosses >= 3)
+			imageline ( $image , 1, $drawheight/2, $drawwidth - 1, $drawheight/2 , $color );
 	
+		switch (VTM_ICON_FORMAT) {
+			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+		}
+		imagedestroy($image);
+	}
 }
 function vtm_draw_mail($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) {
-	if (class_exists('Imagick')) {
-		$drawwidth    = 15;
-		$drawheight   = 10;
-		$drawmargin   = 1;
-		$imagetype    = 'jpg';
+	$drawwidth    = 15;
+	$drawheight   = 10;
+	$drawmargin   = 1;
+	$imagetype    = VTM_ICON_FORMAT;
 
+	if (class_exists('Imagick')) {
 		$image = new Imagick();
 		
 		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
@@ -764,15 +900,44 @@ function vtm_draw_mail($name, $drawcolour, $drawbgcolour, $drawborder, $crosses)
 
 		$image = "";
 	}
+	elseif (extension_loaded('gd')) {
+					
+		$image = imagecreatetruecolor ( $drawwidth , $drawheight );
+		$rgbcolor = vtm_hex2rgb($drawcolour);
+		$rgbbackground = vtm_hex2rgb($drawbgcolour);
+		$background = imagecolorallocate($image, $rgbbackground[0], $rgbbackground[1], $rgbbackground[2]);
+		$color = imagecolorallocate($image, $rgbcolor[0], $rgbcolor[1], $rgbcolor[2]);
+		imagefill($image, 0, 0, $background);
+
+		imagefilledrectangle ( $image , 1 , 1 , $drawwidth - 1, $drawheight - 1 , $color );
+		imagefilledrectangle ( $image , $drawborder+1 , $drawborder+1 , $drawwidth - $drawborder -1, $drawheight - $drawborder - 1 , $background );
+		
+		imagesetthickness($image, $drawborder);
+		imageline ( $image , 1, 1, $drawwidth/2, $drawheight/2 , $color );
+		imageline ( $image , $drawwidth/2, $drawheight/2, $drawwidth - $drawborder - 1,	$drawborder , $color );
+	
+		switch (VTM_ICON_FORMAT) {
+			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+		}
+		imagedestroy($image);
+	}
 	
 }
 function vtm_draw_check($name, $drawcolour, $drawbgcolour, $drawborder) {
-	if (class_exists('Imagick')) {
-		$drawwidth    = 32;
-		$drawheight   = 32;
-		$drawmargin   = 1;
-		$imagetype    = 'jpg';
+	$drawwidth    = 32;
+	$drawheight   = 32;
+	$drawmargin   = 1;
+	$imagetype    = VTM_ICON_FORMAT;
+	$Lx = $drawborder;
+	$Ty = $drawborder;
+	$Rx = $drawheight - $drawborder - $drawmargin;
+	$By = $drawwidth - $drawborder - $drawmargin;
+	$MIDx = $drawwidth/2;
+	$MIDy = $drawheight/2;
+	$gap = $drawborder * 2;
 
+	if (class_exists('Imagick')) {
 		$image = new Imagick();
 		
 		$image->newImage($drawwidth, $drawheight, new ImagickPixel($drawbgcolour), $imagetype);
@@ -781,15 +946,7 @@ function vtm_draw_check($name, $drawcolour, $drawbgcolour, $drawborder) {
 		$draw->setStrokeWidth($drawborder);
 		$draw->setFillColor($drawbgcolour);
 		$draw->rectangle( $drawborder, $drawborder, $drawwidth - $drawborder - 1, $drawheight - $drawborder - 1);
-		
-		$Lx = $drawborder;
-		$Ty = $drawborder;
-		$Rx = $drawheight - $drawborder - $drawmargin;
-		$By = $drawwidth - $drawborder - $drawmargin;
-		$MIDx = $drawwidth/2;
-		$MIDy = $drawheight/2;
-		$gap = $drawborder * 2;
-		
+
 		$draw->setStrokeWidth($drawborder * 2);
 		$draw->line($Lx + $gap, $MIDy, 		$MIDx, $By - $gap);
 		$draw->line($MIDx, $By - $gap,		$Rx - $gap, $Ty + $gap);
@@ -799,13 +956,42 @@ function vtm_draw_check($name, $drawcolour, $drawbgcolour, $drawborder) {
 
 		$image = "";
 	}
+	elseif (extension_loaded('gd')) {
+		$image = imagecreatetruecolor ( $drawwidth , $drawheight );
+		$rgbcolor = vtm_hex2rgb($drawcolour);
+		$rgbbackground = vtm_hex2rgb($drawbgcolour);
+		$background = imagecolorallocate($image, $rgbbackground[0], $rgbbackground[1], $rgbbackground[2]);
+		$color = imagecolorallocate($image, $rgbcolor[0], $rgbcolor[1], $rgbcolor[2]);
+		imagefill($image, 0, 0, $background);
+		
+		imagefilledrectangle ( $image , 1 , 1 , $drawwidth - 1, $drawheight - 1 , $color );
+		imagefilledrectangle ( $image , $drawborder+1 , $drawborder+1 , $drawwidth - $drawborder -1, $drawheight - $drawborder - 1 , $background );
+		
+		imagesetthickness($image, $drawborder*2);
+		imageline ( $image , $Lx + $gap, $MIDy, $MIDx, $By - $gap , $color );
+		imageline ( $image , $MIDx, $By - $gap,	$Rx - $gap, $Ty + $gap, $color );
+		
+		switch (VTM_ICON_FORMAT) {
+			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+		}
+		imagedestroy($image);
+	}
 }
 function vtm_draw_arrow($name, $drawcolour, $drawbgcolour, $drawborder) {
+	$drawwidth    = 32;
+	$drawheight   = 32;
+	$drawmargin   = 1;
+	$imagetype    = VTM_ICON_FORMAT;
+	$Lx = $drawborder;
+	$Ty = $drawborder;
+	$Rx = $drawheight - $drawborder - $drawmargin;
+	$By = $drawwidth - $drawborder - $drawmargin;
+	$MIDx = $drawwidth/2;
+	$MIDy = $drawheight/2;
+	
+
 	if (class_exists('Imagick')) {
-		$drawwidth    = 32;
-		$drawheight   = 32;
-		$drawmargin   = 1;
-		$imagetype    = 'jpg';
 
 		$image = new Imagick();
 		
@@ -814,13 +1000,6 @@ function vtm_draw_arrow($name, $drawcolour, $drawbgcolour, $drawborder) {
 		$draw->setStrokeColor($drawcolour);
 		$draw->setStrokeWidth($drawborder);
 				
-		$Lx = $drawborder;
-		$Ty = $drawborder;
-		$Rx = $drawheight - $drawborder - $drawmargin;
-		$By = $drawwidth - $drawborder - $drawmargin;
-		$MIDx = $drawwidth/2;
-		$MIDy = $drawheight/2;
-		
 		$draw->line($Lx, $MIDy, $Rx, $MIDy);
 		$draw->line($MIDx, $Ty, $Rx, $MIDy);
 		$draw->line($MIDx, $By, $Rx, $MIDy);
@@ -829,6 +1008,25 @@ function vtm_draw_arrow($name, $drawcolour, $drawbgcolour, $drawborder) {
 		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
 
 		$image = "";
+	}
+	elseif (extension_loaded('gd')) {
+		$image = imagecreatetruecolor ( $drawwidth , $drawheight );
+		$rgbcolor = vtm_hex2rgb($drawcolour);
+		$rgbbackground = vtm_hex2rgb($drawbgcolour);
+		$background = imagecolorallocate($image, $rgbbackground[0], $rgbbackground[1], $rgbbackground[2]);
+		$color = imagecolorallocate($image, $rgbcolor[0], $rgbcolor[1], $rgbcolor[2]);
+		imagefill($image, 0, 0, $background);
+				
+		imagesetthickness($image, $drawborder);
+		imageline ( $image , $Lx, $MIDy, $Rx, $MIDy , $color );
+		imageline ( $image , $MIDx, $Ty, $Rx, $MIDy, $color );
+		imageline ( $image , $MIDx, $By, $Rx, $MIDy, $color );
+		
+		switch (VTM_ICON_FORMAT) {
+			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+		}
+		imagedestroy($image);
 	}
 }
 
@@ -906,6 +1104,26 @@ function vtm_render_config_pm() {
 			<td><input type="text" name="vtm_pm_ic_postoffice_location" value="<?php echo get_option( 'vtm_pm_ic_postoffice_location' ); ?>" /></td>
 			<td>For example, characters might be able to leave messages for each other at a central location such as a nightclub</td>
 		</tr>
+		<tr>
+			<td><label>Number of digits in a telephone number: </label></td>
+			<td><input type="number" name="vtm_pm_telephone_digits" min="1" max="20" value="<?php echo get_option( 'vtm_pm_telephone_digits',11 ); ?>" /></td>
+			<td>For automatic telephone number generation.</td>
+		</tr>
+		<tr>
+			<td><label>Mobile number prefix: </label></td>
+			<td><input type="text" name="vtm_pm_mobile_prefix" value="<?php echo get_option( 'vtm_pm_mobile_prefix', '07' ); ?>" /></td>
+			<td>What digits should be put at the start of an auto-generated mobile number.</td>
+		</tr>
+		<tr>
+			<td><label>Land Line number prefix: </label></td>
+			<td><input type="text" name="vtm_pm_landline_prefix" value="<?php echo get_option( 'vtm_pm_landline_prefix', '0141' ); ?>" /></td>
+			<td>What digits should be put at the start of an auto-generated land-line number.</td>
+		</tr>
+		<tr>
+			<td><label>Allow sending PMs to dead characters: </label></td>
+			<td><input type="checkbox" name="vtm_pm_send_to_dead_characters" value="1" <?php checked( '1', get_option( 'vtm_pm_send_to_dead_characters', '0' ) ); ?> /></td>
+			<td>Dead characters are included in the list of available recipients. Note that not-visible characters will always be hidden from the recipient list.</td>
+		</tr>
 		</table>
 		<?php submit_button("Save Changes", "primary", "save_pm_button"); ?>
 		</form>
@@ -924,6 +1142,10 @@ function vtm_render_config_profile() {
 			?>	
 			
 			<table>
+			<tr>
+				<td><label>Players can set their quote:</label></td>
+				<td><input type="checkbox" name="vtm_user_set_quote" value="1" <?php checked( '1', get_option( 'vtm_user_set_quote', '1' ) ); ?> /></td>
+			</tr>
 			<tr>
 				<td><label>Players can set their profile picture:</label></td>
 				<td><input type="checkbox" name="vtm_user_set_image" value="1" <?php checked( '1', get_option( 'vtm_user_set_image', '1' ) ); ?> /></td>
@@ -944,6 +1166,7 @@ function vtm_render_config_profile() {
 				<td><label>Maximum picture filesize for uploaded pictures (bytes)</label></td>
 				<td><input type="text" name="vtm_max_size" value="<?php echo get_option('vtm_max_size', '0'); ?>" /> (set to 0 for no limit)</td>
 			</tr>
+			<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
 			<tr>
 				<td>Image effect</td>
 				<td>
@@ -951,12 +1174,15 @@ function vtm_render_config_profile() {
 					<option value="none" <?php echo selected( 'none', get_option('vtm_image_effect'), false );?>>None</option>
 					<option value="bw" <?php echo selected( 'bw', get_option('vtm_image_effect'), false );?>>Black and White</option>
 					<option value="sepia" <?php echo selected( 'sepia', get_option('vtm_image_effect'), false );?>>Sepia</option>
+					<?php if (class_exists('Imagick')) { ?>
 					<option value="painting" <?php echo selected( 'painting', get_option('vtm_image_effect'), false );?>>Painting</option>
+					<?php } ?>
 				</select>
 				</td>
 			</tr>
 			</table>
-			<?php submit_button("Save Profile Options", "primary", "save_profile_button"); ?>
+			<?php }
+			submit_button("Save Profile Options", "primary", "save_profile_button"); ?>
 		
 		</form>
 
@@ -1133,8 +1359,11 @@ function vtm_render_config_database() {
 				//print_r($_REQUEST);
 				//print_r($_FILES);
 				// check file type
-				if ($_FILES['vtm_import']['type'] !== 'application/zip') {
-					echo "<p style='color:red'>Uploaded file must be a zip file</p>";
+				if ($_FILES['vtm_import']['type'] !== 'application/zip' &&
+					$_FILES['vtm_import']['type'] !== 'application/x-zip-compressed' &&
+					$_FILES['vtm_import']['type'] !== 'application/x-zip'
+					) {
+					echo "<p style='color:red'>Uploaded file must be a zip file: {$_FILES['vtm_import']['type']}</p>";
 				}
 				else {
 					// put in upload directory
@@ -1175,12 +1404,12 @@ function vtm_render_config_database() {
 						if (vtm_is_valid_import_version(basename($subfolder))) {
 							// install
 							echo '<p>Clearing all data from data tables</p>';
-							vtm_factory_defaults();
+							vtm_factory_defaults("import");
 							echo "<p>Installing data</p>";
 							vtm_character_install_data("$subfolder");
 								
 						} else {
-							echo "<p style='color:red'>Cannot import data as it was created with a different database version.</p>";       
+							echo "<p style='color:red'>Cannot import data as it was created with a different database version (" . basename($subfolder) . ").</p>";       
 						}
 					
 					} else {

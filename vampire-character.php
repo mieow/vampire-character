@@ -3,11 +3,11 @@
         Plugin URI: http://plugin.gvlarp.com
         Description: Management of Characters and Players
         Author: Jane Houston
-        Version: 2.3
+        Version: 2.9
         Author URI: http://www.mieow.co.uk
     */
 
-    /*  Copyright 2015 Jane Houston
+    /*  Copyright 2020 Jane Houston
 
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License, version 2, as
@@ -28,6 +28,8 @@ global $wpdb;
 define( 'VTM_CHARACTER_URL', plugin_dir_path(__FILE__) );
 define( 'VTM_TABLE_PREFIX', $wpdb->prefix . "vtm_" );
 define( 'VTM_PLUGIN_URL',  plugins_url('vampire-character'));
+define( 'VTM_ICON_FORMAT',  'jpg');
+
 require_once VTM_CHARACTER_URL . 'inc/functions.php';
 require_once VTM_CHARACTER_URL . 'inc/printable.php';
 require_once VTM_CHARACTER_URL . 'inc/extendedbackground.php';
@@ -56,7 +58,7 @@ if (is_admin()) {
 	// The plugin works without loading in the data, although they 
 	// will then have to manually enter skills, etc.
 	define( 'VTM_DATA_NAME',    'vampire-data');
-	define( 'VTM_DATA_VERSION', 'vtm2.2-v2.2');
+	define( 'VTM_DATA_VERSION', 'vtm2.6-v3.1');
 	define( 'VTM_DATA_FILE',  'https://github.com/mieow/vampire-data/archive/' . VTM_DATA_VERSION . '.zip');
 }
 
@@ -65,7 +67,7 @@ require_once VTM_CHARACTER_URL . 'inc/adminpages/toolbar.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/characters.php';
 
 $title = "Vampire Character Management";
-$vtmglobal['config'] = vtm_getConfig();
+vtm_getConfig();
 
 /* STYLESHEETS
 ------------------------------------------------------ */
@@ -89,9 +91,7 @@ add_action('admin_enqueue_scripts', 'vtm_feedingmap_scripts');
 /* FUNCTIONS
 ------------------------------------------------------ */
 function vtm_isST() {
-	global $current_user;
-	
-	get_currentuserinfo();
+	$current_user = wp_get_current_user();
 	$result = false;
 	$roles = $current_user->roles;
 
@@ -105,9 +105,8 @@ function vtm_isST() {
 }
 
 function vtm_establishCharacter($character) {
-	global $current_user;
 	global $vtmglobal;
-	get_currentuserinfo();
+	$current_user = wp_get_current_user();
 	if (vtm_isST()) {
 		if (isset($_POST['VTM_CHARACTER'])) {
 			$character = $_POST['VTM_CHARACTER'];
@@ -123,9 +122,7 @@ function vtm_establishCharacter($character) {
 		$character = $current_user->user_login;
 		$vtmglobal['character'] = $character;
 	}
+	
 	return $character;
 }
-
-
-
 ?>

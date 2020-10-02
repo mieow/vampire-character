@@ -190,7 +190,8 @@ function vtm_render_printable($characterID) {
 		
 		$backgrounds = $mycharacter->getBackgrounds();
 		$disciplines = $mycharacter->getDisciplines();
-		$paths       = $mycharacter->paths;
+		$primarypaths   = $mycharacter->primary_paths;
+		$secondarypaths = $mycharacter->secondary_paths;
 		
 		$sql = "SELECT NAME, PARENT_ID FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE;";
 		$allgroups = $wpdb->get_results($sql);	
@@ -208,16 +209,24 @@ function vtm_render_printable($characterID) {
 		$alldisciplines = array();
 		foreach ($disciplines as $discipline) {
 			array_push($alldisciplines, array( $discipline->name , "", $discipline->level, $discipline->pending));
-			if (isset($paths[$discipline->name])) {
-				foreach ($paths[$discipline->name] as $path => $info) {
+			if (isset($primarypaths[$discipline->name])) {
+				foreach ($primarypaths[$discipline->name] as $path => $info) {
+					array_push($alldisciplines, array( "", $path."(P)" , $info[0], $info[1]));
+				}
+			}
+			if (isset($secondarypaths[$discipline->name])) {
+				foreach ($secondarypaths[$discipline->name] as $path => $info) {
 					array_push($alldisciplines, array( "", $path , $info[0], $info[1]));
 				}
 			}
 		}
 		
 		$discrows = count($disciplines);
-		if (count($paths) > 0) {
-			foreach ($paths as $discipline => $majikpaths) {
+		if (count($primarypaths) > 0) {
+			foreach ($primarypaths as $discipline => $majikpaths) {
+				$discrows += count($majikpaths);
+			}
+			foreach ($secondarypaths as $discipline => $majikpaths) {
 				$discrows += count($majikpaths);
 			}
 		}
@@ -328,19 +337,27 @@ function vtm_render_printable($characterID) {
 		$pdf->Divider('Character Information');
 		$dob = explode('-',$mycharacter->date_of_birth);
 		$doe = explode('-',$mycharacter->date_of_embrace);
+		$doa = explode('-',$mycharacter->date_of_approval);
 		$dobm = strftime("%b", strtotime($mycharacter->date_of_birth));
 		$doem = strftime("%b", strtotime($mycharacter->date_of_embrace));
+		$doam = strftime("%b", strtotime($mycharacter->date_of_approval));
 		
 		$pdf->BasicInfoTableRow( array(
 				'Date of Birth',   ($dob[2] * 1) . " $dobm " . $dob[0],
-				'Date of Embrace', ($doe[2] * 1) . " $doem " . $doe[0],
-				'Sire',          $mycharacter->sire
+				'Sire',          $mycharacter->sire,
+				'Clan Flaw',     $mycharacter->clan_flaw,
 			)
 		);
 		$pdf->BasicInfoTableRow( array(
-				'Clan Flaw',     $mycharacter->clan_flaw,
+				'Date of Embrace', ($doe[2] * 1) . " $doem " . $doe[0],
+				'Sect',          $mycharacter->sect,
 				'Site Login',    $mycharacter->wordpress_id,
-				'Sect',          $mycharacter->sect
+			)
+		);
+		$pdf->BasicInfoTableRow( array(
+				'Blood per round',    $mycharacter->blood_per_round,
+				'Domain',         $mycharacter->domain,
+				'Approval Date', ($doa[2] * 1) . " $doam " . $doa[0]
 			)
 		);
 		$pdf->Ln();
@@ -424,23 +441,6 @@ function vtm_render_printable($characterID) {
 		echo "<p>Class error</p>";
 		exit;
 	}
-}
-
-function vtm_hex2rgb($hex) {
-   $hex = str_replace("#", "", $hex);
-
-   if(strlen($hex) == 3) {
-      $r = hexdec(substr($hex,0,1).substr($hex,0,1));
-      $g = hexdec(substr($hex,1,1).substr($hex,1,1));
-      $b = hexdec(substr($hex,2,1).substr($hex,2,1));
-   } else {
-      $r = hexdec(substr($hex,0,2));
-      $g = hexdec(substr($hex,2,2));
-      $b = hexdec(substr($hex,4,2));
-   }
-   $rgb = array($r, $g, $b);
-   //return implode(",", $rgb); // returns the rgb values separated by commas
-   return $rgb; // returns an array with the rgb values
 }
 
 

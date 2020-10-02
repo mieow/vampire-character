@@ -135,6 +135,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 	function vtm_get_queued_mail_recipients($postid, $status = "all") {
 		global $wpdb;
 		
+		$args = array($postid);
 		$sql = "SELECT c.NAME as name, s.NAME as status, c.EMAIL as email
 				FROM 
 					" . VTM_TABLE_PREFIX . "CHARACTER c,
@@ -146,8 +147,9 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 					AND q.WP_POST_ID = %s";
 		if ($status != "all") {
 			$sql .= " AND s.NAME = %s";
+			array_push($args, $status);
 		}
-		$sql = $wpdb->prepare($sql, $postid, $status);
+		$sql = $wpdb->prepare($sql, $args);
 		//echo "<p>SQL: $sql</p>";
 		return $wpdb->get_results($sql);
 	}
@@ -297,25 +299,26 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 		$postinfo = get_post($postid);
 		$subject = stripslashes($postinfo->post_title);
 		
-		$body = "Hello $name,\n\n";
-		$body .= "You have {$mycharacter->current_experience} experience available to spend. ";
+		$body = "<p>Hello $name,</p>";
+		$body .= "<p>You have <strong>{$mycharacter->current_experience}</strong> experience available to spend. ";
 		if (get_option('vtm_feature_temp_stats', '0') == '1')
-			$body .= "You have {$mycharacter->current_willpower} Willpower out of {$mycharacter->willpower}. ";
-		$body .= "You are at {$mycharacter->path_rating} on {$mycharacter->path_of_enlightenment}. ";
-		$body .= "Your background is " . 
+			$body .= "You have <strong>{$mycharacter->current_willpower}</strong> Willpower out of {$mycharacter->willpower}. ";
+		$body .= "You are at <strong>{$mycharacter->path_rating}</strong> on {$mycharacter->path_of_enlightenment}. ";
+		$body .= "Your background is <strong>" . 
 			sprintf ("%.0f%%", $mycharacter->backgrounds_done * 100 / $mycharacter->backgrounds_total) .
-			" complete.\n\n";
+			"</strong> complete.</p>";
 			
 		$xpdata = vtm_get_xp_table($mycharacter->player_id, $characterID, 5);
 		if (count($xpdata) > 0) {
+			$body .= "<ul>\n";
 			foreach ($xpdata as $row) {
-				$body .= "{$row->awarded} " . stripslashes($row->char_name) . " : " . stripslashes($row->reason_name) . " " . stripslashes($row->comment) . " : {$row->amount} experience\n";
+				$body .= "<li>{$row->awarded} " . stripslashes($row->char_name) . " : " . stripslashes($row->reason_name) . " " . stripslashes($row->comment) . " : {$row->amount} experience</li>";
 			}
-			$body .= "\n";
+			$body .= "</ul>";
 		}
 			
-		$body .= stripslashes($postinfo->post_content);
-		$body .= "\n\nBest regards,\n$replyname";
+		$body .=  apply_filters('the_content', $postinfo->post_content);
+		$body .= "<p>Best regards,<br>$replyname</p>";
 		
 		$result = vtm_send_email($email, $subject, $body);
 		

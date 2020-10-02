@@ -1,9 +1,10 @@
-=== Vampire Character Manager ===
+﻿=== Vampire Character Manager ===
 Contributors: magent
 Tags: vampire, character, generation, roleplay, rpg, lrp, larp
-Requires at least: 4.3.1
-Tested up to: 4.3.1
-Stable tag: 2.3
+Requires at least: 5.2.4
+Tested up to: 5.2.4
+Stable tag: 2.9
+Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -14,7 +15,8 @@ For managing characters for LARPs and online vampire games.
 This WordPress plugin is intended to manage vampire character sheets for LARPs and online vampire games.
 
 Features are:
-* On-line character generation
+
+* Online character generation
 * Track and assign changes in Experience and other ratings
 * Output a PDF character for printing
 * Configure character generation rules using templates
@@ -31,7 +33,27 @@ Features are:
 
 == Installation ==
 
-These are the instructions for manually installing the latest version of the plugin:
+= Setting up for the first time =
+
+1. Install the plugin as you would normally - either directly from the wordpress site or by downloading the zip file and uploading it into your site 
+1. Activate the plugin
+1. Navigate to the Characters -> Configuration page
+1. Select the Database tab and click the button to load in default data (e.g. Skills, Merits and Flaws). Alternatively, you can navigate to the Characters -> Data Tables page and enter it all in manually.
+1. Select the Page Links tab
+	1. Enter a name for each of the pages that the plugin needs to create (e.g. "Profile")
+	1. Click 'Save Links'
+1. Select the Features tab and enable any plugin feature you want to use
+1. Go through the rest of the Configuration tabs and set the options for your game
+1. Navigate to Characters -> Data Tables and review the data
+
+= After updating the plugin = 
+
+1. Go to Characters->Configuration. Check any new options and save your changes.
+1. Go to Data Tables->Character Templates. Check any new template options and save.
+1. Go through version log and make other any appropriate updates 
+
+= Manually updating the plugin =
+
 1. Download the latest version from the plugin site
 1. Log into the administrator account on the Wordpress website
 1. De-activate the character plugin, if already installed
@@ -39,15 +61,11 @@ These are the instructions for manually installing the latest version of the plu
 1. Add New Plugin -> upload
 1. Activate Plugin 
 
-After installation, we recommend:
-1. Go to Characters->Configuration. Check any new options and save your changes.
-1. Go through version log and make any appropriate updates 
-
 == Frequently Asked Questions ==
 
-= I want multiple characters, each with a Wordpress login but Wordpress won't allow it =
+= I want multiple characters under the same email address, each with a Wordpress login but Wordpress won't allow it =
 
-We recommend the 'Allow Multiple Accounts' plugin by Scott Reilly to work around this issue.
+I recommend the 'Allow Multiple Accounts' plugin by Scott Reilly to work around this issue.
 
 = How do I stop Storytellers/Narrators/Games Masters having full admin access to the Wordpress site? =
 
@@ -56,6 +74,10 @@ Create a role for them called 'storyteller' with the 'manage_options' capability
 = Can I have the same Wordpress account for multiple characters? =
 
 No.  The plugin works under the premise that each Wordpress login links to only 1 character.
+
+= How do I get a Google API Key for the map functions? =
+
+You can get a Standard (and free) Google Maps Javascript API key from this google site: https://developers.google.com/maps/documentation/javascript/get-api-key
 
 = Are there any other plugins you recommend for running a game of vampire on Wordpress? =
 
@@ -70,9 +92,33 @@ These are the plugins I have used for the LARP(s) I have been involved in runnin
 
 You can try out character generation on the plugin website.
 
+= I get a 404 page when I try to read a character mail =
+
+Try refreshing the Permalinks.  If that doesn't fix the problem then please contact me.
+
+= The format of the page is all messed up when I try to read a character mail =
+
+The page format for viewing character mails comes from the default template in the plugin.  This template might not work with the theme you are using.  In that case, you can create a new template called 'vtmpm.php' in your theme directory.  Enter the below PHP to insert the message content:
+
+    vtm_pm_render_pmmsg();
+
+You can find the default template under vampire-character/templates/vtmpm.php to use as an example.
+
+= How can I add things to the email template that the plugin sends? =
+
+You can create a custom email template by copying vampire-character/templates/vtmemail.html to your theme directory and making edits there.
+
+= Nothing happens when I try to spend experience! =
+
+When there are alot of things to buy with experience then the plugin reaches the limit of the max_input_vars=1000 default PHP setting.
+
+This setting needs to be increased in your site php.ini or .htaccess file.  This will need to be done by your website administrator or by the webhost.
+
+Version 2.8 has fixed this issue for normal experience spends but not experience spends during character generation.
+
 = I have an idea for a great new feature! =
 
-Please email me at storyteller@plugin.gvlarp.com with your suggestion.
+Please email me at storyteller@plugin.gvlarp.com with your suggestion
 
 = I found a problem with the plugin =
 
@@ -89,12 +135,75 @@ the issue.  Also include any error messages.
 
 == Changelog ==
 
+= 2.9 =
+
+* Bug fix: fixed issue where experience spends failed to approve
+* Bug fix: fixed additional PHP7.3 warnings from shortcodes
+
+= 2.8 = 
+
+* New feature: New shortcode to display inbox contents
+* Bug fix: All disciplines in Clan data table are now optional - required for Caitiff who have no clan disciplines
+* Bug fix: Dead characters no longer show in list of recipients for messages
+* Bug fix: max_input_vars issue resolved for Spending Experience (still to do for Character Generation)
+* Bug fix: incorrect link to character from profile heading when logged in as ST is fixed
+* Bug fix: fixed issue when viewing characters of very low generation where the bloodpool boxes didn't wrap every 10 boxes
+* Bug fix: Doesn't list deleted contact details in profile page
+* Improvements: Emails are now sent in html format
+* Improvements: Users can now update their own profile quotes
+* Improvements: Added a 'Contact details' tab in extended backgrounds where you can automatically create and delete phone numbers
+* Improvements: Character creation date shown on printable character sheet and on character_details shortcode
+* Improvements: Classes added to some private message elements for better CSS support
+* Improvements: Supports PHP7.3
+
+
+= 2.7 =
+
+* Patch for situation where character was not generated using the character generation process and therefore didn't have an associated template ID
+
+= 2.6 =
+
+* New feature: Now supports Thaumaturgy and Necromancy Primary paths
+* Bug fix: XP is now transferred from deleted characters when characters are purged from the database when XP is assigned by player, rather than by character
+* Improvements: Database import now works for any data imported from version 2.3 and onwards
+* Improvements: Publish button is now Send for In-character email
+* Bug fix: Users can't set IC emails to 'Private' which was making the subject show up in everyone's inboxes under the private filter
+* Bug fix: Fixed issue where profile image wasn't being displayed properly
+* Bug fix: HTML in background description for approval now displaying correctly
+* Improvement: warning given when max_input_vars limit reached on experience spend page (will be properly fixed in next version)
+* Bug fix: Copes better with character generation steps appearing/disappearing depending on character options (e.g. adding majik disciplines and the rituals step appearing)
+
+= 2.5 =
+
+* Bug fix: Issue whereby wordpress IDs of deleted characters were stopping the wordpress 
+ID being reused. This was an issue where multiple versions of a character were created
+accidentally
+* Improvement: Admins can now set the sector of a background when on the Edit character page
+* Bug fix: Character generation templates cannot be deleted if characters exist that were 
+created, or are in the process of being created, with that template
+* Bug fix: Character generation now works if the literal 'Humanity' path is missing (e.g.
+where Path of Humanity is used in Dark Ages games)
+* Bug fix: users are no longer prompted about email confirmation emails in character 
+generation when the character failed to save and no emails were sent 
+* Bug fix: Remove spurious 'table is not empty' messages when updating the plugin
+* Bug fix: Dot skinning and Portraits didn't work if the imagemagik library was not 
+installed so added support for PHP GD library and disabled skinning options if neither
+library is installed.
+* Added a silly vampire icon to the plugin assets for the plugin listing
+
+
+= 2.4 =
+
+* Updates for Wordpress 4.5 compatibility
+	* replace depreciated user info functions
+	* selective refresh support for widgets
+
 = 2.3 =
 
 * Updates as a result of feedback from Wordpress.org plugin submission
-** Table data that may cause Copyright issues has been removed from initial data
-** Removed clan icons from images folder 
-** plugin name changed to vampire-character
+	* Table data that may cause Copyright issues has been removed from initial data
+	* Removed clan icons from images folder 
+	* plugin name changed to vampire-character
 * Added In-character private messaging system
 * Added option in Character Generation template to correctly model virtues rules for non-Humanity paths
 * Players can set and/or upload character portraits
@@ -300,6 +409,21 @@ placeholder image, option to change Display Name/Password)
 
 == Upgrade Notice ==
 
+= Upgrading to 2.8 =
+
+Review the new email settings for basic skinning of the HTML emails the plugin now sends.
+
+Review the new settings for auto-generating phone numbers in the Messaging Configuration tab.
+
+Have a look at your Caitiff entry in the Clan tab of the Data Tables page and, if required, set all clan discipline entries to [select]
+
+= Upgrading to 2.6 / 2.7 =
+
+You will need to review the new Primary Path settings for each of your character generation templates. Save each template once you have updated the settings.
+
+Then go through each character and manually select their primary path in the Disciplines section and add that path to their character (if it doesn't already exist).
+
+Also, consider what to do with the path 'Thaumaturgical Countermagic'.  To conform with the V20 rules, I recommend removing it as a path and adding it to the disciplines data table.  The rules do not mention if this 'discipline' is Clan or Non-Clan for Tremere but it would be my ruling that it was Non-Clan.
 
 == Shortcodes ==
 
@@ -308,6 +432,7 @@ placeholder image, option to change Display Name/Password)
 Display a list of characters with a specific Background. Defaults are highlighted.
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * background - which background to list (defaults to Status)
 * liststatus - only list characters with a specific character status (*Alive*, Missing, Dead, Staked, Torpor)
@@ -316,15 +441,16 @@ Options:
 * heading - show or hide table headings (*1*, 0)
 * columns - define which columns to display in a comma-separated list (*level, character, player, clan, domain, background, sector, comment, level, office*, sect)
 * matchtype - advanced filtering options. Specify what kind of match to make:
-** sector - list backgrounds that match the specified sector
-** comment - list backgrounds that match the specified comment/specialisation
-** characteristic - list backgrounds that match a characteristic from a character
+	* sector - list backgrounds that match the specified sector
+	* comment - list backgrounds that match the specified comment/specialisation
+	* characteristic - list backgrounds that match a characteristic from a character
 * match - use with matchtype. Specify what to filter on/match to
-** loggedinclan - list matches with the clan of the logged in user
-** loggedinsect - list matches with the sect of the logged in user
-** <value> - list matches the selected level
+	* loggedinclan - list matches with the clan of the logged in user
+	* loggedinsect - list matches with the sect of the logged in user
+	* <value> - list matches the selected level
 
 Examples:
+
 * Display all active characters in the current domain
 
 [background_table level=displayzeros columns="character,clan,office"]
@@ -345,25 +471,26 @@ into the comment/specialisation box for the background.
 Display character information for the logged in character.
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * group - Sub-group of information to display
-** char_name - character name
-** domain - domain of residence
-** pub_clan - public clan, i.e. the clan that they publicly admit to being a member of
-** priv_clan - private clan, i.e the clan they actually are
-** sire - Name of Sire
-** gen - generation
-** blood_per_round - number of blood points that can be spent per round
-** path_name - Path of Enlightenment name
-** path_value - Level of Path of Enlightenment
-** bloodpool - Size of the bloodpool
-** nature - Character nature (if used)
-** demeanour - Character demeanour (if used, and note UK spelling)
-** date_of_birth - Date of Birth
-** date_of_embrace - Date of Embrace
-** status - Character Status (e.g. Alive, Dead)
-** status_comment - Comment on character status
-** last_updated - date character was last updated (e.g. XP spent)
+	* char_name - character name
+	* domain - domain of residence
+	* pub_clan - public clan, i.e. the clan that they publicly admit to being a member of
+	* priv_clan - private clan, i.e the clan they actually are
+	* sire - Name of Sire
+	* gen - generation
+	* blood_per_round - number of blood points that can be spent per round
+	* path_name - Path of Enlightenment name
+	* path_value - Level of Path of Enlightenment
+	* bloodpool - Size of the bloodpool
+	* nature - Character nature (if used)
+	* demeanour - Character demeanour (if used, and note UK spelling)
+	* date_of_birth - Date of Birth
+	* date_of_embrace - Date of Embrace
+	* status - Character Status (e.g. Alive, Dead)
+	* status_comment - Comment on character status
+	* last_updated - date character was last updated (e.g. XP spent)
 
 "Your character was last updated on [character_detail_block group=last_updated]."
 
@@ -372,6 +499,7 @@ Options:
 Display the Offices of the logged-in character
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 
 [character_offices_block]
@@ -381,9 +509,10 @@ Options:
 Display Path of Enlightenment changes for the logged-in character
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * group - Sub-group of information to display
-** total - current path level
+	* total - current path level
 
 [character_road_or_path_table]
 
@@ -394,6 +523,7 @@ Options:
 Show information on Willpower or Blood spends
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * showtable - show changes in a table (*0*, 1)
 * limit - limit how many rows in the table (defaults to 5)
@@ -406,6 +536,7 @@ Options:
 List the XP spends and assignments for the logged in character
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * maxrecords - limit how many rows in the table (defaults to 20)
 
@@ -424,11 +555,12 @@ admin section.  You will need a valid Google API code for this feature to work.
 Displays a table of characters with a specific Merit or Flaw.
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * merit - Merit or Flaw name to list (Default is “Clan Friendship”)
 * match - add a filter to the list
-** loggedinclan - Comment/specialisation must match that of the clan of the logged in user
-** <value> – match the specified value
+	* loggedinclan - Comment/specialisation must match that of the clan of the logged in user
+	* <value> – match the specified value
 * liststatus - only list characters with a specific character status (*Alive*, Missing, Dead, Staked, Torpor)
 * heading - show or hide table headings (*1*, 0)
 * domain - only list characters in a specific domain (*home*, <domain>)
@@ -443,6 +575,7 @@ For example, display a list of character with Enmity towards your clan
 List all the characters with an office or position of power
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * domain - domain character is an official in
 * office - specific office to display
@@ -454,16 +587,28 @@ Options:
 Displays a button for characters to click to spend Willpower or Bloodpoints.
 
 Options:
+
 * character - Wordpress login name of character to be 'logged in' as (ST/admin only)
 * stat - which Stat the button is for:
-** Willpower
-** Blood
+	* Willpower
+	* Blood
+	
+= inbox_summary =
+
+List the last x private messages.
+
+Options:
+
+* list - define what messages to display
+
+[inbox_summary list=5]
 
 == Widgets ==
 
 = Character Login Widget =
 
 Displays useful links:
+
 * Login/logout
 * Character Sheet
 * Character Profile

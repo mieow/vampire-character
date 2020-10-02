@@ -351,6 +351,7 @@ input[type="submit"].vtmxp_submit {
 	float:right;
 }
 
+
 /* =Feeding Map
 -------------------------------------------------------------- */
 #map-canvas { height: 100% }
@@ -639,4 +640,8 @@ table.feedingmapkey {width:auto;}
 }
 .vtm_pmhistory .entry-content{
 	margin-bottom: 1em;
+}
+.vtm_pmunread {
+	font-weight:bold;
+	
 }

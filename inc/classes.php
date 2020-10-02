@@ -29,6 +29,7 @@ class vtmclass_character {
 	var $max_rating;
 	var $date_of_birth;
 	var $date_of_embrace;
+	var $date_of_approval;
 	var $sire;
 	var $combo_disciplines;
 	var $current_experience;
@@ -56,7 +57,7 @@ class vtmclass_character {
 		global $vtmglobal;
 		
 		$wpdb->show_errors();
-				
+						
 		/* Basic Character Info */
 		$sql = "SELECT chara.name                      cname,
 					   chara.character_status_comment  cstat_comment,
@@ -91,7 +92,8 @@ class vtmclass_character {
 						 " . VTM_TABLE_PREFIX . "GENERATION gen,
 						 " . VTM_TABLE_PREFIX . "ROAD_OR_PATH paths,
 						 " . VTM_TABLE_PREFIX . "SECT sects,
-						 " . VTM_TABLE_PREFIX . "CHARACTER_STATUS cstatus
+						 " . VTM_TABLE_PREFIX . "CHARACTER_STATUS cstatus,
+						 " . VTM_TABLE_PREFIX . "CHARACTER_GENERATION cgen
                     WHERE chara.PUBLIC_CLAN_ID = pub_clan.ID
                       AND chara.PRIVATE_CLAN_ID = priv_clan.ID
                       AND chara.DOMAIN_ID = domains.ID
@@ -161,8 +163,21 @@ class vtmclass_character {
 			$this->newsletter   = 'N';
 		}
 		
-        $user = get_user_by('login',$this->name);
+        $user = get_user_by('login',$this->wordpress_id);
         $this->display_name = isset($user->display_name) ? $user->display_name : 'No character selected';
+		
+		// Character Generation
+		$sql = "SELECT DATE_OF_APPROVAL FROM " . VTM_TABLE_PREFIX . "CHARACTER_GENERATION WHERE CHARACTER_ID = '%s'";
+		$result = $wpdb->get_row($wpdb->prepare($sql, $characterID));
+		if (empty($result->DATE_OF_APPROVAL)) {
+			$sql = "SELECT AWARDED FROM " . VTM_TABLE_PREFIX . "PLAYER_XP WHERE CHARACTER_ID = '%s' ORDER BY AWARDED";
+			$result = $wpdb->get_row($wpdb->prepare($sql, $characterID));
+			if ($result)
+				$this->date_of_approval = $result->AWARDED; 
+		}
+		else
+			$this->date_of_approval = $result->DATE_OF_APPROVAL;
+		
 		
 		// Profile
 		$sql = "SELECT QUOTE, PORTRAIT
@@ -567,11 +582,34 @@ class vtmclass_character {
 		
 		$merged = array_merge($result, $freebies, $xp);
 		
+		// Work out primary paths, by discipline
+		$sql = "SELECT
+				disc.NAME as discipline,
+				path.NAME as name
+			FROM
+				" . VTM_TABLE_PREFIX . "DISCIPLINE disc,
+				" . VTM_TABLE_PREFIX . "CHARACTER_PRIMARY_PATH chpp,
+				" . VTM_TABLE_PREFIX . "PATH path
+			WHERE
+				chpp.CHARACTER_ID = '%s'
+				AND chpp.PATH_ID = path.ID
+				AND chpp.DISCIPLINE_ID = disc.ID";
+		$primary = $wpdb->get_results($wpdb->prepare($sql, $characterID), OBJECT_K);
+		
 		// Reformat:
 		//	[discipline] = ( [name] = (level, pending) )
-		$this->paths = array();
+		$this->primary_paths = array();
+		$this->secondary_paths = array();
+		//print_r($merged);
+		//print_r($primary);
 		foreach ($merged as $majikpath) {
-			$this->paths[$majikpath->discipline][$majikpath->name] = array($majikpath->level, $majikpath->pending);
+			if (isset($primary[$majikpath->discipline])) {
+				if ($primary[$majikpath->discipline]->name == $majikpath->name) {
+					$this->primary_paths[$majikpath->discipline][$majikpath->name] = array($majikpath->level, $majikpath->pending);
+				} else {
+					$this->secondary_paths[$majikpath->discipline][$majikpath->name] = array($majikpath->level, $majikpath->pending);
+				}
+			}
 		}
 		//print_r($this->paths);
 		
@@ -705,6 +743,7 @@ class vtmclass_character {
 		$sql = $wpdb->prepare($sql, $characterID, $characterID);
 		$result = $wpdb->get_results($sql);
 		$i = 0;
+		$this->rituals = array();
 		foreach ($result as $ritual) {
 			$this->rituals[$ritual->discname][$i] = array(
 				'name' => $ritual->ritualname, 
@@ -841,7 +880,8 @@ class vtmclass_character {
 					" . VTM_TABLE_PREFIX . "PM_TYPE as pmt
 				WHERE
 					pma.CHARACTER_ID = %s
-					AND pma.PM_TYPE_ID = pmt.ID ";
+					AND pma.PM_TYPE_ID = pmt.ID
+					AND pma.DELETED = 'N'";
 		$sql =  $wpdb->prepare($sql, $characterID);
 		$this->addresses = $wpdb->get_results($sql);
 		

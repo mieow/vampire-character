@@ -75,6 +75,45 @@ function vtm_get_backgrounds() {
 	
 	return $list;
 }
+
+function vtm_get_magic_disciplines($objectk = 0, $by_discname = 0) {
+	global $wpdb;
+
+	if ($by_discname)
+		$txt = "disc.NAME, disc.ID";
+	else
+		$txt = "disc.ID, disc.NAME";
+	
+	$sql = "SELECT $txt, path.cnt FROM 
+				" . VTM_TABLE_PREFIX . "DISCIPLINE disc
+				LEFT JOIN (
+					SELECT COUNT(ID) as cnt, DISCIPLINE_ID 
+					FROM " . VTM_TABLE_PREFIX . "PATH
+					GROUP BY DISCIPLINE_ID
+				) path
+				ON path.DISCIPLINE_ID = disc.ID
+			WHERE NOT(ISNULL(path.cnt))";
+	
+	if ($objectk) {
+		$list = $wpdb->get_results($sql, OBJECT_K);
+	} else {
+		$list = $wpdb->get_results($sql);
+	}
+	
+	if ($by_discname && $objectk) {
+		$tmp = $list;
+		foreach ($list as $key => $data) {
+			$tmp[sanitize_key($key)] = $data;
+		}
+		$list = $tmp;
+	}
+	
+	//print "SQL: $sql";
+	//print_r($list);
+	return $list;
+	
+}
+
 function vtm_get_profile_display() {
 
 	global $wpdb;
@@ -114,16 +153,17 @@ function vtm_get_stlink_page($stlinkvalue) {
 	}*/
 	$sql = "select DESCRIPTION, WP_PAGE_ID from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
 	$results = $wpdb->get_row($wpdb->prepare($sql, $stlinkvalue));
-	
+		
 	$pageid = "Page not matched";
-	if (count($results) == 1) {
+	if (is_object($results)) {
 		$pages = get_pages();
+		
 		foreach ( $pages as $page ) {
 			if ($page->ID == $results->WP_PAGE_ID) {
 				$pageid = $page->post_title;
 			}
-		}		
-	}
+		}
+	} 
 	return $pageid;
 
 }
@@ -134,7 +174,7 @@ function vtm_get_stlink_url($stlinkvalue, $fullurl = false) {
 	$results = $wpdb->get_row($wpdb->prepare($sql, $stlinkvalue));
 	
 	$url = "Page not matched";
-	if (count($results) == 1) {
+	if (is_object($results)) {
 		$url = get_page_link($results->WP_PAGE_ID);
 	}
 	
@@ -274,6 +314,71 @@ function vtm_get_characters() {
 	
 	return $list;
 }
+
+function vtm_get_character_templateid($characterID) {
+	global $wpdb;
+	
+	$sql = "SELECT TEMPLATE_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_GENERATION
+		WHERE CHARACTER_ID = %s";
+	$sql = $wpdb->prepare($sql, $characterID);
+	$templateID = $wpdb->get_var($sql);
+	if (empty($templateID)) {
+		$sql = "SELECT MIN(TEMPLATE_ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER_GENERATION";
+		$templateID = $wpdb->get_var($sql);
+	}
+	return $templateID;
+	
+}
+function vtm_get_character_primarypath($characterID, $disciplineID) {
+	global $wpdb;
+
+	$sql = "SELECT 
+				cpp.PATH_ID,
+				path.NAME
+		FROM 
+			" . VTM_TABLE_PREFIX . "CHARACTER_PRIMARY_PATH cpp,
+			" . VTM_TABLE_PREFIX . "PATH path
+		WHERE 
+			CHARACTER_ID = '%s'
+			AND path.ID = cpp.PATH_ID
+			AND cpp.DISCIPLINE_ID = '%s'";
+	$sql = $wpdb->prepare($sql, $characterID, $disciplineID);
+	$results = $wpdb->get_row($sql);
+	
+	//print_r($results);
+	
+	return $results;
+}
+function vtm_get_primarypath_default($templateID, $disciplineID, $clanID) {
+	global $wpdb;
+	
+	$sql = "SELECT 
+			disc.ID as discid, 
+			pth.ID as pathid,
+			pth.NAME as name
+		FROM
+			" . VTM_TABLE_PREFIX . "CHARGEN_PRIMARY_PATH cpp,
+			" . VTM_TABLE_PREFIX . "DISCIPLINE disc,
+			" . VTM_TABLE_PREFIX . "PATH pth
+		WHERE
+			cpp.DISCIPLINE_ID = disc.ID
+			AND cpp.PATH_ID = pth.ID
+			AND cpp.TEMPLATE_ID = '%d'
+			AND disc.ID = '%d'
+			AND (cpp.CLAN_ID = '%d' OR cpp.CLAN_ID = '')
+		";
+		
+		
+	
+	$sql = $wpdb->prepare($sql, $templateID, $disciplineID, $clanID);
+	
+	//print "SQL: $sql";
+	$results = $wpdb->get_results($sql, OBJECT_K);
+	//print_r($results);
+
+	return $results;
+}
+
 function vtm_get_character_email($characterID) {
 
 	global $wpdb;
@@ -710,7 +815,7 @@ function vtm_get_character_email($characterID) {
     function vtm_listPaths($showNotVisible) {
         global $wpdb;
         $table_prefix = VTM_TABLE_PREFIX;
-        $visible_sector  = " AND VISIBLE = 'Y' ";
+        $visible_sector  = " AND path.VISIBLE = 'Y' ";
 
         if ($showNotVisible == "Y") {
             $visible_sector = "";
@@ -826,10 +931,14 @@ function vtm_get_character_email($characterID) {
         global $wpdb;
 		global $vtmglobal;
 
-		$sql = "SELECT id
-				FROM " . VTM_TABLE_PREFIX . "CHARACTER
-				WHERE WORDPRESS_ID = %s";
-		$cid = $wpdb->get_var($wpdb->prepare($sql, $character));
+		if (!empty($character)) {
+			$sql = "SELECT id
+					FROM " . VTM_TABLE_PREFIX . "CHARACTER
+					WHERE WORDPRESS_ID = %s";
+			$cid = $wpdb->get_var($wpdb->prepare($sql, $character));
+		} else {
+			$cid = "";
+		}
 		
 		if (empty($cid) && isset($_REQUEST['characterID'])) {
 			$cid = $_REQUEST['characterID'];
@@ -839,7 +948,7 @@ function vtm_get_character_email($characterID) {
 			(isset($vtmglobal['character']) && $character == $vtmglobal['character']) ) {
 			$vtmglobal['characterID'] = $cid;
 		}
-
+		
         return $cid;
     }
 
@@ -915,11 +1024,15 @@ function vtm_get_character_email($characterID) {
 
     function vtm_getConfig() {
         global $wpdb;
+		global $vtmglobal;
 
+		if (!isset($vtmglobal['config'])) $vtmglobal['config'] = new stdClass();
+		
 		if (vtm_table_exists('CONFIG')) {
 			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CONFIG";
 			$vtmglobal['config'] = $wpdb->get_row($sql);
 		} else {
+
 			$vtmglobal['config']->PLACEHOLDER_IMAGE = '';
 			$vtmglobal['config']->ANDROID_LINK = '';
 			$vtmglobal['config']->HOME_DOMAIN_ID = 1;
@@ -992,8 +1105,8 @@ function vtm_get_character_email($characterID) {
 
 function vtm_numberToDots($base, $input) {
 	$number = (int) $input;
-	$full  = VTM_PLUGIN_URL . '/images/dot1full.jpg';
-	$empty = VTM_PLUGIN_URL . '/images/dot1empty.jpg';
+	$full  = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
+	$empty = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
 	
 	$output = "";
 	
@@ -1008,8 +1121,8 @@ function vtm_numberToDots($base, $input) {
 }
 function vtm_numberToBoxes($base, $input) {
 	$number = (int) $input;
-	$full  = VTM_PLUGIN_URL . '/images/crossclear.jpg';
-	$empty = VTM_PLUGIN_URL . '/images/webbox.jpg';
+	$full  = VTM_PLUGIN_URL . '/images/crossclear.' . VTM_ICON_FORMAT;
+	$empty = VTM_PLUGIN_URL . '/images/webbox.' . VTM_ICON_FORMAT;
 	
 	$output = "";
 	
@@ -1019,8 +1132,8 @@ function vtm_numberToBoxes($base, $input) {
 		else
 			$output .= "<img alt='$i' src='$empty' />";
 			
-		if ($i == 10)
-			$output .= "<br />";
+		if ($i % 10 == 0)
+			$output .= "<br />"; 
 	}
 	
 	return $output;
@@ -1066,7 +1179,7 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 				chara.name as char_name,
 				\"Pending\" as reason_name,
 				pending.amount as amount,
-				pending.comment as comment,
+				CONCAT(pending.comment, IF(ISNULL(pending.specialisation),'',CONCAT(' (', pending.specialisation, ')'))) as comment,
 				pending.awarded as awarded
 			FROM
 				" . VTM_TABLE_PREFIX . "CHARACTER chara,
@@ -1095,11 +1208,10 @@ function vtm_get_xp_table($playerID, $characterID, $limit = 0) {
 function vtm_get_pm_addresses($characterID = 0) {
 	global $wpdb;
 	global $vtmglobal;
-	global $current_user;
 
 	if (!vtm_isST() && $characterID == 0){
 		if (!isset($vtmglobal['characterID'])) {
-			get_currentuserinfo();
+			$current_user = wp_get_current_user();
 			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 		}
 		$characterID = $vtmglobal['characterID'];
@@ -1134,6 +1246,7 @@ function vtm_get_default_address($characterID) {
 	// Use the post office address if it's enable and we don't
 	// have any other choices
 	if ($wpdb->num_rows == 0 && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == '1') {		
+		$address = new stdClass();
 		$address->ID = 0;
 		$address->NAME = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'", $characterID));
 		$address->CHARACTER_ID = $characterID;
@@ -1169,10 +1282,9 @@ function vtm_get_pm_addressbook($characterID = 0,
 	$filter_addressbook = 'all') {
 	global $wpdb;
 	global $vtmglobal;
-	global $current_user;
 	if ($characterID == 0){
 		if (!isset($vtmglobal['characterID']) && !vtm_isST()) {
-			get_currentuserinfo();
+			$current_user = wp_get_current_user();
 			$vtmglobal['characterID'] = vtm_establishCharacterID($current_user->user_login);
 			$characterID = $vtmglobal['characterID'];
 		}
@@ -1182,6 +1294,11 @@ function vtm_get_pm_addressbook($characterID = 0,
 	$sqlargs  = array();
 	$filtersql  = "";
 	$filterargs = "";
+	
+	if (!get_option( 'vtm_pm_send_to_dead_characters', '0' )) {
+		$filtersql .= " AND chstatus.NAME != 'Dead'";
+		
+	}
 	
 	if ( "all" !== $filter_address_type) {
 		$filtersql .= " AND pm.PM_TYPE_ID = %s";
@@ -1202,18 +1319,21 @@ function vtm_get_pm_addressbook($characterID = 0,
 			pm.DESCRIPTION,
 			pm.ID as tableID,
 			ch.NAME as charactername,
-			ch.ID as CHARACTER_ID
+			ch.ID as CHARACTER_ID,
+			chstatus.NAME as characterstatus
 		FROM
 			" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS pm,
 			" . VTM_TABLE_PREFIX . "CHARACTER ch,
 			" . VTM_TABLE_PREFIX . "PLAYER player,
 			" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
-			" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+			" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus,
+			" . VTM_TABLE_PREFIX . "CHARACTER_STATUS chstatus
 		WHERE
 			pm.CHARACTER_ID = ch.ID
 			AND ch.PLAYER_ID = player.ID
 			AND player.PLAYER_STATUS_ID = pstatus.ID
 			AND cgstatus.ID = ch.CHARGEN_STATUS_ID
+			AND chstatus.ID = ch.CHARACTER_STATUS_ID
 			AND cgstatus.NAME = 'Approved'
 			AND ch.DELETED = 'N'
 			AND ch.VISIBLE = 'Y'
@@ -1234,7 +1354,6 @@ function vtm_get_pm_addressbook($characterID = 0,
 		$stfiltersql = "";
 	} else {
 		$stfiltersql = "AND ab.CHARACTER_ID = %s";
-		array_push($sqlargs, $characterID);
 	}
 	
 	$addressbook = "SELECT ab.NAME as NAME,
@@ -1244,19 +1363,22 @@ function vtm_get_pm_addressbook($characterID = 0,
 			ab.DESCRIPTION,
 			ab.ID as tableID,
 			ch.NAME as charactername,
-			ch.ID as CHARACTER_ID
+			ch.ID as CHARACTER_ID,
+			chstatus.NAME as characterstatus
 		FROM
 			" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK ab,
 			" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS pm,
 			" . VTM_TABLE_PREFIX . "CHARACTER ch,
 			" . VTM_TABLE_PREFIX . "PLAYER player,
 			" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
-			" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+			" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus,
+			" . VTM_TABLE_PREFIX . "CHARACTER_STATUS chstatus
 		WHERE
 			pm.CHARACTER_ID = ch.ID
 			AND ch.PLAYER_ID = player.ID
 			AND player.PLAYER_STATUS_ID = pstatus.ID
 			AND cgstatus.ID = ch.CHARGEN_STATUS_ID
+			AND chstatus.ID = ch.CHARACTER_STATUS_ID
 			AND cgstatus.NAME = 'Approved'
 			AND ch.DELETED = 'N'
 			AND ch.VISIBLE = 'Y'
@@ -1268,8 +1390,12 @@ function vtm_get_pm_addressbook($characterID = 0,
 	if ($filter_addressbook == 'all' ||
 		$filter_addressbook == 'private') {
 		array_push($sqlarray, $addressbook);
+		if ($stfiltersql !== '')
+			array_push($sqlargs, $characterID);
 		if ($filterargs !== '')
 			array_push($sqlargs, $filterargs);
+		
+
 	}
 				
 	// all addresses from post office (if enabled) of visible/active/undeleted
@@ -1283,21 +1409,25 @@ function vtm_get_pm_addressbook($characterID = 0,
 				'Addressed message left in a secure location' as DESCRIPTION,
 				ch.ID as tableID,
 				ch.NAME as charactername,
-				ch.ID as CHARACTER_ID
+				ch.ID as CHARACTER_ID,
+				chstatus.NAME as characterstatus
 			FROM 
 				" . VTM_TABLE_PREFIX . "CHARACTER ch,
 				" . VTM_TABLE_PREFIX . "PLAYER player,
 				" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus,
+				" . VTM_TABLE_PREFIX . "CHARACTER_STATUS chstatus
 			WHERE
 				ch.PLAYER_ID = player.ID
 				AND player.PLAYER_STATUS_ID = pstatus.ID
 				AND cgstatus.ID = ch.CHARGEN_STATUS_ID
+				AND chstatus.ID = ch.CHARACTER_STATUS_ID
 				AND pstatus.NAME = 'Active'
 				AND ch.VISIBLE = 'Y'
 				AND ch.DELETED = 'N'
-				AND cgstatus.NAME = 'Approved'
-			";
+				AND cgstatus.NAME = 'Approved' " .
+				$filtersql;
+
 		if ( ($filter_address_type == 'all' || $filter_address_type == 0) &&
 			 ($filter_addressbook == 'all' || $filter_addressbook == 'postoffice') ) {
 			array_push($sqlarray, $postoffice);
@@ -1311,14 +1441,15 @@ function vtm_get_pm_addressbook($characterID = 0,
 	$sql .= " ORDER BY charactername, NAME, tableID";
 		
 	//print_r($sqlargs);
+	//echo "<p>SQL: $sql</p>";
 	if (count($sqlargs) > 0) {
 		$sql  = $wpdb->prepare($sql, $sqlargs);
 	}
-	//echo "<p>SQL: $sql</p>";
+	//echo "<p>SQL prepare: $sql</p>";
 	
 	$data = $wpdb->get_results($sql);
 	
-	if (count($data) > 0) {
+	if (vtm_count($data) > 0) {
 		$i = 1;
 		foreach ($data as $row) {
 			$row->ID = $i++;
@@ -1377,7 +1508,7 @@ function vtm_pm_link($linktext, $args) {
 		$linkurl = add_query_arg('characterID',$characterID,$linkurl);
 		$linkurl = add_query_arg('type',$type,$linkurl);
 		
-		$imgurl = VTM_PLUGIN_URL . '/images/mail.jpg';
+		$imgurl = VTM_PLUGIN_URL . '/images/mail.' . VTM_ICON_FORMAT;
 		
 		// output link
 		$linktext .= " <a href='$linkurl'><img class='vtmpm_icon' src='$imgurl' alt='(contact)'></a>";
@@ -1392,5 +1523,100 @@ function  vtm_get_characterID_from_pm_code($code) {
 	
 	return $wpdb->get_var($wpdb->prepare("SELECT CHARACTER_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS WHERE PM_CODE = '%s'", $code));
 	
+}
+
+function vtm_hex2rgb($hex) {
+   $hex = str_replace("#", "", $hex);
+
+   if(strlen($hex) == 3) {
+      $r = hexdec(substr($hex,0,1).substr($hex,0,1));
+      $g = hexdec(substr($hex,1,1).substr($hex,1,1));
+      $b = hexdec(substr($hex,2,1).substr($hex,2,1));
+   } else {
+      $r = hexdec(substr($hex,0,2));
+      $g = hexdec(substr($hex,2,2));
+      $b = hexdec(substr($hex,4,2));
+   }
+   $rgb = array($r, $g, $b);
+   //return implode(",", $rgb); // returns the rgb values separated by commas
+   return $rgb; // returns an array with the rgb values
+}
+
+function vtm_is_page($id) {
+	$pages = get_pages();
+	$match = 0;
+	//print_r($pages);
+	foreach ($pages as $page) { 
+		if ($page->ID == $id) {
+			$match = 1;
+		} 
+	}
+	
+	return $match;
+}
+
+function vtm_get_page_link($id, $characterID, $idname, $name) {
+	
+	$text = "";
+	
+	if (!vtm_is_page($id)) {
+		return "(Error: check configuration for page settings) " . $name;
+	} else {
+		$link = get_page_link($id);
+		return sprintf('<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),vtm_formatOutput($name));
+	}
+	
+}
+function vtm_get_page_icon($id, $characterID, $idname, $icon, $title, $alt) {
+	
+	$text = "";
+	
+	if (!vtm_is_page($id)) return "";
+	
+	$iconurl = plugins_url('inc/adminpages/icons/',dirname(__FILE__)) . $icon;
+	$iconurl = sprintf('<img src="%s" alt="%s" title="%s" />',$iconurl,$alt,$title);
+	$link = get_page_link($id);
+	
+	return sprintf('&nbsp;<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),$iconurl);
+	
+}
+
+function vtm_report_max_input_vars($content) {
+	
+	$count = 0;
+	$start = strpos($content, "<input", 0);
+	while ($start !== false) {
+		$count++;
+		$start = strpos($content, "<input", $start+1);
+	}
+	
+	if ($count > ini_get('max_input_vars')) {
+		$report = "<div class='vtm_error'><p><b>Error:</b>PHP ini setting 'max_input_vars' is insufficient for the number of inputs on this page.  Either decrease the number of things available to buy with experience or ask your website administrator to increase the setting.</div>";
+		$report .= "<!-- PHP Version: " . phpversion() . " -->\n";
+		$report .= "<!-- max input vars: " . ini_get('max_input_vars') . " -->\n";
+		$report .= "<!-- actual input vars: $count -->\n";
+	} else {
+		$report = "";
+	}
+	
+	return $report . $content;
+}
+
+function vtm_count($input) {
+	
+	if (is_countable($input)) {
+		return count($input);
+	}
+	elseif (is_object($input)) {
+		//print_r($input);
+		$count = 0;
+		foreach ($input as $item) {
+			$count++;
+		}
+		//print "count is $count";
+		return $count;
+	}
+	
+	return 0;
 }
 ?>

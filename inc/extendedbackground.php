@@ -26,6 +26,7 @@ function vtm_get_extbackgrounds_content() {
 				vtm_setSwitchState('backgrounds', tab == 'backgrounds');
 				vtm_setSwitchState('meritflaw', tab == 'meritflaw');
 				vtm_setSwitchState('misc', tab == 'misc');
+				vtm_setSwitchState('contact', tab == 'contact');
 				return false;
 			}
 			function vtm_setSwitchState(tab, show) {
@@ -37,8 +38,11 @@ function vtm_get_extbackgrounds_content() {
 			<ul>
 			<li>" . vtm_get_tabanchor('backgrounds', 'Backgrounds') . "</li>
 			<li>" . vtm_get_tabanchor('meritflaw', 'Merits and Flaws') . "</li>
-			<li>" . vtm_get_tabanchor('misc', 'Miscellaneous') . "</li>
-			</ul>
+			<li>" . vtm_get_tabanchor('misc', 'Miscellaneous') . "</li>";
+	if (get_option('vtm_feature_pm',0)) {
+		$content .= "<li>" . vtm_get_tabanchor('contact', 'Contact Details') . "</li>";
+	}
+	$content .= "		</ul>
 		</div>
 		<div class='vtmbgmain'>
 			<div id='gv-backgrounds' " . vtm_get_tabdisplay('backgrounds') . ">
@@ -52,8 +56,13 @@ function vtm_get_extbackgrounds_content() {
 			<div id='gv-misc' " . vtm_get_tabdisplay('misc') . ">
 				" . vtm_get_editmisc_tab($characterID) . "
 				
-			</div>
-		</div>
+			</div>";
+	if (get_option('vtm_feature_pm',0)) {
+		$content .= "<div id='gv-contact' " . vtm_get_tabdisplay('contact') . ">
+				" . vtm_get_editcontact_tab($characterID) . "
+			</div>";
+	}
+	$content .= "</div>
 	</div>";
 	
 	return $content;
@@ -109,9 +118,9 @@ function vtm_get_editbackgrounds_tab($characterID) {
 
 			$data = array (
 				'SECTOR_ID'      => $sector,
-				'PENDING_DETAIL' => $pendingbg[$id],
+				'PENDING_DETAIL' => isset($pendingbg[$id]) ? $pendingbg[$id] : "",
 				'DENIED_DETAIL'  => '',
-				'COMMENT'        => $comments[$id]
+				'COMMENT'        => isset($comments[$id]) ? $comments[$id] : ""
 			);
 			$wpdb->show_errors();
 			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND",
@@ -128,7 +137,7 @@ function vtm_get_editbackgrounds_tab($characterID) {
 				echo "<p style='color:red'>Could not update {$namesbg[$id]} background</p>";
 			}
 			
-			}
+		}
 			
 	}
 
@@ -436,6 +445,137 @@ function vtm_get_editmisc_tab($characterID) {
 	return $content;
 }
 
+function vtm_get_editcontact_tab($characterID) {
+	global $wpdb;
+
+	$character = vtm_establishCharacter("");
+	$characterID = vtm_establishCharacterID($character);
+	$wpdb->show_errors();
+	
+	if (empty($characterID)) {
+		return "<p>A character is required</p>";
+	}
+
+	$content = "";
+	
+	if (isset($_REQUEST["addcontact"])) {
+		$phone_pm_type_id = $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE NAME = 'Telephone'");
+		if ($_REQUEST["addcontact"] == 'mobile') {
+			$number = vtm_generate_phone($characterID, get_option('vtm_pm_mobile_prefix',''));			
+			
+			$dataarray = array(
+							'NAME'         => "Mobile number",
+							'CHARACTER_ID' => $characterID,
+							'PM_TYPE_ID'   => $phone_pm_type_id,
+							'PM_CODE'      => $number,
+							'DESCRIPTION'  => "Auto-generated number",
+							'VISIBLE'      => 'Y',
+							'ISDEFAULT'    => 'N',
+							'DELETED'      => 'N',
+						);
+			
+			
+		}
+		elseif($_REQUEST["addcontact"] == 'landline') {
+			$number = vtm_generate_phone($characterID, get_option('vtm_pm_landline_prefix',''));			
+				$dataarray = array(
+							'NAME'         => "Phone number",
+							'CHARACTER_ID' => $characterID,
+							'PM_TYPE_ID'   => $phone_pm_type_id,
+							'PM_CODE'      => $number,
+							'DESCRIPTION'  => "Auto-generated number",
+							'VISIBLE'      => 'Y',
+							'ISDEFAULT'    => 'N',
+							'DELETED'      => 'N',
+						);
+		}
+		$wpdb->insert(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
+					$dataarray,
+					array (
+						'%s',
+						'%d',
+						'%d',
+						'%s',
+						'%s',
+						'%s',
+						'%s'
+					)
+				);
+		
+		if ($wpdb->insert_id == 0) {
+			echo "<p style='color:red'><b>Error:</b>number could not be inserted (";
+			$wpdb->print_error();
+			echo ")</p>";
+		} 
+		
+	}
+	elseif (isset($_REQUEST["delcontact"])) {
+		$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
+					array ('DELETED' => 'Y'),
+					array ('ID' => $_REQUEST["delcontact"])
+				);
+		
+		if ($result) 
+			echo "<p style='color:green'>Deleted phone number</p>";
+		else if ($result === 0) 
+			echo "<p style='color:orange'>No changes made</p>";
+		else {
+			$wpdb->print_error();
+			echo "<p style='color:red'>Could not delete phone number</p>";
+		}
+	}
+	
+	$contactdetails = vtm_get_extcontact_numbers($characterID);
+	
+	$content .= "<p>For advanced settings, click <a href=" . admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails') . ">here</a>.</p>";
+	
+	// Mobile phone numbers
+	$content .= "<p class='vtmext_name'>My Mobile Numbers</p>
+			<div class='vtmext_section'>\n";
+	$content .= "<ul>";
+	foreach ($contactdetails["mobile"] as $phonenum) {
+		$content .= "<li>";
+		$content .= vtm_formatOutput($phonenum->NAME);
+		if ($phonenum->ISDEFAULT == 'Y')
+			$content .= " (default)";
+		$content .= " - ";
+		$content .= vtm_formatOutput($phonenum->PM_CODE);
+		$content .= " <a href='?tab=contact&amp;delcontact={$phonenum->ID}&amp;characterID=$characterID'>[X]</a></li>\n";
+	}
+	$content .= "<li><a href='?tab=contact&amp;addcontact=mobile&amp;characterID=$characterID'>Add new mobile number</a></li>";
+	$content .= "</ul>";
+	$content .= "</div>\n";
+
+	// Landline phone numbers
+	$content .= "<p class='vtmext_name'>Phone Numbers</p>
+			<div class='vtmext_section'>\n";
+	$content .= "<ul>";
+	foreach ($contactdetails["landline"] as $phonenum) {
+		$content .= "<li>";
+		$content .= vtm_formatOutput($phonenum->NAME);
+		if ($phonenum->ISDEFAULT == 'Y')
+			$content .= " (default)";
+		$content .= " - ";
+		$content .= vtm_formatOutput($phonenum->PM_CODE);
+		$content .= " <a href='?tab=contact&amp;delcontact={$phonenum->ID}&amp;characterID=$characterID'>[X]</a></li>\n";
+	}
+	foreach ($contactdetails["other"] as $phonenum) {
+		$content .= "<li>";
+		$content .= vtm_formatOutput($phonenum->NAME);
+		if ($phonenum->ISDEFAULT == 'Y')
+			$content .= " (default)";
+		$content .= " - ";
+		$content .= vtm_formatOutput($phonenum->PM_CODE);
+		$content .= " <a href='?tab=contact&amp;delcontact={$phonenum->ID}&amp;characterID=$characterID'>[X]</a></li>\n";
+	}
+	$content .= "<li><a href='?tab=contact&amp;addcontact=landline&amp;characterID=$characterID'>Add new phone number</a></li>";
+	$content .= "</ul>";
+	$content .= "</div>\n";
+
+	
+	return $content;
+}
+
 function vtm_get_extbackgrounds_questions($characterID) {
 	global $wpdb;
 	
@@ -503,5 +643,104 @@ function vtm_get_extmisc_questions($characterID) {
 	//echo "<p>SQL: $sql</p>";
 	$questions = $wpdb->get_results($sql);
 	return $questions;
+}
+function vtm_get_extcontact_numbers($characterID) {
+	global $wpdb;
+	
+
+	$sql = "SELECT cpmad.ID, 
+				cpmad.NAME, 
+				cpmad.DESCRIPTION, 
+				cpmad.VISIBLE, 
+				cpmad.PM_CODE, 
+				cpmad.ISDEFAULT,
+				pmtype.NAME as PM_TYPE
+			FROM 
+				" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS cpmad,
+				" . VTM_TABLE_PREFIX . "PM_TYPE pmtype
+			WHERE
+				cpmad.DELETED = 'N'
+				AND cpmad.CHARACTER_ID = '%s'
+				AND pmtype.ID = cpmad.PM_TYPE_ID
+				AND pmtype.NAME = 'Telephone'";
+			
+	$sql = $wpdb->prepare($sql, $characterID);
+	//echo "<p>SQL: $sql</p>";
+	$data = $wpdb->get_results($sql);
+	
+	$mobile   = array();
+	$landline = array();
+	$other    = array();
+	$address  = array();
+	
+	$mobileprefix   = get_option('vtm_pm_mobile_prefix', '');
+	$landlineprefix = get_option('vtm_pm_landline_prefix', '');
+	
+	foreach ($data as $entry) {
+		if ($entry->PM_TYPE = "Telephone" && !empty($mobileprefix) && preg_match("/^$mobileprefix/", $entry->PM_CODE)) {
+			$mobile[] = $entry;
+		}
+		elseif ($entry->PM_TYPE = "Telephone" && !empty($landlineprefix) && preg_match("/^$landlineprefix/", $entry->PM_CODE)) {
+			$landline[] = $entry;
+		}
+		elseif ($entry->PM_TYPE = "Telephone") {
+			$other[] = $entry;
+		}
+		else {
+			$address[] = $entry;
+		}
+	}
+	
+	return array("mobile" => $mobile, 
+				"landline" => $landline, 
+				"other" => $other,
+				"address" => $address);
+}
+
+function vtm_generate_phone($characterID, $prefix) {
+	global $wpdb;
+	
+	// Guess a number
+	// <prefix><characterID><number>
+	// where <number> = <epoch-reversed>
+	$epoch = time();
+	$revepoch = strrev($epoch);
+	
+	$length = get_option('vtm_pm_telephone_digits',11) - strlen($prefix);
+	
+	$number = "$characterID$revepoch";
+		
+	// truncate/expand <number> to required number of digits
+	if (strlen($number) > $length) {
+		$number = substr($number, 0, $length);
+	}
+	elseif (strlen($number) < $length) {
+		for ($i = strlen($number) ; $i < $length ; $i++) {
+			$number .= rand(0,9);
+		}
+	}
+	
+	// Double-check phone number is unique
+	// If not, increment <number> and try again
+	// Exit if you can't find a unique number within x tries
+	$sql = "SELECT COUNT(ID) 
+		FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+		WHERE PM_CODE = %s";
+	$prepsql = $wpdb->prepare($sql, "$prefix$number");
+	$ismatch = $wpdb->get_var($prepsql);
+	if ($ismatch) {
+		$loopcount = 0;
+		do {
+			$number++;
+			$prepsql = $wpdb->prepare($sql, "$prefix$number");
+			$ismatch = $wpdb->get_var($prepsql);
+			$loopcount++;
+			
+		} while ($ismatch && $loopcount < 10);
+		
+	}
+
+	$number = "$prefix$number";
+	return $number;
 }
 ?>

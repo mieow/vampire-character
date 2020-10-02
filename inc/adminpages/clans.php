@@ -190,6 +190,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc1">
+					<option value='0'>[Select]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
 							print "<option value='{$discipline->ID}' ";
@@ -210,6 +211,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc2">
+					<option value='0'>[Select]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
 							print "<option value='{$discipline->ID}' ";
@@ -230,6 +232,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc3">
+					<option value='0'>[Select]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
 							print "<option value='{$discipline->ID}' ";
@@ -249,7 +252,7 @@ function vtm_render_clan_add_form($addaction) {
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
 				<select name="<?php print $type; ?>_clan_disc4">
-					<option value='0' <?php selected($discipline->ID, $clan_discipline4_id); ?>>[Optional]</option>
+					<option value='0'>[Optional]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
 							print "<option value='{$discipline->ID}' ";
@@ -304,9 +307,9 @@ function vtm_clan_input_validation() {
 			echo "<p style='color:red'>ERROR: Please add disciplines to the database before saving a clan</p>";
 		} else {
 			if (
-				($_REQUEST[$type . '_clan_disc1'] == $_REQUEST[$type . '_clan_disc2']) ||
-				($_REQUEST[$type . '_clan_disc1'] == $_REQUEST[$type . '_clan_disc3']) ||
-				($_REQUEST[$type . '_clan_disc2'] == $_REQUEST[$type . '_clan_disc3'])
+				($_REQUEST[$type . '_clan_disc1'] == $_REQUEST[$type . '_clan_disc2'] && $_REQUEST[$type . '_clan_disc1'] != 0) ||
+				($_REQUEST[$type . '_clan_disc1'] == $_REQUEST[$type . '_clan_disc3'] && $_REQUEST[$type . '_clan_disc1'] != 0) ||
+				($_REQUEST[$type . '_clan_disc2'] == $_REQUEST[$type . '_clan_disc3'] && $_REQUEST[$type . '_clan_disc2'] != 0)
 			) {
 				$doaction = "fix-$type";
 				echo "<p style='color:red'>ERROR: Cannot choose the same clan discipline more than once</p>";

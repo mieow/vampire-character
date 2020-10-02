@@ -186,10 +186,15 @@ function vtm_get_profile_content() {
 				echo "<p style='color:red'>Uploaded file is greater than the maximum size of " . get_option('vtm_max_size', '0') ." bytes</p>";
 			}
 			else {
-				$image = new imagick($_FILES['vtm_portrait']['tmp_name']); 
-				$geo = $image->getImageGeometry();
-				$sizex=$geo['width'];
-				$sizey=$geo['height']; 
+				if (class_exists('Imagick')) {
+					$image = new imagick($_FILES['vtm_portrait']['tmp_name']); 
+					$geo = $image->getImageGeometry();
+					$sizex=$geo['width'];
+					$sizey=$geo['height']; 
+				}
+				elseif (extension_loaded('gd')) {
+					list($sizex, $sizey, $type, $attr) = getimagesize($_FILES['vtm_portrait']['tmp_name']);
+				}
 				
 				if (get_option('vtm_max_width', '0') != 0 &&
 					$sizex > get_option('vtm_max_width', '0') ){
@@ -234,11 +239,26 @@ function vtm_get_profile_content() {
 				}
 			}
 			
+			
 		} else {
 
 			// The security check failed, maybe show the user an error.
 		}
 		
+		// Update quote
+		if (isset($_POST['charHarpyQuote']) && get_option('vtm_user_set_quote', '0') == '1') {
+			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+				array('QUOTE' => $_POST['charHarpyQuote']),
+				array('CHARACTER_ID' => $characterID)
+			);
+			if (!$result && $result !== 0){
+				echo "<p style='color:red'>Could not save quote</p>";
+			} else {
+				$output .= "<p>Changed quote</p>";
+			}
+			$mycharacter->quote = $_POST['charHarpyQuote'];
+				
+		}
 	} else {
 		$displayName = $mycharacter->name;
 	}
@@ -251,7 +271,7 @@ function vtm_get_profile_content() {
 	
 	// Title, with link to view character for STs
 	$characterDisplayName = vtm_isST() ? 
-							"<a href='" . get_site_url() . vtm_get_stlink_url('viewCharSheet') . "?CHARACTER=" . urlencode($character) . "'>" . $displayName . "</a>" 
+							"<a href='" . vtm_get_stlink_url('viewCharSheet') . "?CHARACTER=" . urlencode($character) . "'>" . $displayName . "</a>" 
 							: vtm_formatOutput($displayName);
 	$output .= "<h1>" . $characterDisplayName . "</h1>";
 	
@@ -259,7 +279,7 @@ function vtm_get_profile_content() {
 	$output .= "<table class='gvplugin vtmprofile' id=\"gvid_prof_out\">\n";
 	$output .= "<tr><td class=\"gvcol_1 gvcol_val\">\n";
 	// Character Info
-	$output .= "<p><img alt='Clan Icon' src='$clanIcon' />" . vtm_formatOutput($mycharacter->quote, 1) . "</p>\n";
+	$output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />" . vtm_formatOutput($mycharacter->quote, 1) . "</p>\n";
 	$output .= "<table class='gvplugin vtmprofile' id=\"gvid_prof_in\">\n";
     $output .= "<tr><td class=\"gvcol_1 gvcol_key\">Player:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->player) . "</td></tr>";
 	$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Clan:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->clan);
@@ -340,10 +360,12 @@ function vtm_get_profile_content() {
 	
 	// Public addresses
 	$addr2display = array();
-	if (count($mycharacter->addresses) > 0) {
-		foreach ($mycharacter->addresses as $address) {
-			if ($address->VISIBLE == 'Y' || vtm_isST() || $currentCharacter == $character ) {
-				$addr2display[] = $address;
+	if (get_option('vtm_feature_pm', '0')) {
+		if (count($mycharacter->addresses) > 0) {
+			foreach ($mycharacter->addresses as $address) {
+				if ($address->VISIBLE == 'Y' || vtm_isST() || $currentCharacter == $character ) {
+					$addr2display[] = $address;
+				}
 			}
 		}
 	}
@@ -375,7 +397,7 @@ function vtm_get_profile_content() {
 	$output .= "</table></td><td class=\"gvcol_2 gvcol_img\">\n";
 	// Portrait
 
-	$output .= "<img alt='Profile Image' src='?vtm_get_portrait=$characterID'>";
+	$output .= "<img alt='[Profile Image]' src='?vtm_get_portrait=$characterID'>";
 	
 	$output .= "</td></tr>";
 	$output .= "</table>";
@@ -467,6 +489,15 @@ function vtm_get_profile_content() {
 		$output .= "<input type='submit' name=\"newsletterUpdate\" value=\"Update Newsletter\">";
 		$output .= "</form>";
 		
+		// Update Quote
+		if (get_option('vtm_user_set_quote', '0') == '1') {
+			$output .= "</div><div class='vtmext_section vtmprofile'>";
+			$output .= "<h4>Set a Character Quote</h4>\n";
+			$output .= "<form id='quote_set' method='post'>";
+			$output .= "    <textarea name='charHarpyQuote' rows='5' cols='50'>" . vtm_formatOutput($mycharacter->quote, 1) . "</textarea>";
+			$output .= "	<input id='set_vtm_quote' name='set_vtm_quote' type='submit' value='Save' />";
+			$output .= "</form>";
+		}
 		$output .= "</div>\n";
 
 

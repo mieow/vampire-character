@@ -40,6 +40,10 @@ function vtm_phpmailer_setup( $phpmailer ) {
 	}
 }
 
+function vtm_mail_content_type( $content_type ) {
+	return 'text/html';
+}
+
 function vtm_test_email($email) {
 	
 	$result = vtm_send_email($email, "Test Email", "This is a test email\n");
@@ -51,7 +55,7 @@ function vtm_test_email($email) {
 	
 }
 
-function vtm_send_email($email, $subject, $body) {
+function vtm_send_email($email, $subject, $content) {
 	
 	$tag      = get_option( 'vtm_emailtag' );
 	$fromname = get_option( 'vtm_replyto_name', "Website");
@@ -59,19 +63,55 @@ function vtm_send_email($email, $subject, $body) {
 
 	$subject  = stripslashes("$tag $subject");
 	
+	$signature = "View your character: <a href='" . vtm_get_stlink_url('viewCharSheet') . "'>" . vtm_get_stlink_url('viewCharSheet') . "</a><br>" .
+		"Spend Experience: <a href='" . vtm_get_stlink_url('viewXPSpend') . "'>" . vtm_get_stlink_url('viewXPSpend') . "</a><br>";
+	if (get_option( 'vtm_feature_news', '0' ) == '1')
+		$signature .= "Opt-in/out of newsletter: <a href='" . vtm_get_stlink_url('viewProfile') . "'>" . vtm_get_stlink_url('viewProfile') . "</a>";
+	
+	//$signature  = get_option( 'vtm_email_signature', '');
+	$font       = get_option( 'vtm_email_font', 'Arial');
+	$background = get_option( 'vtm_email_background', '#FFFFFF');
+	$textcolor  = get_option( 'vtm_email_textcolor', '#000000');
+	$linecolor  = get_option( 'vtm_email_linecolor', '#000000');
+	
 	$method   = get_option( 'vtm_method', 'mail' );
 	if ($method == 'mail')
 		$headers[] = "From: \"$fromname\" <$replyto>\n";
 	$headers[] = "Reply-To: \"$fromname\" <$replyto>";
 	
-	$body  = stripslashes($body);
-	$body .= "\n---\nView your character: " . vtm_get_stlink_url('viewCharSheet');
-	$body .= "\nSpend Experience: " . vtm_get_stlink_url('viewXPSpend');
+	// Email template
+	$path = locate_template("vtmemail.php");
+	if (file_exists($path)) {
+		$template = $path;
+	} else {
+		$path = VTM_CHARACTER_URL . '/templates/vtmemail.html';
+		if (file_exists($path)) {
+			$template = $path;
+		} else {
+			print "<p>Failed to identify email template from $path or " . locate_template("vtmemail.html") . "</p>";
+			return false;
+		}
+	}
+
+	$body = file_get_contents($template);
+	if ($body === false) {
+		print "<p>Failed to read email template from $template</p>";
+		return false;
+	}
 	
-	if (get_option( 'vtm_feature_news', '0' ) == '1')
-		$body .= "\nOpt-in/out of newsletter: " . vtm_get_stlink_url('viewProfile');
 	
+	// Replace macros with content, etc
+	$body = preg_replace("/\[Subject\]/", $subject, $body);
+	$body = preg_replace("/\[Font\]/", $font, $body);
+	$body = preg_replace("/\[BackgroundColor\]/", $background, $body);
+	$body = preg_replace("/\[TextColor\]/", $textcolor, $body);
+	$body = preg_replace("/\[LineColor\]/", $linecolor, $body);
+	$body = preg_replace("/\[Signature\]/", $signature, $body);
+	$body = preg_replace("/\[MessageBody\]/", stripslashes($content), $body);
+	
+	add_filter( 'wp_mail_content_type', 'vtm_mail_content_type' );
 	$result = wp_mail($email, $subject, $body, $headers);
+	remove_filter( 'wp_mail_content_type', 'vtm_mail_content_type' );
 	
 	return $result;
 }

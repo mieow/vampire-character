@@ -124,6 +124,28 @@ function vtm_render_template_data(){
 							);
 						}
 					}
+					
+					// save primary path defaults
+				
+					$clans       = $_REQUEST['ppclanid'];
+					$disciplines = $_REQUEST['ppdiscid'];
+					$paths       = $_REQUEST['pppathid'];
+
+					for ($i = 0 ; $i < count($clans) ; $i++) {
+						$data = array(
+								'TEMPLATE_ID' => $id,
+								'PATH_ID'     => $paths[$i],
+								'CLAN_ID'     => $clans[$i],
+								'DISCIPLINE_ID' => $disciplines[$i],
+							);
+					
+						//print_r($data);
+						$wpdb->insert(VTM_TABLE_PREFIX . "CHARGEN_PRIMARY_PATH",
+							$data,
+							array('%d', '%d', '%d', '%d')
+						);
+					}
+
 				}
 			} 
 			elseif (isset($_REQUEST['do_delete_' . $type])) {
@@ -134,9 +156,22 @@ function vtm_render_template_data(){
 					/* delete */
 					
 					/* Check if model in use */
-					$ok = 1;
+					//$ok = 1;
+					$sql = "select 
+						ch.ID, ch.NAME
+					from 
+						" . VTM_TABLE_PREFIX . "CHARACTER ch,
+						" . VTM_TABLE_PREFIX . "CHARACTER_GENERATION cg,
+						" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgs
+					where
+						ch.CHARGEN_STATUS_ID = cgs.ID
+						and ch.ID = cg.CHARACTER_ID
+						AND cg.TEMPLATE_ID = %d;";
+					$sql = $wpdb->prepare($sql, $id);
+					$result = $wpdb->get_results($sql);
+					//echo "SQL: $sql ($result)";
 					
-					if ($ok) {
+					if (count($result) == 0) {
 						/* delete options */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_OPTIONS where TEMPLATE_ID = %d;";
 						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
@@ -150,6 +185,12 @@ function vtm_render_template_data(){
 						$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE where ID = %d;";
 						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
 						echo "<p style='color:green'>Deleted template {$_REQUEST['template_name']}</p>";
+					} else {
+						echo "<p style='color:red'><b>Error: </b>Cannot delete as this template has been used in these characters:<ul>";
+						foreach ($result as $character)
+							echo "<li style='color:red'>" . stripslashes($character->NAME) . "</li>";
+						echo "</ul></p>";
+						
 					}
 					
 					
@@ -301,6 +342,32 @@ function vtm_render_template_data(){
 						}
 					}
 				}
+				
+				// save primary path defaults
+				
+				//delete primary path defaults 
+				$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_PRIMARY_PATH where TEMPLATE_ID = %d;";
+				$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+
+				// then re-add
+				$clans       = $_REQUEST['ppclanid'];
+				$disciplines = $_REQUEST['ppdiscid'];
+				$paths       = $_REQUEST['pppathid'];
+
+				for ($i = 0 ; $i < count($clans) ; $i++) {
+					$data = array(
+							'TEMPLATE_ID' => $id,
+							'PATH_ID'     => $paths[$i],
+							'CLAN_ID'     => $clans[$i],
+							'DISCIPLINE_ID' => $disciplines[$i],
+						);
+				
+					//print_r($data);
+					$wpdb->insert(VTM_TABLE_PREFIX . "CHARGEN_PRIMARY_PATH",
+						$data,
+						array('%d', '%d', '%d', '%d')
+					);
+				}
 			}
 			break;		
 	}
@@ -342,6 +409,9 @@ function vtm_render_template_data(){
 		$settings['limit-sect-id']        = isset($results['limit-sect-id']->VALUE) ? $results['limit-sect-id']->VALUE : $settings['limit-sect-id'];
 		$settings['virtues-free-dots']    = isset($results['virtues-free-dots']->VALUE) ? $results['virtues-free-dots']->VALUE : $settings['virtues-free-dots'];
 		$settings['limit-generation-low'] = isset($results['limit-generation-low']->VALUE) ? $results['limit-generation-low']->VALUE : $settings['limit-generation-low'];
+		$settings['primarypath-select']   = isset($results['primarypath-select']->VALUE) ? $results['primarypath-select']->VALUE : $settings['primarypath-select'];
+		$settings['primarypath-default']  = isset($results['primarypath-default']->VALUE) ? $results['primarypath-default']->VALUE : $settings['primarypath-default'];
+		//$settings['primarypath-2arylvl']  = isset($results['primarypath-2arylvl']->VALUE) ? $results['primarypath-2arylvl']->VALUE : $settings['primarypath-2arylvl'];
 			
 	} else {
 		$name   = "";
@@ -415,6 +485,21 @@ function vtm_render_template_data(){
 		<td colspan=2>
 			<table>
 			<tr><th>Number of Discipline Dots</th> <td><input type="text" name="disciplines-points"  value="<?php print $settings['disciplines-points']; ?>"></td></tr>
+			</table>
+		</td>
+	</tr>
+	<tr class="template_option_row">
+		<td rowspan=1>Primary Paths of Magik</td>
+		<td colspan=2>
+			<table>
+			<tr><th>Can non-default Paths be selected?</th> <td>
+				<input type="radio" name="primarypath-select" value="1" <?php checked( '1', $settings['primarypath-select']); ?>>Yes, or 
+				<input type="radio" name="primarypath-select" value="0" <?php checked( '0', $settings['primarypath-select']); ?>>No</td></tr>
+			<tr><th>Primary path default based on</th>
+				<td>
+				<input type="radio" name="primarypath-default" value="clan" <?php checked( 'clan', $settings['primarypath-default']); ?>>Clan, or 
+				<input type="radio" name="primarypath-default" value="discipline" <?php checked( 'discipline', $settings['primarypath-default']); ?>>Discipline</td></tr>
+				</td></tr>
 			</table>
 		</td>
 	</tr>
@@ -560,6 +645,105 @@ function vtm_render_template_data(){
 	</table>
 	</div>
 
+	<h4>Primary Magik Path Defaults</h4>
+	
+	<?php 
+	$sql = "SELECT cpp.PATH_ID, cpp.CLAN_ID, disc.ID as DISCIPLINE_ID
+		FROM 
+			" . VTM_TABLE_PREFIX . "CHARGEN_PRIMARY_PATH cpp,
+			" . VTM_TABLE_PREFIX . "DISCIPLINE disc,
+			" . VTM_TABLE_PREFIX . "PATH path
+		WHERE 
+			cpp.TEMPLATE_ID = '%s'
+			AND disc.ID = path.DISCIPLINE_ID
+			AND path.ID = cpp.PATH_ID";
+	$sql = $wpdb->prepare($sql, $id);
+	$results = $wpdb->get_results($sql);
+	
+	$disciplines = vtm_get_magic_disciplines();
+	$paths = vtm_listPaths("Y");
+	
+	if ($settings['primarypath-default'] == 'clan') { 
+		$clans = vtm_get_clans();
+		//print_r($results);
+		
+		foreach ($results as $entry) {
+			if ($entry->CLAN_ID == 0) {
+				foreach ($clans as $clan) {
+					$primarypaths[$clan->ID][$entry->DISCIPLINE_ID] = $entry->PATH_ID;
+				}
+			} else {
+				$primarypaths[$entry->CLAN_ID][$entry->DISCIPLINE_ID] = $entry->PATH_ID;
+			}
+		}
+		//print_r($primarypaths);
+		
+	?>
+	<p>Select which path is the default primary path for each clan</p>
+	<div class="primarypath_defaults">
+	<table>
+	<tr class="template_default_row"><th>Clan</th><th>Discipline</th><th>Default Path</th></tr>
+	<?php
+		$offset = 0;
+		foreach ($clans as $clan) {
+			$selected = isset($primarypaths[$clan->ID][$discipline->ID]) ? $primarypaths[$clan->ID][$discipline->ID] : 0;
+			foreach ($disciplines as $discipline) {
+				print "<tr><td>
+					<input type='hidden' name='ppclanid[$offset]' value='$clan->ID'>
+					<input type='hidden' name='ppdiscid[$offset]' value='$discipline->ID'>
+					{$clan->NAME}</td><td>$discipline->NAME</td><td>";
+				print "<select name='pppathid[$offset]' >";
+				foreach ($paths as $path) {
+					if ($path->disname == $discipline->NAME) {
+						print "<option value='" . $path->id . "' " . selected($selected,$path->id, false) . ">" . vtm_formatOutput($path->name) . "</option>";
+					}
+				}
+				print "</select>";
+				print "</td></tr>";
+				
+				$offset++;
+			}
+			
+		}
+	?>
+	</table>
+	</div>
+	<?php } else { 
+		foreach ($results as $entry) {
+			$primarypaths[$entry->DISCIPLINE_ID] = $entry->PATH_ID;
+		}
+	
+	?>
+	<p>Select which path is the default primary path for each discipline</p>
+	<div class="primarypath_defaults">
+	<table>
+	<tr class="template_default_row"><th>Discipline</th><th>Default Path</th></tr>
+	<?php
+		$offset = 0;
+		foreach ($disciplines as $discipline) {
+			$selected = isset($primarypaths[$discipline->ID]) ? $primarypaths[$discipline->ID] : 0;
+			print "<tr><td>
+				<input type='hidden' name='ppclanid[$offset]' value='0'>
+				<input type='hidden' name='ppdiscid[$offset]' value='$discipline->ID'>
+				$discipline->NAME</td><td>";
+			print "<select name='pppathid[$offset]'>";
+			foreach ($paths as $path) {
+				if ($path->disname == $discipline->NAME) {
+					print "<option value='" . $path->id . "' " . selected($selected,$path->id, false) . ">" . vtm_formatOutput($path->name) . "</option>";
+				}
+			}
+			print "</select>";
+			print "</td></tr>";
+			
+			$offset++;
+		}
+	?>		
+	
+	</table>
+	</div>
+	
+	<?php } ?>
+	
 	<h4>Character Generation Template Defaults</h4>
 	<p>Select any items which will be automatically added on to the character.</p>
 	<div class="datatables_defaults">

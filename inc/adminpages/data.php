@@ -25,7 +25,7 @@ function vtm_render_meritflaw_page($type){
 	
 	vtm_render_meritflaw_add_form($type, $doaction);
 	
-    $testListTable[$type]->prepare_items($type);
+    $testListTable[$type]->prepare_items_bytype($type);
 	$current_url = remove_query_arg( 'action', $current_url );
 
    ?>	
@@ -998,7 +998,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 	}
     
     
-    function prepare_items($type) {
+    function prepare_items_bytype($type) {
         global $wpdb; 
 
         /* $per_page = 20; */
