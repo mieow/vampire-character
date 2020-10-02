@@ -8,7 +8,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.8"; 
-$vtm_character_db_version = "82X"; 
+$vtm_character_db_version = "82"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -2099,9 +2099,9 @@ function vtm_export_data($filepath, $dirname) {
 				$headings[] = $data->Field;
 			}
 			
-			echo "<li>$path/$filename</li>";
+			//echo "<li>$path/$filename</li>";
 			//print_r($contents);
-			echo "</li>";
+			//echo "</li>";
 			// Open CSV file
 			$file = fopen("$path/$filename","w");
 			// output headings
@@ -2131,7 +2131,7 @@ function vtm_export_data($filepath, $dirname) {
 	// zip up directory
 	//create the archive
 	$zipfilename = "$filepath/$dirname.zip";
-	echo "<p>Creating zip: $zipfilename</p>";
+	//echo "<p>Creating zip: $zipfilename</p>";
 	$zip = new ZipArchive();
 	$zip->open($zipfilename, ZipArchive::CREATE);
 	for ($i = 0 ; $i < count($tables) ; $i++) {
@@ -2140,7 +2140,7 @@ function vtm_export_data($filepath, $dirname) {
 		for ($id = 0 ; $id < count($tablelist) ; $id++) {
 			$table = $tablelist[$id];
 			$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
-			echo "<li>Adding file: $path/$filename, $dirname/$filename</li>";
+			//echo "<li>Adding file: $path/$filename, $dirname/$filename</li>";
 			$zip->addFile("$path/$filename", "$dirname/$filename");
 		}
 	}
