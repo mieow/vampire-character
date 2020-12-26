@@ -2133,20 +2133,38 @@ function vtm_export_data($filepath, $dirname) {
 	$zipfilename = "$filepath/$dirname.zip";
 	//echo "<p>Creating zip: $zipfilename</p>";
 	$zip = new ZipArchive();
-	$zip->open($zipfilename, ZipArchive::CREATE);
-	for ($i = 0 ; $i < count($tables) ; $i++) {
-		$lvl = count($tables) - $i;
-		$tablelist = $tables[$i];
-		for ($id = 0 ; $id < count($tablelist) ; $id++) {
-			$table = $tablelist[$id];
-			$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
-			//echo "<li>Adding file: $path/$filename, $dirname/$filename</li>";
-			$zip->addFile("$path/$filename", "$dirname/$filename");
+	chdir($path);
+	//if ($zip->open($zipfilename, ZipArchive::CREATE)) {
+	if ($zip->open($zipfilename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE) === TRUE && is_writable($filepath)) {
+		for ($i = 0 ; $i < count($tables) ; $i++) {
+			$lvl = count($tables) - $i;
+			$tablelist = $tables[$i];
+			for ($id = 0 ; $id < count($tablelist) ; $id++) {
+				$table = $tablelist[$id];
+				$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
+				if (file_exists("$filename") && is_readable("$filename")) {
+					//echo "<li>Adding file (" . ($i + 1) .":" . ($id+1) . "): $filename";
+					//$ok = $zip->addFile("$filename");
+					$contents = file_get_contents($filename);
+					$ok = $zip->addFromString("$dirname/$filename", $contents);
+					if (!$ok) {
+						echo "Failed to add $filename to zip</li>";
+					} 
+				} else {
+					echo "<p>Failed to find file: $path/$filename</p>";
+				}
+			}
 		}
+		$zip->close();
+		$ret = "$dirname.zip";
+		//echo "<li>Completed $ret</li>";
+	} else {
+		echo "<p>Unable to open new zipfile</p>";
+		$ret = "";
 	}
-	$zip->close();
 	
-	return "$dirname.zip";
+	return $ret;
+	
 }
 
 function vtm_is_valid_import_version($version) {
