@@ -1333,15 +1333,18 @@ function vtm_render_config_database() {
 				global $vtm_character_version;
 				$upload = wp_upload_dir();
 				//print_r($upload);
+				//phpinfo();
 				$link = vtm_export_data($upload['path'], "vtm-export-$vtm_character_version");
 				// provide link
-				$url = $upload['url'] . "/$link";
-				echo "<p>Download exported data: <a class='button-primary' href='$url'>$link</a>";
-				?>
-				<form id='options_form' method='post'>
-				<input type="submit" name="return_export_data" class="button-primary" value="Done" />
-				</form>
-				<?php
+				if ($link != "") {
+					$url = $upload['url'] . "/$link";
+					echo "<p>Download exported data: <a class='button-primary' href='$url'>$link</a>";
+					?>
+					<form id='options_form' method='post'>
+					<input type="submit" name="return_export_data" class="button-primary" value="Done" />
+					</form>
+					<?php
+				}
 			}
 			elseif (isset($_REQUEST['import_data'])) {
 				?>
