@@ -2384,7 +2384,7 @@ function vtm_save_freebies() {
 					'CHARTABLE_ID'   => $chartableid,
 					'LEVEL_FROM'     => $levelfrom,
 					
-					'LEVEL_TO'       => $levelto,
+					'LEVEL_TO'       => $type == 'MERIT' ? $amount : $levelto,
 					'AMOUNT'         => $amount,
 					'ITEMTABLE'      => $type,
 					'ITEMNAME'       => $key,
