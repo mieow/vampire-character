@@ -2,8 +2,8 @@
 Contributors: magent
 Tags: vampire, character, generation, roleplay, rpg, lrp, larp
 Requires at least: 5.2.4
-Tested up to: 5.2.4
-Stable tag: 2.9
+Tested up to: 5.6.1
+Stable tag: 2.10
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -134,6 +134,14 @@ the issue.  Also include any error messages.
 4. Spend Experience
 
 == Changelog ==
+
+= 2.10 =
+
+* Bug fix: fixed issue where merit & flaw costs were incorrectly set to level 1 when character approved
+* Bug fix: fixed issue for PHP7.3 where database zip wasn't being created (NB: still fails for PHP7.4)
+* Bug fix: fixed issue where XP spends could not be approved - database SQL error returned
+* Bug fix: remove "Creating default object from empty value" warning message when resetting the database to defaults
+* Bug fix: remove missing file error when reading in init database by checking if file exists first
 
 = 2.9 =
 
