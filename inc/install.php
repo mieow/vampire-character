@@ -1220,92 +1220,94 @@ function vtm_character_install_data($initdatapath) {
 		$sql = "select ID from " . VTM_TABLE_PREFIX . $tablename;
 		$rows = vtm_count($wpdb->get_results($sql));
 		if (!$rows) {
-			$filehandle = fopen($datafile,"r");
-			
-			// Read the data file, line by line
-			$i=0;
-			$data = array();
-			while(! feof($filehandle)) {
-				if ($i == 0) {
-					// first line is the headings
-					$headings = fgetcsv($filehandle,0,",");
-				} else {
-					// remaining lines are data
-					$line = fgetcsv($filehandle,0,",");
-					if ($line > 0) {
-						$j=0;
-						foreach ($headings as $heading) {
-							$data[$i-1][$heading] = $line[$j];
-							$j++;
-						}
-					}
-				}
-				$i++;
-			}
-			fclose($filehandle);
-			//print_r($headings);
-
-			// compare source and target table headings
-			// If the headings from the csv and db table match then no issues
-			// If the csv headings are all in the dbtable and the missing ones
-			//		don't have constraints then we should be okay
-			$tgtinfo = $wpdb->get_results("SHOW COLUMNS FROM " . VTM_TABLE_PREFIX . "$tablename;", ARRAY_A);
-			//print_r($tgtinfo);
-			$tgtheadings = array_column($tgtinfo, 'Field');
-			$tgttype = array_column($tgtinfo, 'Type');
-			$allmatch = 1;
-			$go = 1;
-			// All csv headings in dbtable?
-			foreach ($headings as $heading) {
-				$check = array_intersect(array($heading), $tgtheadings);
-				if (empty($check)) {
-					echo "<p style='color:red'>Table $tablename heading $heading in CSV is not in database: ";
-					//print_r($tgtheadings);
-					echo "</p>";
-					$allmatch = 0;
-				}
-			}
-			if ($allmatch == 0) $go = 0;
-			// Add dbtable headings in csv?
-			// If not, we can let the default be null (unless it has a constraint)
-			$allmatch = 1;
-			$index = 0;
-			foreach ($tgtheadings as $tgt) {
-				if ($tgt != "ID") {		// It is okay for ID column to be missing in CSV
-					$type = $tgttype[$index];
-					
-					$docheck = 1;
-					if ($tgt != "NAME") {
-						// Tinytext fields are okay to be missing as they are generally descriptions/specialities
-						if ($type == "tinytext") $docheck = 0;
-						if ($type == "text")     $docheck = 0;
-					}
-					if ($docheck) {	
-						$check = array_intersect(array($tgt), $headings);
-						if (empty($check)) {
-							echo "<p style='color:red'>Table $tablename heading $tgt ($type) in database is not in CSV</p>";
-							$allmatch = 0;
-						}
-					}
-				}
-				$index++;
-			}
-			if ($allmatch == 0) $go = 0;
-			
-			if ($go) {
-				$rowsadded = 0;
-				foreach ($data as $id => $entry) {
-					$rowsadded += $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
-				}
+			if (file_exists($datafile)) {
+				$filehandle = fopen($datafile,"r");
 				
-				if ($rowsadded == 0 && $rows > 0) {
-					echo "<p style='color:red'>No rows added for $tablename but $rows rows in source - check for database errors</p>";
+				// Read the data file, line by line
+				$i=0;
+				$data = array();
+				while(! feof($filehandle)) {
+					if ($i == 0) {
+						// first line is the headings
+						$headings = fgetcsv($filehandle,0,",");
+					} else {
+						// remaining lines are data
+						$line = fgetcsv($filehandle,0,",");
+						if ($line > 0) {
+							$j=0;
+							foreach ($headings as $heading) {
+								$data[$i-1][$heading] = $line[$j];
+								$j++;
+							}
+						}
+					}
+					$i++;
+				}
+				fclose($filehandle);
+				//print_r($headings);
+
+				// compare source and target table headings
+				// If the headings from the csv and db table match then no issues
+				// If the csv headings are all in the dbtable and the missing ones
+				//		don't have constraints then we should be okay
+				$tgtinfo = $wpdb->get_results("SHOW COLUMNS FROM " . VTM_TABLE_PREFIX . "$tablename;", ARRAY_A);
+				//print_r($tgtinfo);
+				$tgtheadings = array_column($tgtinfo, 'Field');
+				$tgttype = array_column($tgtinfo, 'Type');
+				$allmatch = 1;
+				$go = 1;
+				// All csv headings in dbtable?
+				foreach ($headings as $heading) {
+					$check = array_intersect(array($heading), $tgtheadings);
+					if (empty($check)) {
+						echo "<p style='color:red'>Table $tablename heading $heading in CSV is not in database: ";
+						//print_r($tgtheadings);
+						echo "</p>";
+						$allmatch = 0;
+					}
+				}
+				if ($allmatch == 0) $go = 0;
+				// Add dbtable headings in csv?
+				// If not, we can let the default be null (unless it has a constraint)
+				$allmatch = 1;
+				$index = 0;
+				foreach ($tgtheadings as $tgt) {
+					if ($tgt != "ID") {		// It is okay for ID column to be missing in CSV
+						$type = $tgttype[$index];
+						
+						$docheck = 1;
+						if ($tgt != "NAME") {
+							// Tinytext fields are okay to be missing as they are generally descriptions/specialities
+							if ($type == "tinytext") $docheck = 0;
+							if ($type == "text")     $docheck = 0;
+						}
+						if ($docheck) {	
+							$check = array_intersect(array($tgt), $headings);
+							if (empty($check)) {
+								echo "<p style='color:red'>Table $tablename heading $tgt ($type) in database is not in CSV</p>";
+								$allmatch = 0;
+							}
+						}
+					}
+					$index++;
+				}
+				if ($allmatch == 0) $go = 0;
+				
+				if ($go) {
+					$rowsadded = 0;
+					foreach ($data as $id => $entry) {
+						$rowsadded += $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
+					}
+					
+					if ($rowsadded == 0 && $rows > 0) {
+						echo "<p style='color:red'>No rows added for $tablename but $rows rows in source - check for database errors</p>";
+					}
+				} else {
+					echo "<p style='color:red'>No data added for $tablename - column mismatch</p>";
 				}
 			} else {
-				echo "<p style='color:red'>No data added for $tablename - column mismatch</p>";
+					//echo "<p style='color:red'>Target table $tablename is not empty</p>";
 			}
-		} else {
-				//echo "<p style='color:red'>Target table $tablename is not empty</p>";
 		}
 	}
 
