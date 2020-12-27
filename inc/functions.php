@@ -1026,13 +1026,8 @@ function vtm_get_character_email($characterID) {
         global $wpdb;
 		global $vtmglobal;
 
-		if (!isset($vtmglobal['config'])) $vtmglobal['config'] = new stdClass();
-		
-		if (vtm_table_exists('CONFIG')) {
-			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CONFIG";
-			$vtmglobal['config'] = $wpdb->get_row($sql);
-		} else {
-
+		if (!isset($vtmglobal['config'])) {
+			$vtmglobal['config'] = new stdClass();
 			$vtmglobal['config']->PLACEHOLDER_IMAGE = '';
 			$vtmglobal['config']->ANDROID_LINK = '';
 			$vtmglobal['config']->HOME_DOMAIN_ID = 1;
@@ -1041,8 +1036,34 @@ function vtm_get_character_email($characterID) {
 			$vtmglobal['config']->ASSIGN_XP_BY_PLAYER = 'Y';
 			$vtmglobal['config']->USE_NATURE_DEMEANOUR = 'Y';
 			$vtmglobal['config']->DISPLAY_BACKGROUND_IN_PROFILE = 0;
-
+			$vtmglobal['config']->WEB_COLUMNS = 1;
 		}
+		
+		if (vtm_table_exists('CONFIG')) {
+			// Merge with default settings
+			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CONFIG";
+			$row = $wpdb->get_row($sql);
+			
+			if (vtm_count($row) > 0) {
+				foreach($row as $property => $value) { 
+					$vtmglobal['config']->$property = $value; 
+				} 
+				
+			}
+			
+		 } //else {
+
+			// $vtmglobal['config']->PLACEHOLDER_IMAGE = '';
+			// $vtmglobal['config']->ANDROID_LINK = '';
+			// $vtmglobal['config']->HOME_DOMAIN_ID = 1;
+			// $vtmglobal['config']->HOME_SECT_ID = 1;
+			// $vtmglobal['config']->DEFAULT_GENERATION_ID = 1;
+			// $vtmglobal['config']->ASSIGN_XP_BY_PLAYER = 'Y';
+			// $vtmglobal['config']->USE_NATURE_DEMEANOUR = 'Y';
+			// $vtmglobal['config']->DISPLAY_BACKGROUND_IN_PROFILE = 0;
+
+		// }
+		//print_r($vtmglobal);
 				
 		switch(get_option('vtm_web_pagewidth', 'wide')) {
 			case 'wide'  : $vtmglobal['config']->WEB_COLUMNS = 3; break;
