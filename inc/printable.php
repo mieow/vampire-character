@@ -23,6 +23,7 @@ $headsize      = 10;
 $headrowheight = 10;
 $dividertextsize  = 12;
 $dividerrowheight = 9;
+$overrun       = 18;
 
 $dotmaximum = 5;  /* get this from character */
 			
@@ -80,7 +81,7 @@ function vtm_render_printable($characterID) {
 	global $textfont;
 	global $textrowheight;
 	global $vtmglobal;
-
+	global $overrun;
 
 	$mycharacter = new vtmclass_character();
 	$mycharacter->load($characterID);
@@ -230,12 +231,14 @@ function vtm_render_printable($characterID) {
 				$discrows += count($majikpaths);
 			}
 		}
+		$loopoverrun = 6;
 		$rows = 3;
 		if ($rows < $discrows)           $rows = $discrows;
 		if ($rows < count($backgrounds)) $rows = count($backgrounds);
 		if ($rows < count($secondary))   $rows = count($secondary);
 		
 		for ($i=0;$i<$rows;$i++) {
+			
 		
 			if (isset($backgrounds[$i]->sector))
 				$sector = $backgrounds[$i]->sector;
@@ -266,8 +269,32 @@ function vtm_render_printable($characterID) {
 			if ($i==0)
 				array_push($data, "Backgrounds", "Disciplines", "Secondary Abilities");
 				
-			$pdf->FullWidthTableRow($data);
+			
+			if ($i >= $loopoverrun && count($backgrounds) >= $loopoverrun && $i >= $discrows && $i >= count($secondary)) {
+				$data = array (
+					count($backgrounds) > $i ? "See Extended Backgrounds..." : '',
+					'',
+					'',
+					'',
+					
+					'',
+					'',
+					'',
+					'',
+					
+					'',
+					'',
+					'',
+					'',
+				);
+				$loopoverrun = $overrun - $i;
+				$pdf->FullWidthTableRow($data);
+				break;
+			} else {
+				$pdf->FullWidthTableRow($data);
+			}
 		}
+
 		
 		$pdf->Divider();
 		
@@ -278,8 +305,9 @@ function vtm_render_printable($characterID) {
 			/* Merits and Flaws */
 			$merits = $mycharacter->meritsandflaws;
 			if (count($merits) > 0) {
-				$pdf->SingleColumnHeading("Merits and Flaws");
+				$xnext = $pdf->SingleColumnHeading("Merits and Flaws");
 				
+				$i = 0;
 				foreach ($merits as $merit) {
 					$string = $merit->name;
 					if (!empty($merit->comment))
@@ -288,11 +316,16 @@ function vtm_render_printable($characterID) {
 					if (isset($merit->pending) && $merit->pending != 0)
 						$string .= " pending";
 					$pdf->SingleColumnText($string);
+					$i++;
+					if ($i == $loopoverrun) {
+						$pdf->SingleColumnText("See Extended Backgrounds for more...");
+						break;
+					}
 				}
 			}
 			
-			$xnext = $pdf->SingleColumnHeading('Current Experience');
-			$pdf->SingleColumnCell(($mycharacter->current_experience - $mycharacter->pending_experience) . " ( " . $mycharacter->spent_experience . " spent on character )");
+			//$xnext = $pdf->SingleColumnHeading('Current Experience');
+			//$pdf->SingleColumnCell(($mycharacter->current_experience - $mycharacter->pending_experience) . " ( " . $mycharacter->spent_experience . " spent on character )");
 			
 			$ybottom = $pdf->GetY();
 		
@@ -358,6 +391,12 @@ function vtm_render_printable($characterID) {
 				'Blood per round',    $mycharacter->blood_per_round,
 				'Domain',         $mycharacter->domain,
 				'Approval Date', ($doa[2] * 1) . " $doam " . $doa[0]
+			)
+		);
+		$pdf->BasicInfoTableRow( array(
+				'Current Experience',    $mycharacter->current_experience - $mycharacter->pending_experience,
+				'Experience Spent',      $mycharacter->spent_experience,
+				'', ''
 			)
 		);
 		$pdf->Ln();
