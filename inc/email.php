@@ -35,7 +35,7 @@ function vtm_phpmailer_setup( $phpmailer ) {
 		$phpmailer->SetFrom($smtpuser, $fromname);
 
 		}
-	else {
+	elseif ($method != 'mail') {
 		echo "<p>Unknown mail transport method '$method'</p>";
 	}
 }
