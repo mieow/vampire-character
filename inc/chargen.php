@@ -699,12 +699,12 @@ function vtm_render_basic_info($step) {
 	}
 	$output .= "</td></tr>
 		<tr>
-			<td class='vtmcol_key'>Concept* (200 characters):</td>
+			<td class='vtmcol_key'>Concept*:</td>
 			<td>\n";
 	if ($submitted)
 		$output .= $concept;
 	else
-		$output .= "<textarea name='concept' rows='2' cols='50' maxlength='200'>$concept</textarea>\n";
+		$output .= "<textarea name='concept' rows='3' cols='50'>$concept</textarea>\n";
 	$output .= "</td></tr>
 		</table>\n";
 		
