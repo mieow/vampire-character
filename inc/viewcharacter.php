@@ -27,40 +27,46 @@ function vtm_get_viewcharacter_content() {
 
 	$maxrating = $mycharacter->max_rating > 5 ? 10 : 5;
 
+	/*
 	if ($vtmglobal['config']->WEB_COLUMNS == 1)
 		$divder = "<tr><td class='vtmhr'><hr /></td></tr>"; // divider
 	else
 		$divder = "<tr><td class='vtmhr' colspan=" . $vtmglobal['config']->WEB_COLUMNS . "><hr /></td></tr>"; // divider
+	*/
+	$divder = "<hr />";
 	
 	$content = "<div class='gvplugin vtmpage_" . $vtmglobal['config']->WEB_PAGEWIDTH . "' id=\"csheet\">";
 	
 	//---- TOP CHARACTER INFO ----
-	$c_tableleft = "<table><tbody>
+	$c_tableleft = "<div class='vtmsubsection'><table><tbody>
 		<tr><td class='vtmcol_key'>Character</td><td>". vtm_formatOutput($mycharacter->name) . "</td></tr>
 		<tr><td class='vtmcol_key'>Domain</td><td>"   . vtm_formatOutput($mycharacter->domain) . "</td></tr>
 		<tr><td class='vtmcol_key'>Sect</td><td>"     . vtm_formatOutput($mycharacter->sect) . "</td></tr>
-		</tbody></table>";
-	$c_tablemid = "<table><tbody>
+		</tbody></table></div>";
+	$c_tablemid = "<div class='vtmsubsection'><table><tbody>
 		<tr><td class='vtmcol_key'>Clan</td><td>"        . vtm_formatOutput($mycharacter->private_clan) . "</td></tr>
 		<tr><td class='vtmcol_key'>Public Clan</td><td>" . vtm_formatOutput($mycharacter->clan) . "</td></tr>
 		<tr><td class='vtmcol_key'>Sire</td><td>"        . vtm_formatOutput($mycharacter->sire) . "</td></tr>
-		</tbody></table>";
+		</tbody></table></div>";
 	if ($vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') {
-		$c_tableright = "<table><tbody>
+		$c_tableright = "<div class='vtmsubsection'><table><tbody>
 			<tr><td class='vtmcol_key'>Generation</td><td>" . vtm_formatOutput($mycharacter->generation) . "</td></tr>
 			<tr><td class='vtmcol_key'>Nature</td><td>"     . vtm_formatOutput($mycharacter->nature) . "</td></tr>
 			<tr><td class='vtmcol_key'>Demeanour</td><td>"  . vtm_formatOutput($mycharacter->demeanour) . "</td></tr>
-			</tbody></table>";
+			</tbody></table></div>";
 	} else {
-		$c_tableright = "<table><tbody>
+		$c_tableright = "<div class='vtmsubsection'><table><tbody>
 			<tr><td class='vtmcol_key'>Generation</td><td>" . vtm_formatOutput($mycharacter->generation) . "</td></tr>
 			<tr><td class='vtmcol_key'>Date of Birth</td><td>" . vtm_formatOutput($mycharacter->date_of_birth) . "</td></tr>
 			<tr><td class='vtmcol_key'>Date of Embrace</td><td>" . vtm_formatOutput($mycharacter->date_of_embrace) . "</td></tr>
-			</tbody></table>";
+			</tbody></table></div>";
 	}
 	
-	$content .= "<table>\n";
-	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
+	$content .= "<div class='vtmsection'>\n";
+	$content .= "$c_tableleft\n$c_tablemid\n$c_tableright\n";
+	$content .= "</div><!-- end section -->\n";
+	
+	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "<tr>
 			<td class='vtm_colnarrow'>$c_tableleft</td>
 			<td class='vtm_colnarrow'>$c_tablemid</td>
@@ -71,7 +77,7 @@ function vtm_get_viewcharacter_content() {
 			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>
 			<tr><td class='vtm_colfull'>$c_tablemid</td></tr>
 			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}
+	}*/
 	$content .= $divder;
 	
 	//---- ATTRIBUTES ----
@@ -79,7 +85,7 @@ function vtm_get_viewcharacter_content() {
 	$social   = $mycharacter->getAttributes("Social");
 	$mental   = $mycharacter->getAttributes("Mental");
 	
-	$c_tableleft = "<table><tr><td colspan=3><h4>Physical</h4></td></tr>";
+	$c_tableleft = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Physical</h4></td></tr>";
 	for ($i=0;$i<3;$i++) {
 		$statname = isset($physical[$i]->name)      ? vtm_formatOutput($physical[$i]->name) : '';
 		$statspec = isset($physical[$i]->specialty) ? vtm_formatOutput($physical[$i]->specialty) : '';
@@ -91,8 +97,8 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $statlvl) . "</td>
 			</tr>";
 	}
-	$c_tableleft .= "</table>";
-	$c_tablemid = "<table><tr><td colspan=3><h4>Social</h4></td></tr>";
+	$c_tableleft .= "</table></div>\n";
+	$c_tablemid = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Social</h4></td></tr>";
 	for ($i=0;$i<3;$i++) {
 		$statname = isset($social[$i]->name)      ? vtm_formatOutput($social[$i]->name) : '';
 		$statspec = isset($social[$i]->specialty) ? vtm_formatOutput($social[$i]->specialty) : '';
@@ -104,8 +110,8 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $statlvl) . "</td>
 			</tr>";
 	}
-	$c_tablemid .= "</table>";
-	$c_tableright = "<table><tr><td colspan=3><h4>Mental</h4></td></tr>";
+	$c_tablemid .= "</table></div>\n";
+	$c_tableright = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Mental</h4></td></tr>";
 	for ($i=0;$i<3;$i++) {
 		$statname = isset($mental[$i]->name)      ? vtm_formatOutput($mental[$i]->name) : '';
 		$statspec = isset($mental[$i]->specialty) ? vtm_formatOutput($mental[$i]->specialty) : '';
@@ -117,10 +123,13 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $statlvl) . "</td>
 			</tr>";
 	}
-	$c_tableright .= "</table>";
+	$c_tableright .= "</table></div>\n";
 
+	$content .= "<div class='vtmsection'>\n";
+	$content .= "$c_tableleft\n$c_tablemid\n$c_tableright\n";
+	$content .= "</div><!-- end section -->\n";
 
-	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
+	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "
 			<tr><td colspan=3><h3>Attributes</h3></td></tr>
 			<tr>
@@ -134,7 +143,7 @@ function vtm_get_viewcharacter_content() {
 			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>
 			<tr><td class='vtm_colfull'>$c_tablemid</td></tr>
 			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}
+	}*/
 
 	//---- ABILITIES ----
 	$content .= $divder;
@@ -143,7 +152,7 @@ function vtm_get_viewcharacter_content() {
 	$skill     = $mycharacter->getAbilities("Skills");
 	$knowledge = $mycharacter->getAbilities("Knowledges");
 	
-	$c_tableleft = "<table><tr><td colspan=3><h4>Talents</h4></td></tr>";
+	$c_tableleft = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Talents</h4></td></tr>";
 	for ($i=0;$i<count($talent);$i++) {
 		$max = max($talent[$i]->level, $maxrating);
 		if ($talent[$i]->level > 0)
@@ -153,8 +162,8 @@ function vtm_get_viewcharacter_content() {
 					<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $talent[$i]->level) . "</td>
 				</tr>";
 	}
-	$c_tableleft .= "</table>";
-	$c_tablemid = "<table><tr><td colspan=3><h4>Skills</h4></td></tr>";
+	$c_tableleft .= "</table></div>\n";
+	$c_tablemid = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Skills</h4></td></tr>";
 	for ($i=0;$i<count($skill);$i++) {
 		$max = max($skill[$i]->level, $maxrating);
 		if ($skill[$i]->level > 0)
@@ -164,8 +173,8 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $skill[$i]->level) . "</td>
 			</tr>";
 	}
-	$c_tablemid .= "</table>";
-	$c_tableright = "<table><tr><td colspan=3><h4>Knowledges</h4></td></tr>";
+	$c_tablemid .= "</table></div>\n";
+	$c_tableright = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Knowledges</h4></td></tr>";
 	for ($i=0;$i<count($knowledge);$i++) {
 		$max = max($knowledge[$i]->level, $maxrating);
 		if ($knowledge[$i]->level > 0)
@@ -175,9 +184,9 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $knowledge[$i]->level) . "</td>
 			</tr>";
 	}
-	$c_tableright .= "</table>";
+	$c_tableright .= "</table></div>\n";
 	
-	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
+	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "
 			<tr><td colspan=3><h3>Abilities</h3></td></tr>
 			<tr>
@@ -191,7 +200,11 @@ function vtm_get_viewcharacter_content() {
 			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>
 			<tr><td class='vtm_colfull'>$c_tablemid</td></tr>
 			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}
+	}*/
+	$content .= "<div class='vtmsection'>\n";
+	$content .= "$c_tableleft\n$c_tablemid\n$c_tableright\n";
+	$content .= "</div><!-- end section -->\n";
+	
 	
 	//---- BACKGROUND, DISCIPLINES AND OTHER TRAITS ----
 	
@@ -212,7 +225,7 @@ function vtm_get_viewcharacter_content() {
 	foreach ($secondarygroups as $group)
 			$secondary = array_merge($mycharacter->getAbilities($group), $secondary);	
 	
-	$c_tableleft = "<table><tr><td colspan=3><h4>Backgrounds</h4></td></tr>";
+	$c_tableleft = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Backgrounds</h4></td></tr>";
 	for ($i=0;$i<count($backgrounds);$i++) {
 		$max = max($backgrounds[$i]->level, $maxrating);
 		$c_tableleft .= "<tr>
@@ -221,8 +234,8 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $backgrounds[$i]->level) . "</td>
 			</tr>";
 	}
-	$c_tableleft .= "</table>";
-	$c_tablemid = "<table><tr><td colspan=3><h4>Disciplines</h4></td></tr>";
+	$c_tableleft .= "</table></div>\n";
+	$c_tablemid = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Disciplines</h4></td></tr>";
 	for ($i=0;$i<count($disciplines);$i++) {
 		$max = max($disciplines[$i]->level, $maxrating);
 		if ($disciplines[$i]->level > 0)
@@ -238,8 +251,8 @@ function vtm_get_viewcharacter_content() {
 		if (!strstr($disc,"PENDING"))
 			$c_tablemid .= "<tr><td colspan=3>" . vtm_formatOutput($disc) . "</td></tr>";
 	}
-	$c_tablemid .= "</table>";
-	$c_tableright = "<table><tr><td colspan=3><h4>Other Traits</h4></td></tr>";
+	$c_tablemid .= "</table></div>\n";
+	$c_tableright = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Other Traits</h4></td></tr>";
 	for ($i=0;$i<count($secondary);$i++) {
 		$max = max($secondary[$i]->level, $maxrating);
 		if ($secondary[$i]->level > 0)
@@ -249,9 +262,9 @@ function vtm_get_viewcharacter_content() {
 				<td class='vtmdot_{$maxrating}'>" . vtm_numberToDots($max, $secondary[$i]->level) . "</td>
 			</tr>";
 	}
-	$c_tableright .= "</table>";
+	$c_tableright .= "</table></div>\n";
 	
-	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
+	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "
 			<tr>
 			<td class='vtm_colnarrow'>$c_tableleft</td>
@@ -263,7 +276,11 @@ function vtm_get_viewcharacter_content() {
 			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>$divder
 			<tr><td class='vtm_colfull'>$c_tablemid</td></tr>$divder
 			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}
+	}*/
+	$content .= "<div class='vtmsection'>\n";
+	$content .= "$c_tableleft\n$c_tablemid\n$c_tableright\n";
+	$content .= "</div><!-- end section -->\n";
+
 	
 	//---- MERITS, FLAWS, VIRTUES, WILLPOWER, PATH AND BLOOD ----
 	$content .= $divder;
@@ -271,7 +288,7 @@ function vtm_get_viewcharacter_content() {
 	$merits = $mycharacter->meritsandflaws;
 	$virtues = $mycharacter->getAttributes("Virtue");
 
-	$c_tableleft = "<table><tr><td><h4>Merits and Flaws</h4></td></tr>";
+	$c_tableleft = "<div class='vtmsubsection_wide'><table><tr><td><h4>Merits and Flaws</h4></td></tr>";
 	$c_tableleft .= "<tr>";
 	if (count($merits) > 0) {
 		$c_tableleft .= "<td><table>";
@@ -286,8 +303,8 @@ function vtm_get_viewcharacter_content() {
 	} else {
 		$c_tableleft .= "<td>&nbsp;</td>";
 	}
-	$c_tableleft .= "</tr></table>";
-	$c_tableright = "<table><tr><td colspan=3><h4>Virtues</h4></td></tr>";
+	$c_tableleft .= "</tr></table></div>\n";
+	$c_tableright = "<div class='vtmsubsection'><table><tr><td colspan=3><h4>Virtues</h4></td></tr>";
 	for ($i=0;$i<3;$i++) {
 		$statname = isset($virtues[$i]->name)      ? vtm_formatOutput($virtues[$i]->name) : '';
 		$statlvl  = isset($virtues[$i]->level)     ? $virtues[$i]->level : '';
@@ -306,9 +323,9 @@ function vtm_get_viewcharacter_content() {
 	$c_tableright .= "<tr><td colspan=3><hr /></td></tr>\n";
 	$c_tableright .= "<tr><td colspan=3><h4>Bloodpool</h4></td></tr>";
 	$c_tableright .= "<tr><td colspan=3 class='vtmdot_10 vtmdotwide'>" . vtm_numberToBoxes($mycharacter->bloodpool,0) . "</td></tr>\n";
-	$c_tableright .= "</table>";
+	$c_tableright .= "</table></div>\n";
 
-	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
+	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "
 			<tr>
 			<td class='vtm_colwide' colspan = 2>$c_tableleft</td>
@@ -318,7 +335,10 @@ function vtm_get_viewcharacter_content() {
 		$content .= "
 			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>
 			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}
+	}*/
+	$content .= "<div class='vtmsection'>\n";
+	$content .= "$c_tableleft\n$c_tableright\n";
+	$content .= "</div><!-- end section -->\n";
 
 	
 	//---- MAGIK ----
@@ -328,7 +348,7 @@ function vtm_get_viewcharacter_content() {
 	$majikpaths_primary  = $mycharacter->primary_paths;
 	$majikpaths_secondary  = $mycharacter->secondary_paths;
 
-	$c_tableleft = "<table><tr><td><h4>Rituals</h4></td></tr>";
+	$c_tableleft = "<div class='vtmsubsection_wide'><table><tr><td><h4>Rituals</h4></td></tr>";
 	$c_tableleft .= "<tr>";
 	if (count($rituals) > 0) {
 		$c_tableleft .= "<td><table>";
@@ -343,8 +363,8 @@ function vtm_get_viewcharacter_content() {
 	} else {
 		$c_tableleft .= "<td>&nbsp;</td>";
 	}
-	$c_tableleft .= "</tr></table>";
-	$c_tableright = "<table><tr><td><h4>Paths</h4></td></tr>";
+	$c_tableleft .= "</tr></table></div>\n";
+	$c_tableright = "<div class='vtmsubsection'><table><tr><td><h4>Paths</h4></td></tr>";
 	$c_tableright .= "<tr>";
 	
 	if (count($majikpaths_primary)>0) {
@@ -369,10 +389,10 @@ function vtm_get_viewcharacter_content() {
 	} else {
 				$c_tableright .= "&nbsp;";
 	}
-	$c_tableright .= "</tr></table>";
+	$c_tableright .= "</tr></table></div>\n";
 	
 
-	if ($vtmglobal['config']->WEB_COLUMNS == 3) {
+	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
 		$content .= "
 			<tr>
 			<td class='vtm_colwide' colspan = 2>$c_tableleft</td>
@@ -382,9 +402,12 @@ function vtm_get_viewcharacter_content() {
 		$content .= "
 			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>$divder
 			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}
+	}*/
+	$content .= "<div class='vtmsection'>\n";
+	$content .= "$c_tableleft\n$c_tableright\n";
+	$content .= "</div><!-- end section -->\n";
 
-	$content .= "</table>";
+	//$content .= "</table>"; */
 	$content .= "</div>\n";
 	
 	return $content;

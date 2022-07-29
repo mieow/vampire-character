@@ -136,6 +136,7 @@ div.vtm_error ul {list-style: none;}
 
 /* =Character Sheet
 -------------------------------------------------------------- */
+
 #csheet td {
     padding:1px;
 	margin:0px;
@@ -146,13 +147,6 @@ div.vtm_error ul {list-style: none;}
 #csheet h3 {text-align:center;}
 #csheet h4 {text-align:center;}
 
-#csheet td.vtmdotwide.vtmdot_10  {
-	text-align:left;
-}
-
-#csheet td.vtm_colfull {width:auto;}
-#csheet td.vtm_colwide {width:66%;}
-#csheet td.vtm_colnarrow {width:33%;}
 
 #csheet td.vtmcol_key {
 	width: 33%;
@@ -168,19 +162,60 @@ div.vtm_error ul {list-style: none;}
 #csheet td.vtmdot_10 {
 	text-align:center;
 	width:40%;
-} 
-
-#csheet td.vtmdot_10.vtmdotwide {
-	text-align:left;
 }
-
-
-/*
 div#csheet {
     float: left;
     width: 100%;
     display: block;
 }
+
+#csheet div.vtmsection table {
+	border: none;
+}
+
+@media (min-width:480px)  { 
+
+	#csheet div.vtmsubsection {
+		width:49.5%;
+		display: inline-block;
+		vertical-align: top;
+	}
+	#csheet div.vtmsubsection_wide {
+		width:100%;
+		display: inline-block;
+		vertical-align: top;
+	}
+}
+@media (min-width:800px)  { 
+
+	#csheet div.vtmsubsection {
+		width:32.5%;
+		display: inline-block;
+		vertical-align: top;
+	}
+	#csheet div.vtmsubsection_wide {
+		width:65.5%;
+		display: inline-block;
+		vertical-align: top;
+	}
+}
+
+ /* OLD */
+/*
+
+#csheet td.vtm_colfull {width:auto;}
+#csheet td.vtm_colwide {width:66%;}
+#csheet td.vtm_colnarrow {width:33%;}
+
+#csheet td.vtmdotwide.vtmdot_10  {
+	text-align:left;
+}#csheet td.vtmdot_10.vtmdotwide {
+	text-align:left;
+}
+*/
+
+/*
+
 
 */
 
