@@ -1630,7 +1630,7 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 
-	if ($type == 'path' || $type == 'ritual' || $type == 'merit') {
+	/*if ($type == 'path' || $type == 'ritual' || $type == 'merit') {
 		$columns = min(2, $vtmglobal['config']->WEB_COLUMNS);
 	} else {
 		$columns = $vtmglobal['config']->WEB_COLUMNS;
@@ -1639,6 +1639,11 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 		case 1: $colclass = 'vtm_colfull'; break;
 		case 2: $colclass = 'vtm_colwide'; break;
 		case 3: $colclass = 'vtm_colnarrow'; break;
+	}*/
+	if ($type == 'path' || $type == 'ritual' || $type == 'merit') {
+		$colclass = 'vtmsubsection_wide';
+	} else {
+		$colclass = 'vtmsubsection';
 	}
 	
 	$allxpdata = $wpdb->get_results(call_user_func($sqlfunction, $characterID));
@@ -1650,7 +1655,7 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 	$grpcount = 0;
 	$extracols = 0;
 	$col = 0;
-	$rowoutput = "";
+	$rowoutput = array();   // rowoutput[group][title], rowoutput[group][rows] = 
 	if (count($allxpdata)>0) {
 		$id = 0;
 		foreach ($allxpdata as $xpdata) {
@@ -1734,8 +1739,10 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 			if (isset($xpdata->grp)) {
 				if ($grp != $xpdata->grp) {
 					$grpcount++;
-					if (empty($grp)) {
-						$rowoutput .= "<tr><td class='$colclass'>\n<table>\n<tr><th class='$colclass' colspan=3>{$xpdata->grp}</th></tr>\n";
+					$rowoutput[$xpdata->grp]['title'] = "<table>\n<tr><th colspan=3>{$xpdata->grp}</th></tr>\n";
+										
+					/*if (empty($grp)) {
+						$rowoutput .= "<div class='$colclass'>\n<table>\n<tr><th colspan=3>{$xpdata->grp}</th></tr>\n";
 						$col++;
 					} 
 					elseif ($col == $columns) {
@@ -1743,9 +1750,9 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 						$col = 1;
 					}
 					else {
-						$rowoutput .= "</table>\n</td><td class='$colclass'>\n<table>\n<tr><th class='$colclass' colspan=3>{$xpdata->grp}</th></tr>\n";
+						$rowoutput .= "</table></div>\n<div class='$colclass'>\n<table>\n<tr><th class='$colclass' colspan=3>{$xpdata->grp}</th></tr>\n";
 						$col++;
-					}
+					}*/
 					$grp = $xpdata->grp;
 				}
 			}
@@ -1779,45 +1786,46 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 			
 			//dots row
 			$xpcost = 0;
-			$rowoutput .= "<tr><td class='vtmcol_key'><span";
+			
+			$rowoutput[$grp]['rows'][$id] = "<tr><td class='vtmcol_key'><span";
 			if ($xpcomment)
-				$rowoutput .= " title='$xpcomment' class='vtmxp_spec' ";
-			$rowoutput .= ">$name</span></td>\n";
-			$rowoutput .= "<td class='vtmdot_$tmp_max2display vtmdots'>";
+				$rowoutput[$grp]['rows'][$id] .= " title='$xpcomment' class='vtmxp_spec' ";
+			$rowoutput[$grp]['rows'][$id] .= ">$name</span></td>\n";
+			$rowoutput[$grp]['rows'][$id] .= "<td class='vtmdot_$tmp_max2display vtmdots'>";
 			for ($i=1;$i<=$tmp_max2display;$i++) {
 			
 				if ($xpdata->curr_level >= $i)
-					$rowoutput .= "<img alt='*' src='$fulldoturl'>";
+					$rowoutput[$grp]['rows'][$id] .= "<img alt='*' src='$fulldoturl'>";
 				elseif ($maxRating < $i)
-					$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+					$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 				elseif ($xpdata->pending_level)
 					if ($xpdata->pending_level >= $i)
-						$rowoutput .= "<img alt='X' src='$pendingdoturl'>";
+						$rowoutput[$grp]['rows'][$id] .= "<img alt='X' src='$pendingdoturl'>";
 					elseif ($type == 'merit' && $xpdata->next_level < 0 && $xpdata->xp_cost)
-						$rowoutput .= "<img alt='X' src='$pendingdoturl'>";
+						$rowoutput[$grp]['rows'][$id] .= "<img alt='X' src='$pendingdoturl'>";
 					else
-						$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+						$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 				elseif ($type == 'path' && $xpdata->item_id == $xpdata->primary_path_id) {
 					// no spending xp on primary paths
-					$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+					$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 				}
 				elseif ($type == 'path' && $maxRating < 5 && $maxRating == $i) {
 					// no spending xp on secondary paths if the primary path
 					// is less than max and if the new rating is equal to the
 					// primary path rating
-					$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+					$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 				}
 				elseif ($type == 'combo' || $type == 'ritual') {
 					$xpcost = $xpdata->xp_cost;
 				
 					if ($xp_avail >= $xpcost) {
 					
-						$rowoutput .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='{$xpdata->next_level}' id='vtmcb_{$type}_$id' ";
+						$rowoutput[$grp]['rows'][$id] .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='{$xpdata->next_level}' id='vtmcb_{$type}_$id' ";
 						if (isset($levelsdata[$id]))
-							$rowoutput .= "checked";
-						$rowoutput .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
+							$rowoutput[$grp]['rows'][$id] .= "checked";
+						$rowoutput[$grp]['rows'][$id] .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
 					} else
-						$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+						$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 									
 				}
 				elseif ($type == 'merit') {
@@ -1825,23 +1833,23 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 					if ($xpdata->next_level < 0) { // Flaw
 						if($xpcost) {
 							if ($xp_avail >= $xpcost) {
-								$rowoutput .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='{$xpdata->next_level}' id='vtmcb_{$type}_$id' ";
+								$rowoutput[$grp]['rows'][$id] .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='{$xpdata->next_level}' id='vtmcb_{$type}_$id' ";
 								if (isset($levelsdata[$id]))
-									$rowoutput .= "checked";
-								$rowoutput .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
+									$rowoutput[$grp]['rows'][$id] .= "checked";
+								$rowoutput[$grp]['rows'][$id] .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
 							} else
-								$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+								$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 
 						} else
-								$rowoutput .= "<img alt='O' src='$fulldoturl'>";
+								$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$fulldoturl'>";
 					} else {
 						if ($xp_avail >= $xpcost) {
-							$rowoutput .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='{$xpdata->next_level}' id='vtmcb_{$type}_$id' ";
+							$rowoutput[$grp]['rows'][$id] .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='{$xpdata->next_level}' id='vtmcb_{$type}_$id' ";
 							if (isset($levelsdata[$id]))
-								$rowoutput .= "checked";
-							$rowoutput .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
+								$rowoutput[$grp]['rows'][$id] .= "checked";
+							$rowoutput[$grp]['rows'][$id] .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
 						} else
-							$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+							$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 					}
 				}
 				else {
@@ -1851,7 +1859,7 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 							$xpcost = $xpdata->xp_cost;
 							
 						if ($xpcost == 0) {
-							$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+							$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 						}
 						elseif ($xp_avail >= $xpcost) {
 								
@@ -1859,16 +1867,16 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 						
 							//$rowoutput .= "<input type='hidden'   name='{$type}_cost[" . $id . "]'    value='" . $xpcost . "' >";
 							//$rowoutput .= "<input type='hidden'   name='{$type}_comment[" . $id . "]' value='$comment' >";
-							$rowoutput .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='$i' id='vtmcb_{$type}_$id' ";
+							$rowoutput[$grp]['rows'][$id] .= "<input type='CHECKBOX' name='$checkboxname:{$xpcost}[level]'   value='$i' id='vtmcb_{$type}_$id' ";
 							if (isset($levelsdata[$id]) && $i == $levelsdata[$id])
-								$rowoutput .= "checked";
-							$rowoutput .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
+								$rowoutput[$grp]['rows'][$id] .= "checked";
+							$rowoutput[$grp]['rows'][$id] .= "><label for='vtmcb_{$type}_$id' title='[ ]'>&nbsp;</label>";
 						}
 						else
-							$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+							$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 					}
 					else
-						$rowoutput .= "<img alt='O' src='$emptydoturl'>";
+						$rowoutput[$grp]['rows'][$id] .= "<img alt='O' src='$emptydoturl'>";
 				}	
 			}
 			
@@ -1876,30 +1884,30 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 			//$xpcost = ($xpdata->next_level <= $maxRating) ? "(" . $xpdata->XP_COST . " XP)" : "";
 			$xpcost = ($xpdata->next_level <= $maxRating) ? $xpdata->xp_cost . "xp" : "";
 			if ($xpdata->has_pending)
-				$rowoutput .= "<td class='vtmxp_cost'><input class='vtmxp_clear' type='submit' name='cancel[{$xpdata->pending_id}]' value='Del'></td>";
+				$rowoutput[$grp]['rows'][$id] .= "<td class='vtmxp_cost'><input class='vtmxp_clear' type='submit' name='cancel[{$xpdata->pending_id}]' value='Del'></td>";
 			elseif ($xpdata->xp_cost == 0) {
-				$rowoutput .= "<td class='vtmxp_cost'>&nbsp;</td>";
+				$rowoutput[$grp]['rows'][$id] .= "<td class='vtmxp_cost'>&nbsp;</td>";
 			}
 			elseif ($type == 'path' && $xpdata->item_id == $xpdata->primary_path_id) {
-				$rowoutput .= "<td class='vtmxp_cost'>&nbsp;</td>";
+				$rowoutput[$grp]['rows'][$id] .= "<td class='vtmxp_cost'>&nbsp;</td>";
 			}
 			else
-				$rowoutput .= "<td class='vtmxp_cost'>$xpcost</td>";
+				$rowoutput[$grp]['rows'][$id] .= "<td class='vtmxp_cost'>$xpcost</td>";
 				
-			$id++;
-			if ($id == count($allxpdata)) {
+			/*if ($id == count($allxpdata)) {
 				$remaining = $grpcount % $columns;
 				if ($remaining) {
 					$extracols = $columns - $remaining;
 				}
-			}
+			}*/
 			
-			$rowoutput .= "</tr>\n";
+			$rowoutput[$grp]['rows'][$id] .= "</tr>\n";
+			$id++;
 			
 		}
 	}
 	
-	if ($extracols > 0) {
+	/*if ($extracols > 0) {
 		$rowoutput .= "</table></td>";
 		for ($i = 1 ; $i <= $extracols ; $i++) {
 			$rowoutput .= "<td class='$colclass'>&nbsp;</td>";
@@ -1907,12 +1915,20 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 		$rowoutput .= "</tr>";
 	} 
 	elseif ($rowoutput != "")
-		$rowoutput .= "</table></td></tr>\n";
+		$rowoutput .= "</table></td></tr>\n";*/
 
-	if (!empty($rowoutput)) {
-		$output = "<table>\n";
-		$output .= "$rowoutput\n";
-		$output .= "</table>\n";
+	if (vtm_count($rowoutput) > 0) {
+		$output = "<div>";
+		foreach ($rowoutput as $grp => $section) {
+			$output .= "<div class='$colclass'>\n";
+			$output .= $section['title'];
+			foreach ($section['rows'] as $id => $row) {
+				$output .= $row;
+			}
+			$output .= "</table>\n";
+			$output .= "</div>\n";
+		}
+		$output .= "</div>";
 	} else {
 		$output = "";
 	}
