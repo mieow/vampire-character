@@ -99,6 +99,7 @@ function vtm_print_background_shortcode($atts, $content = null) {
 		"columns"    => "level,character,player,clan,domain,background,sector,office,comment,level",  // also sect
 		"heading"    => 1,
 		"charactertype" => 'all',
+		"pronouns"   => 1,
 		), $atts)
 	);
 	
@@ -132,7 +133,8 @@ function vtm_print_background_shortcode($atts, $content = null) {
 				sector.name as sectorname,
 				cgstatus.name as chargenstat,
 				sects.name as sect,
-				ctype.name as charactertype
+				ctype.name as charactertype,
+				chara.pronouns as pronouns
 			FROM
 				" . VTM_TABLE_PREFIX . "CHARACTER chara,
 				" . VTM_TABLE_PREFIX . "PLAYER player,
@@ -185,7 +187,8 @@ function vtm_print_background_shortcode($atts, $content = null) {
 				\"\" as sectorname,
 				cgstatus.name as chargenstat,
 				sects.name as sect,
-				ctype.name as charactertype
+				ctype.name as charactertype,
+				chara.pronouns as pronouns
 			FROM
 				" . VTM_TABLE_PREFIX . "CHARACTER chara
 				LEFT JOIN
@@ -360,6 +363,7 @@ function vtm_print_background_shortcode($atts, $content = null) {
 				if ($name == 'level')  $output .= "<th>Level</th>";
 				if ($name == 'office')   $output .= "<th>Office</th>";
 				if ($name == 'sect')   $output .= "<th>Affiliation</th>";
+				if ($name == 'pronouns')   $output .= "<th>Pronouns</th>";
 			}
 			$output .= "</tr>\n";
 		}
@@ -382,6 +386,7 @@ function vtm_print_background_shortcode($atts, $content = null) {
 					$output .= "<td class='gvcol_$col gvcol_val'>$text</td>";
 				}
 				if ($name == 'sect')  $output .= "<td class='gvcol_$col gvcol_val'>" . vtm_formatOutput($tablerow->sect) . "</td>";
+				if ($name == 'pronouns')  $output .= "<td class='gvcol_$col gvcol_val'>" . vtm_formatOutput($tablerow->pronouns) . "</td>";
 				$col++;
 			}
 			$output .= "</tr>\n";

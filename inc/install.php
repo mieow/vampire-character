@@ -7,8 +7,8 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 
 global $vtm_character_version;
 global $vtm_character_db_version;
-$vtm_character_version = "2.8"; 
-$vtm_character_db_version = "82"; 
+$vtm_character_version = "2.11"; 
+$vtm_character_db_version = "83"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -722,6 +722,7 @@ function vtm_character_install($action = "") {
 				GET_NEWSLETTER varchar(1) NOT NULL,
 				VISIBLE varchar(1) NOT NULL,
 				DELETED varchar(1) NOT NULL,
+				PRONOUNS tinytext NOT NULL,
 				PRIMARY KEY  (ID)
 				) ENGINE=INNODB;";
 	$for_update = dbDelta($sql);
@@ -1873,6 +1874,7 @@ function vtm_character_update_2_5($beforeafter) {
 		
 	}
 }
+
 
 add_action('activated_plugin','save_error');
 function save_error(){

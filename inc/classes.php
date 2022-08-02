@@ -42,6 +42,7 @@ class vtmclass_character {
 	var $portrait;
 	var $char_status_comment;
 	var $char_status;
+	var $pronouns;
 	var $offices;
 	var $history;
 	var $last_updated;
@@ -83,7 +84,8 @@ class vtmclass_character {
 					   priv_clan.icon_link			   private_icon,
 					   chara.concept				   concept,
 					   chara.email,
-					   chara.get_newsletter			   newsletter
+					   chara.get_newsletter			   newsletter,
+					   chara.pronouns
                     FROM " . VTM_TABLE_PREFIX . "CHARACTER chara,
                          " . VTM_TABLE_PREFIX . "PLAYER player,
                          " . VTM_TABLE_PREFIX . "DOMAIN domains,
@@ -135,6 +137,7 @@ class vtmclass_character {
 			$this->path_of_enlightenment = stripslashes($result[0]->path);
 			$this->email        = $result[0]->email;
 			$this->newsletter   = $result[0]->newsletter != '' ? $result[0]->newsletter : 'Y';
+			$this->pronouns     = $result[0]->pronouns;
 		} else {
 			$this->name         = 'No character selected';
 			$this->clan         = '';
@@ -157,6 +160,7 @@ class vtmclass_character {
 			$this->date_of_birth   = '';
 			$this->date_of_embrace = '';
 			$this->char_status_comment   = '';
+			$this->pronouns     = '';
 			$this->path_of_enlightenment = '';
 			$this->concept      = '';
 			$this->email        = '';

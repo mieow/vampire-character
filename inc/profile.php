@@ -259,6 +259,21 @@ function vtm_get_profile_content() {
 			$mycharacter->quote = $_POST['charHarpyQuote'];
 				
 		}
+		
+		// Update Pronouns
+		if (isset($_POST['Pronouns'])) {
+			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+				array('PRONOUNS' => $_POST['Pronouns']),
+				array('ID' => $characterID)
+			);
+			if (!$result && $result !== 0){
+				echo "<p style='color:red'>Could not save pronouns</p>";
+			} else {
+				$output .= "<p>Changed pronouns</p>";
+			}
+			$mycharacter->pronouns = $_POST['Pronouns'];
+				
+		}
 	} else {
 		$displayName = $mycharacter->name;
 	}
@@ -307,6 +322,10 @@ function vtm_get_profile_content() {
 	if ($mycharacter->char_status_comment != "") {
 		$output .= " (" . vtm_formatOutput($mycharacter->char_status_comment) . ")";
 	}
+	$output .= "</td></tr>";
+	
+	// Pronouns
+	$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Character Pronouns:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->pronouns);
 	$output .= "</td></tr>";
 	
 	// Clan Prestige
@@ -498,7 +517,14 @@ function vtm_get_profile_content() {
 			$output .= "	<input id='set_vtm_quote' name='set_vtm_quote' type='submit' value='Save' />";
 			$output .= "</form>";
 		}
-		$output .= "</div>\n";
+		
+		// Pronouna
+		$output .= "</div><div class='vtmext_section vtmprofile'>";
+		$output .= "<h4>Set Character Pronouns</h4>\n";
+		$output .= "<form id='set_pronouns' method='post'>";
+		$output .= "<input type='text' size=20 maxlength=20 name=\"Pronouns\" value=\"" . vtm_formatOutput($mycharacter->pronouns) . "\">";
+		$output .= "	<input id='set_vtm_pronouns' name='set_vtm_pronouns' type='submit' value='Save' />";
+		$output .= "</form>";
 
 
 	}

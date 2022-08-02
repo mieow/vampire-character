@@ -1576,9 +1576,12 @@ function vtm_render_finishing($step) {
 	$doe_month = isset($_POST['month_doe']) ? $_POST['month_doe'] : (isset($doe) ? strftime("%m", strtotime($doe)) : '');
 	$doe_year  = isset($_POST['year_doe'])  ? $_POST['year_doe']  : (isset($doe) ? $doe_array[0] : '');
 	
-	// Date of Embrace
+	// Sire
 	$sire = $wpdb->get_var($wpdb->prepare("SELECT SIRE FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s", $vtmglobal['characterID']));
 	$sire = isset($_POST['sire']) ? $_POST['sire'] : $sire;
+	// Pronouns
+	$pronouns = $wpdb->get_var($wpdb->prepare("SELECT PRONOUNS FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s", $vtmglobal['characterID']));
+	$pronouns = isset($_POST['pronouns']) ? $_POST['pronouns'] : $pronouns;
 	
 	$output .= "<h4>Calculated Values</h4>\n";
 	$output .= "<table>\n";
@@ -1657,6 +1660,12 @@ function vtm_render_finishing($step) {
 	
 	$output .= "<h4>Miscellaneous</h4>\n";
 	$output .= "<table>\n";
+	$output .= "<tr><td>Character Pronouns:</td><td>\n";
+	if ($submitted)
+		$output .= vtm_formatOutput($pronouns);
+	else
+		$output .= "<input type='text' name='pronouns' value='" . vtm_formatOutput($pronouns) . "' />\n";
+	$output .= "</td></tr>\n";
 	$output .= "<tr><td>Name of your Sire:</td><td>\n";
 	if ($submitted)
 		$output .= vtm_formatOutput($sire);
@@ -2567,6 +2576,7 @@ function vtm_save_finish() {
 		'DATE_OF_BIRTH'       => $dob,
 		'DATE_OF_EMBRACE'     => $doe,
 		'GENERATION_ID'       => $_POST['generationID'],
+		'PRONOUNS'            => $_POST['pronouns'],
 		'ROAD_OR_PATH_RATING' => isset($_POST['pathrating']) ? $_POST['pathrating'] : 0,
 	);
 	
