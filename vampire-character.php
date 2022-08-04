@@ -3,7 +3,7 @@
         Plugin URI: http://plugin.gvlarp.com
         Description: Management of Characters and Players
         Author: Jane Houston
-        Version: 2.10
+        Version: 2.11
         Author URI: http://www.mieow.co.uk
     */
 

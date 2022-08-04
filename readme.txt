@@ -2,8 +2,8 @@
 Contributors: magent
 Tags: vampire, character, generation, roleplay, rpg, lrp, larp
 Requires at least: 5.2.4
-Tested up to: 5.6.1
-Stable tag: 2.10
+Tested up to: 6.0.1
+Stable tag: 2.11
 Requires PHP: 5.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -134,6 +134,16 @@ the issue.  Also include any error messages.
 4. Spend Experience
 
 == Changelog ==
+
+= 2.11 =
+
+* Bug fix: Fixed email error when using default wordpress 'mail' config
+* Bug fix: PDF character sheet format doesn't get messed up when it has large numbers of background
+* Bug fix: PDF library updated for PHP7
+* Bug fix: input box for character gen concept limited to 200 characters to stop database save failing when user enters more than that
+* Improvements: Character sheet and XP spend page are now viewable on mobile devices
+* New feature: Added support for specifying character pronouns
+
 
 = 2.10 =
 
