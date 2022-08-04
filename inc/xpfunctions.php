@@ -1736,6 +1736,9 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 			
 			
 			// start column / new column
+			if ($xpdata->grp == '') {
+				$rowoutput[$xpdata->grp]['title'] = "<table>\n";
+			}
 			if (isset($xpdata->grp)) {
 				if ($grp != $xpdata->grp) {
 					$grpcount++;
