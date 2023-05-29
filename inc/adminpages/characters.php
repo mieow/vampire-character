@@ -322,19 +322,19 @@ add_filter( 'the_content', 'vtm_edit_character_content_filter' );
 
 function vtm_get_edit_character_content() {
 
-	if (count(vtm_get_clans()) == 0) {
+	if (sizeof(vtm_get_clans()) == 0) {
 		return "<div class='vtm_error'><p>No clans have been defined in the database</p></div>";
 	}
-	if (count(vtm_listRoadsOrPaths()) == 0) {
+	if (sizeof(vtm_listRoadsOrPaths()) == 0) {
 		return "<div class='vtm_error'><p>No Paths of Enlightenment have been defined in the database</p></div>";
 	}
-	if (count(vtm_listPlayers("","")) == 0) {
+	if (sizeof(vtm_listPlayers("","")) == 0) {
 		return "<div class='vtm_error'><p>No players have been added to the database</p></div>";
 	}
-/* 	if (count(vtm_listSkills("","")) == 0) {
+/* 	if (sizeof(vtm_listSkills("","")) == 0) {
 		return "<div class='vtm_error'><p>No abilities have been defined in the database</p></div>";
 	}
-	if (count(vtm_get_backgrounds()) == 0) {
+	if (sizeof(vtm_get_backgrounds()) == 0) {
 		return "<div class='vtm_error'><p>No backgrounds have been defined in the database</p></div>";
 	}
  */
@@ -363,7 +363,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 	$output = "";
 
 	if ($characterID == "0" || (int) ($characterID) > 0) {
-		$players           = vtm_listPlayers("Active", "");       // ID, name
+		$players           = vtm_listPlayers("", "", array("show-inactive"=>'last'));       // ID, name
 		$clans             = vtm_listClans();               // ID, name
 		$generations       = vtm_listGenerations();         // ID, name
 		$domains           = vtm_listDomains();             // ID, name
