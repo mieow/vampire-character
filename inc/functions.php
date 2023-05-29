@@ -470,9 +470,15 @@ function vtm_get_character_email($characterID) {
     }
 	*/
 	
-    function vtm_listPlayers($playerStatus, $playerType) {
+    function vtm_listPlayers($playerStatus, $playerType, $options = array()) {
         global $wpdb;
         $table_prefix = VTM_TABLE_PREFIX;
+		
+		if (isset($options["show-inactive"]) && $options["show-inactive"] == "last") {
+			$sortby = "statusname, name";
+		} else {
+			$sortby = "name";
+		}
 
         $statusClause = "";
 		$playerStatusID = "";
@@ -493,7 +499,7 @@ function vtm_get_character_email($characterID) {
                         WHERE player.player_status_id = pstatus.id
                           AND player.player_type_id   = ptype.id
                           " . $statusClause . $typeClause . "
-                        ORDER BY name";
+                        ORDER BY {$sortby}";
 
         if ($playerStatusID != null && $playerStatusID != "" && $playerType != null && $playerType != "") {
             $sql = $wpdb->prepare($sql, $playerStatusID, $playerType);
