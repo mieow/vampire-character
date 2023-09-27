@@ -137,46 +137,18 @@ function vtm_get_sectors($showhidden = false) {
 function vtm_get_stlink_page($stlinkvalue) {
 	global $wpdb;
 
-	/*$sql = "select DESCRIPTION, LINK from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
-	$results = $wpdb->get_results($wpdb->prepare($sql, $stlinkvalue));
+	$linkname = "vtm_link_" . $stlinkvalue;
+	$option = get_option( $linkname,'0' );
+	$pageid = $option[$linkname];
 	
-	$pageid   = 0;
-	$pagename = "Page not matched";
-	if (count($results) == 1) {
-		$pages = get_pages();
-		foreach ( $pages as $page ) {
-			if ('/' . get_page_uri( $page->ID ) == $results[0]->LINK) {
-				$pageid = $page->ID;
-				$pagename = $page->post_title;
-			}
-		}		
-	}*/
-	$sql = "select DESCRIPTION, WP_PAGE_ID from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
-	$results = $wpdb->get_row($wpdb->prepare($sql, $stlinkvalue));
-		
-	$pageid = "Page not matched";
-	if (is_object($results)) {
-		$pages = get_pages();
-		
-		foreach ( $pages as $page ) {
-			if ($page->ID == $results->WP_PAGE_ID) {
-				$pageid = $page->post_title;
-			}
-		}
-	} 
 	return $pageid;
 
 }
 function vtm_get_stlink_url($stlinkvalue, $fullurl = false) {
 	global $wpdb;
 
-	$sql = "select DESCRIPTION, WP_PAGE_ID from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
-	$results = $wpdb->get_row($wpdb->prepare($sql, $stlinkvalue));
-	
-	$url = "Page not matched";
-	if (is_object($results)) {
-		$url = get_page_link($results->WP_PAGE_ID);
-	}
+	$pageid = vtm_get_stlink_page($stlinkvalue);
+	$url = get_page_link($pageid);
 	
 	return $url;
 
@@ -306,6 +278,39 @@ function vtm_get_characters() {
                 AND pl.PLAYER_STATUS_ID = ps.ID
 				AND ch.CHARACTER_STATUS_ID = cs.ID
 				AND cgs.ID = ch.CHARGEN_STATUS_ID
+				AND ch.VISIBLE = 'Y'
+				AND ch.DELETED = 'N'
+				AND cgs.NAME = 'Approved'
+				AND ps.NAME = 'Active';";
+	$list = $wpdb->get_results($sql);
+	
+	return $list;
+}
+
+function vtm_get_characters_wide() {
+
+	global $wpdb;
+
+	$sql = "SELECT
+				ch.ID as characterID, 
+				ch.NAME characterName,
+				ch.WORDPRESS_ID wordpress_id, 
+				pl.NAME player, 
+				cs.NAME char_status,
+				clans.NAME as clan
+			FROM 
+				" . VTM_TABLE_PREFIX . "CHARACTER ch,
+				" . VTM_TABLE_PREFIX . "PLAYER pl,
+				" . VTM_TABLE_PREFIX . "PLAYER_STATUS ps,
+				" . VTM_TABLE_PREFIX . "CHARACTER_STATUS cs,
+				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgs,
+				" . VTM_TABLE_PREFIX . "CLAN clans
+			WHERE 
+				ch.PLAYER_ID = pl.ID
+                AND pl.PLAYER_STATUS_ID = ps.ID
+				AND ch.CHARACTER_STATUS_ID = cs.ID
+				AND cgs.ID = ch.CHARGEN_STATUS_ID
+				AND clans.ID = ch.PUBLIC_CLAN_ID
 				AND ch.VISIBLE = 'Y'
 				AND ch.DELETED = 'N'
 				AND cgs.NAME = 'Approved'
