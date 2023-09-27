@@ -2661,6 +2661,221 @@ class vtmclass_PDFreport extends FPDF {
 
 }
 
+class vtmclass_restapi extends WP_REST_Controller {
+	
+  /**
+   * Register the routes for the objects of the controller.
+   */
+  public function register_routes() { 
+    $version = '1';
+    $namespace = 'vampire-character/v' . $version;
+    $base = 'character';
+	
 
+    register_rest_route( $namespace, '/' . $base . '/(?P<characterID>[\d]+)', array(
+      array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => array( $this, 'get_item' ),
+        'permission_callback' => array( $this, 'get_item_permissions_check' ),
+		'args'                => array(
+
+			'characterID' => array(
+				'validate_callback' => function($param, $request, $key) {
+					return is_numeric( $param );
+				}
+			),
+			'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+			),
+		),
+
+    ) );
+    register_rest_route( $namespace, '/' . $base , array(
+      array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => array( $this, 'get_items' ),
+        'permission_callback' => array( $this, 'get_items_permissions_check' ),
+		'args'                => array(
+			'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+			),
+		),
+
+    ) );
+    register_rest_route( $namespace, '/' . $base . "/wpid" , array(
+      array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => array( $this, 'get_item_by_wpid' ),
+        'permission_callback' => array( $this, 'get_items_permissions_check' ),
+		'args'                => array(
+			'wordpress_id'	=> array(
+				'validate_callback' => function($param, $request, $key) {
+					  return true;
+					},
+				'required' => true,
+			),
+			'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+			),
+		),
+
+    ) );
+    register_rest_route( $namespace, '/' . $base . '/me', array(
+      array(
+        'methods'             => WP_REST_Server::READABLE,
+        'callback'            => array( $this, 'get_me' ),
+        'permission_callback' => array( $this, 'get_me_permissions_check' ),
+		'args'                => array(
+			'context' => $this->get_context_param( array( 'default' => 'view' ) ),
+			),
+		),
+
+    ) );
+    register_rest_route( $namespace, '/' . $base . '/schema', array(
+      'methods'  => WP_REST_Server::READABLE,
+      'callback' => array( $this, 'get_public_item_schema' ),
+    ) ); 
+  }
+  
+  /**
+   * Get logged in user's character
+   *
+   * @param WP_REST_Request $request Full data about the request.
+   * @return WP_Error|WP_REST_Response
+   */
+  public function get_me( $request ) {
+	
+    //get parameters from request
+    $params = $request->get_params();
+    $mycharacter = array();
+
+	$current_user = wp_get_current_user();
+	$character = $current_user->user_login;
+	$characterID = vtm_establishCharacterID($character);
+	if ($characterID == 0) {
+		return new WP_Error( 'no_character', 'No character associated with user Wordpress account' );
+	} 
+	
+	$mycharacter = new vtmclass_character();
+	$mycharacter->load($characterID);
+
+    $data = $this->prepare_item_for_response( $mycharacter, $request );
+	
+    return new WP_REST_Response( $data, 200 );
+ }
+
+  /**
+   * Get one item from the collection
+   *
+   * @param WP_REST_Request $request Full data about the request.
+   * @return WP_Error|WP_REST_Response
+   */
+  public function get_item( $request ) {
+ 
+    //get parameters from request
+    $params = $request->get_params();
+	
+	$characterID = $params["characterID"];
+
+	$mycharacter = new vtmclass_character();
+	$mycharacter->load($characterID);
+
+    $data = $this->prepare_item_for_response( $mycharacter, $request );
+
+    return new WP_REST_Response( $data, 200 );
+
+ }
+  public function get_item_by_wpid( $request ) {
+ 
+    //get parameters from request
+    $params = $request->get_params();
+	
+	$characterID = vtm_establishCharacterID($params["wordpress_id"]);
+	if ($characterID == 0) {
+		return new WP_Error( 'no_character', 'No character associated with user Wordpress account' );
+	} 
+	$mycharacter = new vtmclass_character();
+	$mycharacter->load($characterID);
+
+    $data = $this->prepare_item_for_response( $mycharacter, $request );
+
+    return new WP_REST_Response( $data, 200 );
+
+ }
+ /**
+   * Get all the active characte
+   *
+   * @param WP_REST_Request $request Full data about the request.
+   * @return WP_Error|WP_REST_Response
+   */
+  public function get_items( $request ) {
+	
+	$characters = vtm_get_characters_wide();
+
+    $data = $this->prepare_item_for_response( $characters, $request );
+
+    return new WP_REST_Response( $data, 200 );
+ }
+
+
+
+  /**
+   * Check if a given request has access to get their character
+   *
+   * @param WP_REST_Request $request Full data about the request.
+   * @return WP_Error|bool
+   */
+  public function get_me_permissions_check( $request ) {
+    return is_user_logged_in();
+  }
+  
+  /**
+   * Check if a given request has access to get a specific item
+   *
+   * @param WP_REST_Request $request Full data about the request.
+   * @return WP_Error|bool
+   */
+  public function get_item_permissions_check( $request ) {
+    return vtm_isST();
+  }
+  public function get_items_permissions_check( $request ) {
+    return vtm_isST();
+  }
+
+  /**
+   * Prepare the item for the REST response
+   *
+   * @param mixed $item WordPress representation of the item.
+   * @param WP_REST_Request $request Request object.
+   * @return mixed
+   */
+  public function prepare_item_for_response( $item, $request ) {
+    return array('result' => $item, 'request' => $request);
+  }
+
+  /**
+   * Get the query params for collections
+   *
+   * @return array
+   */
+  // public function get_collection_params() {
+    // return array(
+      // 'page'     => array(
+        // 'description'       => 'Current page of the collection.',
+        // 'type'              => 'integer',
+        // 'default'           => 1,
+        // 'sanitize_callback' => 'absint',
+      // ),
+      // 'per_page' => array(
+        // 'description'       => 'Maximum number of items to be returned in result set.',
+        // 'type'              => 'integer',
+        // 'default'           => 10,
+        // 'sanitize_callback' => 'absint',
+      // ),
+      // 'search'   => array(
+        // 'description'       => 'Limit results to those matching a string.',
+        // 'type'              => 'string',
+        // 'sanitize_callback' => 'sanitize_text_field',
+      // ),
+    // );
+  // }
+}
 
 ?>
