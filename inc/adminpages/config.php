@@ -13,7 +13,6 @@ function vtm_character_config() {
 		<div class="gvadmin_nav">
 			<ul>
 				<li><?php echo vtm_get_tablink('general',   'General'); ?></li>
-				<li><?php echo vtm_get_tablink('pagelinks', 'Page Links'); ?></li>
 				<li><?php echo vtm_get_tablink('profile',   'Profile'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo vtm_get_tablink('maps', 'Map Options'); ?></li>
 				<li><?php echo vtm_get_tablink('chargen',   'Character Generation'); ?></li>
@@ -21,7 +20,6 @@ function vtm_character_config() {
 				<li><?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo vtm_get_tablink('email', 'Email Options'); ?></li>
 				<li><?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo vtm_get_tablink('pm', 'Messaging'); ?></li>
 				<li><?php echo vtm_get_tablink('database',  'Database'); ?></li>
-				<li><?php echo vtm_get_tablink('features',  'Features'); ?></li>
 			</ul>
 		</div>
 		<div class="gvadmin_content">
@@ -32,9 +30,6 @@ function vtm_character_config() {
 		switch ($tabselect) {
 			case 'general':
 				vtm_render_config_general();
-				break;
-			case 'pagelinks':
-				vtm_render_config_pagelinks();
 				break;
 			case 'maps':
 				vtm_render_config_maps();
@@ -209,128 +204,99 @@ function vtm_render_config_general() {
 	<?php 
 	}
 }
-function vtm_render_config_pagelinks() {	
-	global $wpdb;
-
-		?><h3>Page Links</h3>
-		<?php 
-			if (isset($_REQUEST['save_st_links'])) {
-				for ($i=0; $i<$_REQUEST['linecount']; $i++) {
-					if ($_REQUEST['selectpage' . $i] == "vtmnewpage") {
-					
-						//check if page with name $_REQUEST['value' . $i] exists 
-						if (isset($_REQUEST['link' . $i]) && $_REQUEST['link' . $i] != "") {
-							$my_page = array(
-								  'post_status'           => 'publish', 
-								  'post_type'             => 'page',
-								  'comment_status'		  => 'closed',
-								  'post_name'			  => $_REQUEST['value' . $i],
-								  'post_title'			  => $_REQUEST['link' . $i]
-							);
-
-							// Insert the post into the database
-							$pageid = wp_insert_post( $my_page );
-						} else {
-							$pageid = 0;
-						}
-					}
-					else
-						$pageid = $_REQUEST['selectpage' . $i];
-						
-					if ($pageid > 0) {
-						$dataarray = array (
-							'ORDERING' => $_REQUEST['order' . $i],
-							'WP_PAGE_ID' => $pageid
-						);
-						//print_r($dataarray);
-						
-						$result = $wpdb->update(VTM_TABLE_PREFIX . "ST_LINK",
-							$dataarray,
-							array (
-								'ID' => $_REQUEST['id' . $i]
-							)
-						);
-						
-						if ($result) 
-							echo "<p style='color:green'>Updated {$_REQUEST['value' . $i]}</p>";
-						else if ($result === 0) 
-							echo "<p style='color:orange'>No updates made to {$_REQUEST['value' . $i]}</p>";
-						else {
-							$wpdb->print_error();
-							echo "<p style='color:red'>Could not update {$_REQUEST['value' . $i]} ({$_REQUEST['id' . $i]})</p>";
-						}
-					}
-			
-				}
-			}
-			$sql = "select * from " . VTM_TABLE_PREFIX . "ST_LINK;";
-			$stlinks = $wpdb->get_results($sql);
-			
-			$args = array(
-				'sort_order' => 'ASC',
-				'sort_column' => 'post_title',
-				'hierarchical' => 0,
-				'exclude' => '',
-				'include' => '',
-				'meta_key' => '',
-				'meta_value' => '',
-				'authors' => '',
-				'child_of' => 0,
-				'parent' => -1,
-				'exclude_tree' => '',
-				'number' => '',
-				'offset' => 0,
-				'post_type' => 'page',
-				'post_status' => 'publish'
-			); 
-			$pages = get_pages($args);
-			$pagetitles = array();
-			foreach ( $pages as $page ) {
-				$pagetitles[$page->ID] = $page->post_title;
-			}							
-		?>
-		
-		<form id='ST_Links_form' method='post'>
-			<input type="hidden" name="linecount" value="<?php print count($stlinks); ?>" />
-			<table>
-				<tr><th>List Order</th><th>Name</th><th>Description</th><th>Select Page</th><th>New Page name</th></tr>
-			<?php
-				$i = 0;
-				foreach ($stlinks as $stlink) {
-					
-					?>
-					<tr>
-						<td><input type="hidden" name="id<?php print $i ?>" value="<?php print $stlink->ID; ?>" />
-							<input type="text" name="order<?php print $i; ?>" value="<?php print $stlink->ORDERING; ?>" size=5 /></td>
-						<td><input type="hidden" name="value<?php print $i ?>" value="<?php print $stlink->VALUE; ?>" />
-							<?php print $stlink->VALUE; ?></td>
-						<td><input type="hidden" name="desc<?php print $i ?>" value="<?php print vtm_formatOutput($stlink->DESCRIPTION); ?>" />
-							<?php print vtm_formatOutput($stlink->DESCRIPTION); ?></td>
-						<td>
-							<select name="selectpage<?php print $i; ?>">
-							<option value='vtmnewpage'>[New Page]</option>
-							<?php
-								$match = 0;
-								foreach ( $pagetitles as $pageid => $pagetitle ) {
-									echo "<option value='$pageid' ";
-									selected($pageid, $stlink->WP_PAGE_ID);
-									echo ">" . vtm_formatOutput($pagetitle) . "</option>";
-								}								
-							?>
-							</select>
-						</td>
-						<td><input type="text" name="link<?php print $i; ?>" value="" /></td>
-					</tr>
-					<?php
-					$i++;
-				}
-			?>
-			</table>
-			<input type="submit" name="save_st_links" class="button-primary" value="Save Links" />
-		</form>
-
-	<?php 
+function vtm_render_config_pagelinks() {
+	// output to print at start of pagelinks section
+	echo "<p>Define which Wordpress pages are used to display the various character pages.</p>";
 }
+
+function pre_update_vtm_link_cb($value, $old_value, $option) {
+
+	if ($value !== $old_value && isset($value[$option]) && $value[$option] == 0) {
+		$newpage = $value[$option . "_newpage"];
+				
+		// create page
+		$my_page = array(
+			  'post_status'           => 'publish', 
+			  'post_type'             => 'page',
+			  'comment_status'		  => 'closed',
+			  'post_name'			  => $option,
+			  'post_title'			  => $newpage
+		);
+
+		// Insert the post into the database
+		$pageid = wp_insert_post( $my_page );
+		
+		// provide new page ID as $value
+		$value[$option] = $pageid;
+		
+		add_settings_error(
+			'vtmlinkerr',
+			esc_attr( 'settings_updated' ),
+			"Created a new page: {$newpage}",
+			"success"
+		);
+	}
+	
+	return $value;
+}
+function vtm_checkbox_cb($args) {
+	$option_name = $args['label_for'];
+	$option = get_option( $option_name,'0' );
+
+	?>
+	<input type="checkbox" name="<?php echo esc_attr( $option_name ); ?>" value="1" <?php checked( '1', $option ); ?> />
+	</td><td>	
+	<?php
+	print($args["description"]);
+}
+function vtm_link_cb($args) {
+	
+	$option_name = $args['label_for'];
+	$options = get_option( $option_name,'0' );
+	$option = isset($options[$option_name]) ? $options[$option_name] : 0;
+	$newpage = $args['newpagename'];
+	
+	$pageargs = array(
+		'sort_order' => 'ASC',
+		'sort_column' => 'post_title',
+		'hierarchical' => 0,
+		'exclude' => '',
+		'include' => '',
+		'meta_key' => '',
+		'meta_value' => '',
+		'authors' => '',
+		'child_of' => 0,
+		'parent' => -1,
+		'exclude_tree' => '',
+		'number' => '',
+		'offset' => 0,
+		'post_type' => 'page',
+		'post_status' => 'publish'
+	); 
+	$pages = get_pages($pageargs);
+	$pagetitles = array();
+	foreach ( $pages as $page ) {
+		$pagetitles[$page->ID] = $page->post_title;
+	}				
+
+	?>
+	<input type='hidden' name='<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>_newpage]' value='<?php echo vtm_formatOutput($newpage); ?>'>
+	<select id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>]">
+	<option value='0'>[New Page: <?php echo vtm_formatOutput($newpage); ?>]</option>
+	<?php
+		$match = 0;
+		foreach ( $pagetitles as $pageid => $pagetitle ) {
+			echo "<option value='$pageid' ";
+			selected($pageid, $option);
+			echo ">" . vtm_formatOutput($pagetitle) . "</option>";
+		}								
+	?>
+	</select>
+	<?php
+}
+
+
+
 function vtm_render_config_maps() {	
 	global $wpdb;
 
@@ -1034,52 +1000,10 @@ function vtm_draw_arrow($name, $drawcolour, $drawbgcolour, $drawborder) {
 function vtm_render_config_features() {	
 	global $wpdb;
 	
-		?>
-		<h3>Enable/Disable Plugin Features</h3>
-		<p>You can hide or show the various plugin features.</p>
-		<form method="post" action="options.php">
-		<?php
-		
-		settings_fields( 'vtm_features_group' );
-		do_settings_sections('vtm_features_group');
-		?>
-
-		<table>
-		<tr>
-			<td><label>Track Temporary Stats: </label></td>
-			<td><input type="checkbox" name="vtm_feature_temp_stats" value="1" <?php checked( '1', get_option( 'vtm_feature_temp_stats', '0' ) ); ?> /></td>
-			<td>Track Willpower and Blood pool spends</td>
-		</tr>
-		<tr>
-			<td><label>Maps: </label></td>
-			<td><input type="checkbox" name="vtm_feature_maps" value="1" <?php checked( '1', get_option( 'vtm_feature_maps', '0' ) ); ?> /></td>
-			<td>Show hunting/city maps</td>
-		</tr>
-		<tr>
-			<td><label>Reports: </label></td>
-			<td><input type="checkbox" name="vtm_feature_reports" value="1" <?php checked( '1', get_option( 'vtm_feature_reports', '0' ) ); ?> /></td>
-			<td>Show administrator reports, including sign-in sheet</td>
-		</tr>
-		<tr>
-			<td><label>Email configuration: </label></td>
-			<td><input type="checkbox" name="vtm_feature_email" value="1" <?php checked( '1', get_option( 'vtm_feature_email', '0' ) ); ?> /></td>
-			<td>Advanced options for configuring sending email</td>
-		</tr>
-		<tr>
-			<td><label>Newsletter: </label></td>
-			<td><input type="checkbox" name="vtm_feature_news" value="1" <?php checked( '1', get_option( 'vtm_feature_news', '0' ) ); ?> /></td>
-			<td>Email out news and Experience Point totals to active character accounts</td>
-		</tr>
-		<tr>
-			<td><label>Private Messaging: </label></td>
-			<td><input type="checkbox" name="vtm_feature_pm" value="1" <?php checked( '1', get_option( 'vtm_feature_pm', '0' ) ); ?> /></td>
-			<td>Enable inter-character private communication</td>
-		</tr>
-		</table>
-		<?php submit_button("Save Changes", "primary", "save_features_button"); ?>
-		</form>
-		
-	<?php 
+	?>
+			<p>You can hide or show the various plugin features.</p>
+	<?php
+	
 }
 
 function vtm_render_config_pm() {	
@@ -1486,5 +1410,56 @@ function vtm_listDeletedCharacters() {
 	
 	return $results;
 	
+}
+
+function vtm_render_config_options() {	
+	// check user capabilities
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$active_tab = 'general';
+	if( isset( $_GET[ 'tab' ] ) ) {
+		$active_tab = $_GET[ 'tab' ];
+	} // end if
+
+	// add error/update messages
+	settings_errors( 'vtm_messages' );
+
+	// // check if the user have submitted the settings
+	// // WordPress will add the "settings-updated" $_GET parameter to the url
+	// if ( isset( $_GET['settings-updated'] ) ) {
+		// // add settings saved message with the class of "updated"
+		// add_settings_error( 'vtm_messages', 'Settings Saved', 'updated' );
+	// }
+	?>
+	<h2 class="nav-tab-wrapper">
+		<?php echo vtm_get_option_tablink('pagelinks', 'Page Links', 'pagelinks'); ?>
+		<?php echo vtm_get_option_tablink('features',  'Features'); ?>
+	</h2>
+	<?php
+
+	// show error/update messages
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+		<form action="options.php" method="post">
+			<?php
+			if ($active_tab == 'pagelinks') {
+				settings_fields( 'vtm_links_group' );
+				do_settings_sections( 'vtm_links_group' );
+			} 
+			elseif ($active_tab == 'features') {
+				settings_fields( 'vtm_features_group' );
+				do_settings_sections( 'vtm_features_group' );
+			} 
+			else {
+			}
+			// output save settings button
+			submit_button( 'Save Settings' );
+			?>
+		</form>
+	</div>
+	<?php
 }
 ?>
