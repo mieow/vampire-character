@@ -1640,7 +1640,7 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 		case 2: $colclass = 'vtm_colwide'; break;
 		case 3: $colclass = 'vtm_colnarrow'; break;
 	}*/
-	if ($type == 'path' || $type == 'ritual' || $type == 'merit') {
+	if ($type == 'path' || $type == 'combo' || $type == 'ritual' || $type == 'merit') {
 		$colclass = 'vtmsubsection_wide';
 	} else {
 		$colclass = 'vtmsubsection';
