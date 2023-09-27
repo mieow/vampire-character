@@ -44,7 +44,7 @@ add_action('admin_enqueue_scripts', 'vtm_admin_css');
 ----------------------------------------------------------------- */
 function vtm_register_character_settings() {
 	global $wp_roles;
-	
+
 	register_setting( 'vtm_options_group', 'vtm_pdf_title' );
 	register_setting( 'vtm_options_group', 'vtm_pdf_footer' );
 	register_setting( 'vtm_options_group', 'vtm_pdf_titlefont' );
@@ -86,6 +86,66 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_features_group', 'vtm_feature_email' );
 	register_setting( 'vtm_features_group', 'vtm_feature_news' );
 	register_setting( 'vtm_features_group', 'vtm_feature_pm' );
+	add_settings_section(
+		'vtmfeatures',
+		"Plugin Features",
+		"vtm_render_config_features",
+		'vtm_features_group',
+	);
+	add_settings_field(
+		'vtm_feature_temp_stats',
+		'Track Temporary Stats',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_temp_stats',
+			'description'		=> 'Track Willpower and Blood pool spends'
+		)
+	);	
+	add_settings_field(
+		'vtm_feature_maps',
+		'Maps',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_maps',
+			'description'		=> 'Show hunting/city maps'
+		)
+	);	
+	add_settings_field(
+		'vtm_feature_reports',
+		'Reports',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_reports',
+			'description'		=> 'Show administrator reports, including sign-in sheet'
+		)
+	);	
+	add_settings_field(
+		'vtm_feature_email',
+		'Email configuration',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_email',
+			'description'		=> 'Advanced options for configuring sending email'
+		)
+	);	
+	add_settings_field(
+		'vtm_feature_news',
+		'Newsletter',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_news',
+			'description'		=> 'Email out news and Experience Point totals to active character accounts'
+		)
+	);	
+	add_settings_field(
+		'vtm_feature_pm',
+		'Private Messaging',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_pm',
+			'description'		=> 'Enable inter-character private communication'
+		)
+	);	
 	
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_mustbeloggedin' );
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_showsecondaries' );
@@ -133,9 +193,107 @@ function vtm_register_character_settings() {
 	register_setting( 'feedingmap_options_group', 'feedingmap_zoom' );        // zoom
 	register_setting( 'feedingmap_options_group', 'feedingmap_map_type' );    // map type
 
-}
-add_action( 'admin_menu', 'vtm_register_character_settings' );
+	// PAGE LINKS
+	
+	register_setting( 'vtm_links_group', 'vtm_link_editCharSheet' );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCharSheet' );
+	register_setting( 'vtm_links_group', 'vtm_link_printCharSheet' );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCustom' );
+	register_setting( 'vtm_links_group', 'vtm_link_viewProfile' );
+	register_setting( 'vtm_links_group', 'vtm_link_viewXPSpend' );
+	register_setting( 'vtm_links_group', 'vtm_link_viewExtBackgrnd' );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCharGen' );
 
+	add_settings_section(
+		'vtmpagelinks',
+		"Page Links",
+		"vtm_render_config_pagelinks",
+		'vtm_links_group',
+	);
+	add_settings_field(
+		'vtm_link_editCharSheet',
+		'Edit Character Sheet',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_editCharSheet',
+			'newpagename'       => 'New/Edit Character'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_viewCharSheet',
+		'View Character Sheet',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_viewCharSheet',
+			'newpagename'       => 'View Character'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_printCharSheet',
+		'Print Character Sheet',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_printCharSheet',
+			'newpagename'       => 'Print Character'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_viewProfile',
+		'Character Profile',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_viewProfile',
+			'newpagename'       => 'Character Profile'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_viewXPSpend',
+		'Spend Experience',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_viewXPSpend',
+			'newpagename'       => 'Spend Experience'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_viewExtBackgrnd',
+		'Extended Background',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_viewExtBackgrnd',
+			'newpagename'       => 'Extended Background'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_viewCharGen',
+		'Character Generation',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_viewCharGen',
+			'newpagename'       => 'Character Generation'
+		)
+	);	
+	add_settings_field(
+		'vtm_link_viewCustom',
+		'View Custom Page',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_viewCustom',
+			'newpagename'       => 'My Character'
+		)
+	);	
+	
+}
+add_action( 'admin_init', 'vtm_register_character_settings' );
+#add_action( 'updated_option', 'update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_editCharSheet',   'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_viewCustom',      'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_viewCharGen',     'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_viewExtBackgrnd', 'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_viewXPSpend',     'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_viewProfile',     'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_printCharSheet',  'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_viewCharSheet',   'pre_update_vtm_link_cb', 10, 3);
 
 /* function vtm_gvcharacter_options_validate($input) {
 
@@ -167,7 +325,24 @@ function vtm_register_character_menu() {
 	if (get_option( 'vtm_feature_reports', '0' ) == 1)
 		add_submenu_page( "character-plugin", "Reports",             "Reports",             "manage_options", "vtmcharacter-report", "vtm_character_reports" );  
 	add_submenu_page( "character-plugin", "Database Tables",     "Data Tables",         "manage_options", "vtmcharacter-data",   "vtm_character_datatables" );  
-	add_submenu_page( "character-plugin", "Configuration",       "Configuration",       "manage_options", "vtmcharacter-config", "vtm_character_config" );  
+	add_submenu_page(
+		"character-plugin",
+		"Configuration",
+		"Configuration",
+		"manage_options",
+		"vtmcharacter-config",
+		"vtm_character_config"
+	);  
+
+	add_options_page(
+		"Configuration",
+		"Character Options",
+		'manage_options',
+		'vtmoptions',
+		'vtm_render_config_options'
+	);
+	
+
 }
 
 
@@ -224,6 +399,24 @@ function vtm_get_tablink($tab, $text, $default = ""){
 	return str_replace(
 		Array('@TAB@','@TEXT@','@SHOWN@', '@HREF@'),
 			Array($tab, $text, vtm_get_tabhighlight($tab, $default),htmlentities($current_url)),
+			$markup
+		);
+}
+function vtm_get_option_tablink($tab, $text, $default = ""){
+
+	$active_tab = $default;
+	if( isset( $_GET[ 'tab' ] ) ) {
+		$active_tab = $_GET[ 'tab' ];
+	} // end if
+
+	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	$current_url = remove_query_arg( 'tab', $current_url );
+	$current_url = remove_query_arg( 'action', $current_url );
+	$current_url = add_query_arg('tab', $tab, $current_url);
+	$markup = '<a id="gvm-@TAB@" href="@HREF@" class="nav-tab @SHOWN@">@TEXT@</a>';
+	return str_replace(
+		Array('@TAB@','@TEXT@','@SHOWN@', '@HREF@'),
+			Array($tab, $text, ($active_tab == $tab ? 'nav-tab-active' : ''),htmlentities($current_url)),
 			$markup
 		);
 }
