@@ -322,6 +322,8 @@ function vtm_render_printable($characterID) {
 						break;
 					}
 				}
+			} else {
+				$xnext = $xstart;
 			}
 			
 			//$xnext = $pdf->SingleColumnHeading('Current Experience');
