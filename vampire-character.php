@@ -3,11 +3,11 @@
         Plugin URI: http://plugin.gvlarp.com
         Description: Management of Characters and Players
         Author: Jane Houston
-        Version: 2.11
+        Version: 2.13
         Author URI: http://www.mieow.co.uk
     */
 
-    /*  Copyright 2020 Jane Houston
+    /*  Copyright 2022 Jane Houston
 
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License, version 2, as
@@ -34,7 +34,6 @@ require_once VTM_CHARACTER_URL . 'inc/functions.php';
 require_once VTM_CHARACTER_URL . 'inc/printable.php';
 require_once VTM_CHARACTER_URL . 'inc/extendedbackground.php';
 require_once VTM_CHARACTER_URL . 'inc/widgets.php';
-require_once VTM_CHARACTER_URL . 'inc/android.php';
 require_once VTM_CHARACTER_URL . 'inc/xpfunctions.php';
 require_once VTM_CHARACTER_URL . 'inc/shortcodes.php';
 require_once VTM_CHARACTER_URL . 'inc/viewcharacter.php';
@@ -78,6 +77,16 @@ function vtm_plugin_style()
   wp_enqueue_style( 'plugin-style' );
 }
 add_action('wp_enqueue_scripts', 'vtm_plugin_style');
+
+/* REST API
+------------------------------------------------------ */
+add_action( 'rest_api_init', function () {
+	
+	require_once VTM_CHARACTER_URL . 'inc/classes.php';
+	$items=new vtmclass_restapi();
+	$items->register_routes();
+	
+} );
 
 /* JAVASCRIPT
 ----------------------------------------------------------------- */
@@ -125,4 +134,9 @@ function vtm_establishCharacter($character) {
 	
 	return $character;
 }
+
+
+
+
+
 ?>
