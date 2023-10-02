@@ -401,6 +401,33 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		switch ($table) {
 		case 'CHARACTER_STAT':
 			$result = $this->approve_standard($data[0]);
+			
+			// Extra step when increasing Willpower to increase current WP
+			if ($data[0]->ITEMTABLE_ID == 15) {
+				$statID = 1; //Willpower
+				
+				$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT_REASON WHERE NAME = %s";
+				$reasonID = $wpdb->get_var($wpdb->prepare($sql, 'Game spend'));
+				$sql = "SELECT LEVEL FROM " . VTM_TABLE_PREFIX . "CHARACTER_STAT WHERE CHARACTER_ID = %s AND STAT_ID = '15'" ;
+				$max = $wpdb->get_var($wpdb->prepare($sql, $data[0]->CHARACTER_ID));
+				$sql = "SELECT SUM(AMOUNT) FROM " . VTM_TABLE_PREFIX . "CHARACTER_TEMPORARY_STAT WHERE CHARACTER_ID = %s AND TEMPORARY_STAT_ID = %s" ;
+				$current = $wpdb->get_var($wpdb->prepare($sql, $data[0]->CHARACTER_ID, $statID));
+				$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s" ;
+				$char = $wpdb->get_var($wpdb->prepare($sql, $data[0]->CHARACTER_ID));
+
+				vtm_update_temp_stat(
+					$data[0]->CHARACTER_ID, 
+					1, 
+					$data[0]->ITEMTABLE_ID,
+					$statID,
+					$reasonID, 
+					$max, 
+					$current, 
+					$char, 
+					"Increased with increase of maximum willpower"
+				);
+			}
+			
 			break;
 		case 'CHARACTER_SKILL':
 			$result = $this->approve_standard($data[0]);
@@ -971,6 +998,7 @@ function vtm_render_xp_by_player() {
 				pstatus.ID = player.PLAYER_STATUS_ID
 				AND xp.PLAYER_ID = player.ID
 				AND pstatus.NAME = 'Active'
+				AND player.DELETED = 'N'
 			GROUP BY player.ID";
 	//echo "<p>SQL1: $sql</p>";
 	$player_xp = $wpdb->get_results($sql, OBJECT_K);
