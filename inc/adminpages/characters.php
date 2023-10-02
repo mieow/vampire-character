@@ -40,14 +40,14 @@ function vtm_character_options() {
 	else $active_character_visible = $default_character_visible;
 	
 	// Get web pages
-	$stlinks = $wpdb->get_results("SELECT VALUE, WP_PAGE_ID FROM " . VTM_TABLE_PREFIX. "ST_LINK ORDER BY ORDERING", OBJECT_K);
+	//$stlinks = $wpdb->get_results("SELECT VALUE, WP_PAGE_ID FROM " . VTM_TABLE_PREFIX. "ST_LINK ORDER BY ORDERING", OBJECT_K);
 	//print_r($stlinks);
 	
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$noclan_url = remove_query_arg( 'clan', $current_url );
 	?>
 	<div class="wrap">
-		<h2>Characters <a class="add-new-h2" href="<?php echo get_page_link($stlinks['editCharSheet']->WP_PAGE_ID) ; ?>">Add New</a></h2>
+		<h2>Characters <a class="add-new-h2" href="<?php echo get_page_link(vtm_get_stlink_page('editCharSheet')) ; ?>">Add New</a></h2>
 
 		<?php 
 		
@@ -246,41 +246,41 @@ function vtm_character_options() {
 				//if ($character->chargen_status != 'Approved')
 				//	echo $name . " [" . vtm_formatOutput($character->template) . "]";
 				//elseif (!empty($character->wordpress_id))
-				//	echo '<a href="' . get_page_link($stlinks['viewCharSheet']->WP_PAGE_ID) . '?CHARACTER='. urlencode($character->wordpress_id) . '">' . $name . '</a>';
+				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?CHARACTER='. urlencode($character->wordpress_id) . '">' . $name . '</a>';
 				//else
-				//	echo '<a href="' . get_page_link($stlinks['viewCharSheet']->WP_PAGE_ID) . '?characterID='. urlencode($character->ID) . '">' . $name . '</a>';
+				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?characterID='. urlencode($character->ID) . '">' . $name . '</a>';
 				if ($character->chargen_status != 'Approved')
 					echo vtm_formatOutput($character->charactername) . " [" . vtm_formatOutput($character->template) . "]";
 				elseif (!empty($character->wordpress_id))
-					echo vtm_get_page_link($stlinks['viewCharSheet']->WP_PAGE_ID, $character->wordpress_id, "CHARACTER", $character->charactername);
+					echo vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->wordpress_id, "CHARACTER", $character->charactername);
 				else
-					echo vtm_get_page_link($stlinks['viewCharSheet']->WP_PAGE_ID, $character->ID, "characterID", $character->charactername);
+					echo vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->ID, "characterID", $character->charactername);
 				
 				echo "</th><td>";
 				echo '<div>';
 				if ($character->chargen_status == 'Approved')
-					echo vtm_get_page_icon($stlinks['editCharSheet']->WP_PAGE_ID, $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit');
+					echo vtm_get_page_icon(vtm_get_stlink_page('editCharSheet'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit');
 				else
-					echo vtm_get_page_icon($stlinks['viewCharGen']->WP_PAGE_ID, $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit');
-				//	echo '&nbsp;<a href="' . get_page_link($stlinks['editCharSheet']->WP_PAGE_ID) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
+					echo vtm_get_page_icon(vtm_get_stlink_page('viewCharGen'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit');
+				//	echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('editCharSheet')) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
 				//	echo '&nbsp;<a href="' . get_page_link($stlinks['viewCharGen']->WP_PAGE_ID) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
 
 				$delete_url = add_query_arg('action', 'delete', $current_url);
 				$delete_url = add_query_arg('characterID', $character->ID, $delete_url);
 				$delete_url = add_query_arg('characterName', urlencode($character->wordpress_id), $delete_url);
 				echo '&nbsp;<a href="' . htmlentities($delete_url) . '"><img src="' . $iconurl . 'delete.png" alt="Delete" title="Delete Character" /></a>';
-				//echo '&nbsp;<a href="' . get_page_link($stlinks['printCharSheet']->WP_PAGE_ID)  . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'print.png" alt="Print" title="Print Character" /></a>';
-				echo vtm_get_page_icon($stlinks['printCharSheet']->WP_PAGE_ID, $character->ID, 'characterID', 'print.png', 'Print Character', 'Print');
+				//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('printCharSheet'))  . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'print.png" alt="Print" title="Print Character" /></a>';
+				echo vtm_get_page_icon(vtm_get_stlink_page('printCharSheet'), $character->ID, 'characterID', 'print.png', 'Print Character', 'Print');
 				
 				if (!empty($character->wordpress_id) && $character->chargen_status == 'Approved') {
-					echo vtm_get_page_icon($stlinks['viewProfile']->WP_PAGE_ID, $character->wordpress_id, 'CHARACTER', 'profile.png', 'View Profile', 'Profile');
-					echo vtm_get_page_icon($stlinks['viewXPSpend']->WP_PAGE_ID, $character->wordpress_id, 'CHARACTER', 'spendxp.png', 'Spend Experience', 'XP Spend');
-					echo vtm_get_page_icon($stlinks['viewExtBackgrnd']->WP_PAGE_ID, $character->wordpress_id, 'CHARACTER', 'background.png', 'Extended Background', 'Background');
-					echo vtm_get_page_icon($stlinks['viewCustom']->WP_PAGE_ID, $character->wordpress_id, 'CHARACTER', 'custom.png', 'View Custom Page as Character', 'Custom');
-					//echo '&nbsp;<a href="' . get_page_link($stlinks['viewProfile']->WP_PAGE_ID)     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'profile.png" alt="Profile" title="View Profile" /></a>';
-					//echo '&nbsp;<a href="' . get_page_link($stlinks['viewXPSpend']->WP_PAGE_ID)     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'spendxp.png" alt="XP Spend" title="Spend Experience" /></a>';
-					//echo '&nbsp;<a href="' . get_page_link($stlinks['viewExtBackgrnd']->WP_PAGE_ID) . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'background.png" alt="Background" title="Extended Background" /></a>';
-					//echo '&nbsp;<a href="' . get_page_link($stlinks['viewCustom']->WP_PAGE_ID)      . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'custom.png" alt="Custom" title="View Custom Page as Character" /></a>';
+					echo vtm_get_page_icon(vtm_get_stlink_page('viewProfile'), $character->wordpress_id, 'CHARACTER', 'profile.png', 'View Profile', 'Profile');
+					echo vtm_get_page_icon(vtm_get_stlink_page('viewXPSpend'), $character->wordpress_id, 'CHARACTER', 'spendxp.png', 'Spend Experience', 'XP Spend');
+					echo vtm_get_page_icon(vtm_get_stlink_page('viewExtBackgrnd'), $character->wordpress_id, 'CHARACTER', 'background.png', 'Extended Background', 'Background');
+					echo vtm_get_page_icon(vtm_get_stlink_page('viewCustom'), $character->wordpress_id, 'CHARACTER', 'custom.png', 'View Custom Page as Character', 'Custom');
+					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewProfile'))     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'profile.png" alt="Profile" title="View Profile" /></a>';
+					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewXPSpend'))     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'spendxp.png" alt="XP Spend" title="Spend Experience" /></a>';
+					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewExtBackgrnd')) . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'background.png" alt="Background" title="Extended Background" /></a>';
+					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewCustom'))      . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'custom.png" alt="Custom" title="View Custom Page as Character" /></a>';
 				}
 				echo "</div></td>";
 				echo "<td>" . vtm_formatOutput($character->clan) . "</td>";
@@ -1381,12 +1381,7 @@ function vtm_processCharacterUpdate($characterID) {
 	$characterDemeanour        = isset($_POST['charDemeanour']) ? $_POST['charDemeanour'] : 0;
 	$characterTemplateID       = $_POST['charTemplateID'];
 			
-	if (get_magic_quotes_gpc()) {
-		$characterHarpyQuote = stripslashes($_POST['charHarpyQuote']);
-	}
-	else {
-		$characterHarpyQuote = $_POST['charHarpyQuote'];
-	}
+	$characterHarpyQuote = stripslashes($_POST['charHarpyQuote']);
 	$characterPortraitURL      = $_POST['charPortraitURL'];
 	
 	// Input Validation
@@ -1941,6 +1936,13 @@ function vtm_deleteCharacter($characterID) {
 	foreach ($characterNames as $characterName) {
 		$sqlOutput .= vtm_formatOutput($characterName->name) . " ";
 	}
+	
+	// Delete any pending XP spends for that character
+	$wpdb->delete($table_prefix . "PENDING_XP_SPEND", 
+		array(
+			"CHARACTER_ID" => $characterID,
+		)
+	);
 
 	if ($sqlOutput != "") {
 		$output = "Deleted character " . $sqlOutput;
@@ -2480,10 +2482,10 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_GENERATION",
 						array('DATE_OF_APPROVAL' => Date('Y-m-d')),
 						array('CHARACTER_ID' => $characterID)
-		);
+			);
 
-		// Email user with the details
-		vtm_email_chargen_approved($characterID, $wpid, $pass);
+			// Email user with the details
+			vtm_email_chargen_approved($characterID, $wpid, $pass);
 
 		}
 }
@@ -2554,8 +2556,8 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
     function column_name($item){
         
         $actions = array(
-            'view'      => sprintf('<a href="%s?characterID=%s">View</a>',get_page_link($this->stlinks['viewCharGen']->WP_PAGE_ID),$item->ID),
-            'print'     => sprintf('<a href="%s?characterID=%s">Print</a>',get_page_link($this->stlinks['printCharSheet']->WP_PAGE_ID),$item->ID),
+            'view'      => sprintf('<a href="%s?characterID=%s">View</a>',get_page_link(vtm_get_stlink_page('viewCharGen')),$item->ID),
+            'print'     => sprintf('<a href="%s?characterID=%s">Print</a>',get_page_link(vtm_get_stlink_page('printCharSheet')),$item->ID),
             'approveit' => sprintf('<a href="?page=%s&amp;action=%s&amp;character=%s">Approve</a>',$_REQUEST['page'],'approveit',$item->ID),
             'denyit'    => sprintf('<a href="?page=%s&amp;action=%s&amp;character=%s">Deny</a>',$_REQUEST['page'],'denyit',$item->ID),
         );
@@ -2596,7 +2598,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
         global $wpdb; 
         
         $this->type    = "chargen";
-		$this->stlinks = $wpdb->get_results("SELECT VALUE, WP_PAGE_ID FROM " . VTM_TABLE_PREFIX. "ST_LINK ORDER BY ORDERING", OBJECT_K);
+		//$this->stlinks = $wpdb->get_results("SELECT VALUE, WP_PAGE_ID FROM " . VTM_TABLE_PREFIX. "ST_LINK ORDER BY ORDERING", OBJECT_K);
 
         $columns  = $this->get_columns();
         $hidden   = array();
@@ -2762,6 +2764,10 @@ function vtm_purge_character($characterID, $name) {
 		'CHARACTER',
 	);
 	
+	// Get player ID
+	$sql = "SELECT PLAYER_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'";
+	$playerid = $wpdb->get_var($wpdb->prepare($sql, $characterID));
+	
 	// Transfer Player XP over from the deleted character to 
 	// the new one, where XP is assigned by player rather than by character
 	$config = vtm_getConfig();
@@ -2771,9 +2777,6 @@ function vtm_purge_character($characterID, $name) {
 		$totalxp = $wpdb->get_var($wpdb->prepare($sql, $characterID));
 		//echo "<p>Character $characterID had $totalxp XP</p>";
 		
-		// Get player ID
-		$sql = "SELECT PLAYER_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'";
-		$playerid = $wpdb->get_var($wpdb->prepare($sql, $characterID));
 		//echo "<p>Player ID is $playerid</p>";
 		
 		// Pick an alternate character for that player
@@ -2836,6 +2839,30 @@ function vtm_purge_character($characterID, $name) {
 			$column = $table == 'CHARACTER' ? 'ID' : 'CHARACTER_ID';
 			$ok = vtm_purge_table($characterID, $table, $column);
 		}
+	}
+	
+	// Does that player have any other characters?
+	$sql = "SELECT COUNT(ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE PLAYER_ID = %s";
+	$numcharacters = $wpdb->get_var($wpdb->prepare($sql, $playerid));
+	if ($numcharacters == 0) {
+		$result = $wpdb->delete( VTM_TABLE_PREFIX . "PLAYER", 
+			array ("ID" => $playerid), 
+			array ('%d')
+		);
+		if ($result) {
+			echo "<li>Also deleted the player as they have no characters assigned</li>";
+		}
+		elseif ($result === 0) {
+			echo "<li>Delete failed (0) for player $playerid</li>";
+			$ok = 0;
+			$wpdb->show_errors();
+			$wpdb->print_error();
+		}
+		else {
+			echo "<li>Delete failed for player $playerid</li>";
+			$ok = 0;
+		}
+
 	}
 	
 	if ($ok)
