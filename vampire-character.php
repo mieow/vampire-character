@@ -7,7 +7,7 @@
         Author URI: http://www.mieow.co.uk
     */
 
-    /*  Copyright 2022 Jane Houston
+    /*  Copyright 2023 Jane Houston
 
         This program is free software; you can redistribute it and/or modify
         it under the terms of the GNU General Public License, version 2, as
