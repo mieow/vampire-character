@@ -2,9 +2,9 @@
 Contributors: magent
 Tags: vampire, character, generation, roleplay, rpg, lrp, larp
 Requires at least: 5.2.4
-Tested up to: 6.0.1
-Stable tag: 2.11
-Requires PHP: 5.6
+Tested up to: 6.3.1
+Stable tag: 2.13
+Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -37,12 +37,13 @@ Features are:
 
 1. Install the plugin as you would normally - either directly from the wordpress site or by downloading the zip file and uploading it into your site 
 1. Activate the plugin
-1. Navigate to the Characters -> Configuration page
-1. Select the Database tab and click the button to load in default data (e.g. Skills, Merits and Flaws). Alternatively, you can navigate to the Characters -> Data Tables page and enter it all in manually.
+1. Navigate to the Settings -> Character Options page
 1. Select the Page Links tab
-	1. Enter a name for each of the pages that the plugin needs to create (e.g. "Profile")
-	1. Click 'Save Links'
+	1. (Optional) Select which Wordpress page you want to use for the plugin output
+	1. Click 'Save'
+1. Navigate to the Characters -> Configuration page
 1. Select the Features tab and enable any plugin feature you want to use
+1. Select the Database tab and click the button to load in default data (e.g. Skills, Merits and Flaws). Alternatively, you can navigate to the Characters -> Data Tables page and enter it all in manually.
 1. Go through the rest of the Configuration tabs and set the options for your game
 1. Navigate to Characters -> Data Tables and review the data
 
@@ -78,15 +79,6 @@ No.  The plugin works under the premise that each Wordpress login links to only 
 = How do I get a Google API Key for the map functions? =
 
 You can get a Standard (and free) Google Maps Javascript API key from this google site: https://developers.google.com/maps/documentation/javascript/get-api-key
-
-= Are there any other plugins you recommend for running a game of vampire on Wordpress? =
-
-These are the plugins I have used for the LARP(s) I have been involved in running.
-
-* Members, by Justin Tadlock - useful for adding additional roles for Clans, Storytellers, etc
-* User Access Manager, by Alexander Schneider - useful for controlling page access for groups of users based on Roles.
-* Download Monitor, by Barry Kooij & Mike Jolley - useful for tracking and formatting download links for house rules, etc.
-* Events Made Easy, by Franky Van Liedekerke - organising recurring events and deadlines
 
 = Can I try the plugin out? =
 
@@ -134,6 +126,24 @@ the issue.  Also include any error messages.
 4. Spend Experience
 
 == Changelog ==
+
+= 2.13 = 
+
+* Bug fix: Player pull-down now shows player name if the player of the character is Inactive
+* Bug fix: When you delete a character, it also deletes any pending experience spends
+* Bug fix: List of available sects to choose from in Character Generation now honours visible=no setting
+* Bug fix: Current Willpower increases by 1 when Maximum Willpower is increased with experience
+* Improvements: Page links now managed via Wordpress settings instead of from a database table
+* Improvements: Manage Page Links and enabled Features by new "Character Options" page under the Wordpress "Settings" menu
+* Improvements: Use in-built WP classes for admin page tabs
+* Improvements: When reporting number of freebies left in character generation, flaws are added to the "available points" instead of the "have been spent" points
+* New feature: Added custom endpoints for REST API
+* New feature: Player's characters listed on Player Admin page
+* New feature: Can delete players (and all their characters)
+
+= 2.12 =
+
+* Bug fix: Fixed formatting of combo disciplines on XP spend page
 
 = 2.11 =
 
@@ -642,6 +652,14 @@ Displays how much of the character background has been completed.
 = Sunset/Sunrise Times = 
 
 Display the times of sunset and sunrise.
+
+= WordPress REST API Endpoints =
+
+* _/wp-json/vampire-character/v1/character_ : return a list of the active characters
+* _/wp-json/vampire-character/v1/character/<characterID>_ : return character information by character ID
+* _/wp-json/vampire-character/v1/character/wpid&wordpress_id=<username>_ : return character information by wordpress username
+* _/wp-json/vampire-character/v1/character/me_ : return character information for logged-in user
+
 
 == Template Tags ==
 
