@@ -10,18 +10,16 @@ function vtm_character_config() {
 	?>
 	<div class="wrap">
 		<h2>Configuration</h2>
-		<div class="gvadmin_nav">
-			<ul>
-				<li><?php echo vtm_get_tablink('general',   'General'); ?></li>
-				<li><?php echo vtm_get_tablink('profile',   'Profile'); ?></li>
-				<li><?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo vtm_get_tablink('maps', 'Map Options'); ?></li>
-				<li><?php echo vtm_get_tablink('chargen',   'Character Generation'); ?></li>
-				<li><?php echo vtm_get_tablink('skinning',  'Skinning'); ?></li>
-				<li><?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo vtm_get_tablink('email', 'Email Options'); ?></li>
-				<li><?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo vtm_get_tablink('pm', 'Messaging'); ?></li>
-				<li><?php echo vtm_get_tablink('database',  'Database'); ?></li>
-			</ul>
-		</div>
+		<h2 class="nav-tab-wrapper">
+				<?php echo vtm_get_tablink('general',   'General', 'general'); ?>
+				<?php echo vtm_get_tablink('profile',   'Profile'); ?>
+				<?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo vtm_get_tablink('maps', 'Map Options'); ?>
+				<?php echo vtm_get_tablink('chargen',   'Character Generation'); ?>
+				<?php echo vtm_get_tablink('skinning',  'Skinning'); ?>
+				<?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo vtm_get_tablink('email', 'Email Options'); ?>
+				<?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo vtm_get_tablink('pm', 'Messaging'); ?>
+				<?php echo vtm_get_tablink('database',  'Database'); ?>
+		</h2>
 		<div class="gvadmin_content">
 		<?php
 		
