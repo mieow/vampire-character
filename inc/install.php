@@ -7,8 +7,8 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 
 global $vtm_character_version;
 global $vtm_character_db_version;
-$vtm_character_version = "2.11"; 
-$vtm_character_db_version = "83"; 
+$vtm_character_version = "2.13"; 
+$vtm_character_db_version = "86"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -59,6 +59,7 @@ function vtm_character_install($action = "") {
 	// LEVEL 1 TABLES - TABLES WITHOUT FOREIGN KEY CONSTRAINTS
 
 	$current_table_name = $table_prefix . "PLAYER_TYPE";
+	$tableexists = vtm_table_exists($current_table_name);
 	$sql = "CREATE TABLE " . $current_table_name . " (
 				ID mediumint(9) NOT NULL AUTO_INCREMENT,
 				NAME varchar(16) NOT NULL,
@@ -66,7 +67,7 @@ function vtm_character_install($action = "") {
 				PRIMARY KEY  (ID)
 				) ENGINE=INNODB;";
 	$for_update = dbDelta($sql);
-	vtm_save_install_errors($current_table_name,  $for_update);
+	vtm_save_install_errors($current_table_name,  $for_update, $tableexists);
 
 	$current_table_name = $table_prefix . "PLAYER_STATUS";
 	$sql = "CREATE TABLE " . $current_table_name . " (
@@ -78,18 +79,18 @@ function vtm_character_install($action = "") {
 	$for_update = dbDelta($sql);
 	$for_update = vtm_save_install_errors($current_table_name,  $for_update);
 
-	$current_table_name = $table_prefix . "ST_LINK";
-	$sql = "CREATE TABLE " . $current_table_name . " (
-				ID mediumint(9) NOT NULL  AUTO_INCREMENT,
-				VALUE varchar(32) NOT NULL,
-				DESCRIPTION tinytext NOT NULL,
-				LINK tinytext NOT NULL,
-				WP_PAGE_ID mediumint(9) NOT NULL,
-				ORDERING smallint(3) NOT NULL,
-				PRIMARY KEY  (ID)
-				) ENGINE=INNODB;";
-	$for_update = dbDelta($sql);
-	$for_update = vtm_save_install_errors($current_table_name,  $for_update);
+	// $current_table_name = $table_prefix . "ST_LINK";
+	// $sql = "CREATE TABLE " . $current_table_name . " (
+				// ID mediumint(9) NOT NULL  AUTO_INCREMENT,
+				// VALUE varchar(32) NOT NULL,
+				// DESCRIPTION tinytext NOT NULL,
+				// LINK tinytext NOT NULL,
+				// WP_PAGE_ID mediumint(9) NOT NULL,
+				// ORDERING smallint(3) NOT NULL,
+				// PRIMARY KEY  (ID)
+				// ) ENGINE=INNODB;";
+	// $for_update = dbDelta($sql);
+	// $for_update = vtm_save_install_errors($current_table_name,  $for_update);
 
 	$current_table_name = $table_prefix . "OFFICE";
 	$sql = "CREATE TABLE " . $current_table_name . " (
@@ -383,6 +384,7 @@ function vtm_character_install($action = "") {
 				NAME varchar(60) NOT NULL,
 				PLAYER_TYPE_ID mediumint(9) NOT NULL,
 				PLAYER_STATUS_ID mediumint(9) NOT NULL,
+				DELETED varchar(1) NOT NULL,
 				PRIMARY KEY  (ID)
 				) ENGINE=INNODB;";
 	$for_update = dbDelta($sql);
@@ -1245,6 +1247,9 @@ function vtm_character_install_data($initdatapath) {
 					$i++;
 				}
 				fclose($filehandle);
+				
+				//if ($tablename == "COMBO_DISCIPLINE")
+				//	print_r($data);
 				//print_r($headings);
 
 				// compare source and target table headings
@@ -1297,7 +1302,12 @@ function vtm_character_install_data($initdatapath) {
 				if ($go) {
 					$rowsadded = 0;
 					foreach ($data as $id => $entry) {
-						$rowsadded += $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
+						$addrow = $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
+						if (!$addrow) {
+							$info = isset($entry["NAME"]) ? $entry["NAME"] : "ID $id";
+							echo "<p style='color:red'>Failed to add {$info} to $tablename Table</p>";
+						}
+						$rowsadded += $addrow;
 					}
 					
 					if ($rowsadded == 0 && $rows > 0) {
@@ -1307,12 +1317,13 @@ function vtm_character_install_data($initdatapath) {
 					echo "<p style='color:red'>No data added for $tablename - column mismatch</p>";
 				}
 			} else {
-					//echo "<p style='color:red'>Target table $tablename is not empty</p>";
+					echo "<p style='color:red'>Target table $tablename is not empty</p>";
 			}
 		}
 	}
 
 	// SET UP THE AVAILABLE PAGES
+	/*
 	$data = array (
 		'editCharSheet' => array(	'VALUE' => 'editCharSheet',
 									'DESCRIPTION' => 'New/Edit Character Sheet',
@@ -1377,6 +1388,7 @@ function vtm_character_install_data($initdatapath) {
 	foreach ($results as $row) {
 		$result = $wpdb->get_results($wpdb->prepare($sql, $row->ID));
 	}
+	*/
 	
 }
 
@@ -1411,6 +1423,9 @@ function vtm_character_update($beforeafter) {
 			// 2.4: no updates to database
 			// 2.5: no updates to database
 			// 2.6: new tables, but no need to update current data
+			// ...
+			// 2.13: turn ST_LINK table into wp options
+			case "2.13" : $errors += vtm_character_update_2_13($beforeafter);
 		}
 	
 	}
@@ -1545,6 +1560,13 @@ function vtm_rename_table($from, $to, $prefixfrom = VTM_TABLE_PREFIX, $prefixto 
 	$sql = "RENAME TABLE " . $prefixfrom . $from . " TO " . $prefixto . $to;
 	//echo "<p>rename sql: $sql</p>";
 	$result = $wpdb->get_results($sql);
+
+}
+function vtm_delete_table($table, $prefix = VTM_TABLE_PREFIX) {
+	global $wpdb;
+
+	$sql = "DROP TABLE IF EXISTS " . $prefix . $table;
+	$result = $wpdb->query($sql);
 
 }
 
@@ -1859,18 +1881,47 @@ function vtm_character_update_2_0($beforeafter) {
 	}
 }
 
-function vtm_character_update_2_5($beforeafter) {
+function vtm_character_update_2_13($beforeafter) {
 	global $wpdb;
 	
-	// Need to set the default primary path for Necromancy and Thaumaturgy
-	// and swap Thaumaturgical Countermagic to a discipline with it's own cost
-	// model 
+	$data = array (
+		'editCharSheet',
+		'viewCharSheet',
+		'printCharSheet',
+		'viewCustom' ,
+		'viewProfile',
+		'viewXPSpend',
+		'viewExtBackgrnd',
+		'viewCharGen'
+	);
 	
 	if ( $beforeafter == 'before') {
 
 	} else {
-		// Add default primary paths to CHARGEN_PRIMARY_PATH for each template
 		
+		// Copy ST Link info into options
+		if (vtm_table_exists("ST_LINK")) {
+			foreach ($data as $key) {
+				$sql = "select WP_PAGE_ID from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
+				$pageid = $wpdb->get_var($wpdb->prepare($sql,$key));
+				if ($pageid) {
+					$value = array (
+						"vtm_link_{$key}" => $pageid
+					);
+					update_option("vtm_link_{$key}", $value);
+				}
+			}
+		}
+		
+		// Player players deleted = N
+		$wpdb->update(VTM_TABLE_PREFIX . "PLAYER",
+			array("DELETED" => 'N'),
+			array("DELETED" => '')
+		);
+		
+		
+		// Drop the ST_LINK table
+		vtm_delete_table("ST_LINK");
 		
 	}
 }
@@ -1922,7 +1973,7 @@ function vtm_add_admin_notice($text) {
 		get_option('vtm_admin_notices') . $text);
 }
 
-function vtm_save_install_errors($table, $for_update = array()) {
+function vtm_save_install_errors($table, $for_update = array(), $tableexists = false) {
 	global $wpdb;
 	
 	//$errtext1 = "You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'CONSTRAINT";
@@ -1951,10 +2002,15 @@ function vtm_save_install_errors($table, $for_update = array()) {
 	//elseif (strstr($error,$errtext1) && strstr($error,$errtext2))
 	//	return;
 	elseif (!empty($error)) {
-		// save error
-		$erroutput = get_option('vtm_plugin_error');
-		$erroutput .= $table . ":" . $error . "<br />\n";
-		update_option('vtm_plugin_error',  $erroutput);
+		
+		// ignore table exists errors if the table already existed
+		if (!$tableexists || !preg_match('/errno: 121/', $error)) {
+					
+			// save error
+			$erroutput = get_option('vtm_plugin_error');
+			$erroutput .= $table . ":" . $error . "<br />\n";
+			update_option('vtm_plugin_error',  $erroutput);
+		}
 		return;
 	}
 }
@@ -2043,7 +2099,7 @@ function vtm_define_tables() {
 		'PATH_REASON',
 		'XP_REASON',
 		'OFFICE',
-		'ST_LINK',
+		//'ST_LINK',
 		'PLAYER_STATUS',
 		'PLAYER_TYPE',
 	);
