@@ -26,8 +26,14 @@ function vtm_render_player_data(){
 	if ($doaction == "save-player") { 
 		$testListTable->edit($_REQUEST['player_id'], $_REQUEST['player_name'], $_REQUEST['player_type'], $_REQUEST['player_active']);
 	}
-
-	vtm_render_player_add_form($doaction); 
+	if ($doaction == "confirm-delete-player") { 
+		vtm_player_delete($_REQUEST['player_id']);
+	}
+	if ($doaction == "delete-player") { 
+		$testListTable->deleteplayer($_REQUEST['player']);
+	} else {
+		vtm_render_player_add_form($doaction); 
+	}
 	
 	$testListTable->prepare_items();
  	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
@@ -145,6 +151,10 @@ function vtm_player_input_validation() {
 	
 	if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'edit')
 		$doaction = "edit-$type";
+	if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'delete')
+		$doaction = "delete-$type";
+	if (!empty($_REQUEST['action']) && $_REQUEST['action'] == 'confirm-delete')
+		$doaction = "confirm-delete-$type";
 		
 	
 	if (!empty($_REQUEST['action']) && !empty($_REQUEST[$type . '_name']) ){
@@ -152,7 +162,7 @@ function vtm_player_input_validation() {
 	}
 	
 	if ($doaction == "add-$type") {
-		$sql = 'SELECT NAME FROM ' . VTM_TABLE_PREFIX . 'PLAYER WHERE NAME = %s';
+		$sql = 'SELECT NAME FROM ' . VTM_TABLE_PREFIX . 'PLAYER WHERE NAME = %s AND DELETED = "N"';
 		$result = $wpdb->get_col($wpdb->prepare($sql,$_REQUEST[$type . '_name'] ));
 		//print_r($result);
 		$countmatch = count($result);
@@ -246,6 +256,35 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:red'>Could not update " . vtm_formatOutput($name) . " ($id)</p>";
 		}
 	}
+ 	function deleteplayer($id) {
+		global $wpdb;
+		
+		$wpdb->show_errors();
+		
+		$type = "player";
+		$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PLAYER WHERE ID = %s",$id));
+		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+		$current_url = remove_query_arg( 'action', $current_url );
+				
+		echo "<p>Confirm that you want to delete player '$name' and all their characters.</p>";
+		$list = vtm_listCharactersForPlayer($id);
+		if (vtm_count($list) > 0) {
+			echo "<ul>";
+			foreach ($list as $char) {
+				echo "<li>" . vtm_formatOutput($char->NAME) . "</li>";
+			}
+			echo "</ul>";
+		}
+		?>
+		<form id="delete-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
+			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
+			<input type="hidden" name="tab" value="<?php print $type; ?>" />
+			<input type="hidden" name="action" value="confirm-delete" />
+			
+			<input type='submit' name='confirm-delete' class='button-primary' value='Confirm' />
+		</form>
+		<?php
+	}
 
  	function vtm_doactivate($selectedID, $activate) {
 		global $wpdb;
@@ -279,6 +318,18 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
                 return vtm_formatOutput($item->$column_name);
           case 'PLAYERSTATUS':
                 return vtm_formatOutput($item->$column_name);
+          case 'CHARACTERLIST':
+			$list = vtm_listCharactersForPlayer($item->ID);
+			$a = array();
+			foreach ($list as $char) {
+				$name = "<a href='" . vtm_get_stlink_url('editCharSheet') . "?characterID={$char->ID}'>{$char->NAME}</a>";
+				if ($char->VISIBLE == 'N')
+					$name =  $name . " (hidden)";
+				
+				array_push($a,$name);
+			}
+			return join(", ",$a);
+		  
           default:
                 return print_r($item,true); 
         }
@@ -288,7 +339,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
         
         $actions = array(
             'edit'      => sprintf('<a href="?page=%s&amp;action=%s&amp;player=%s">Edit</a>',$_REQUEST['page'],'edit',$item->ID),
-        );
+            'delete'    => sprintf('<a href="?page=%s&amp;action=%s&amp;player=%s">Delete</a>',$_REQUEST['page'],'delete',$item->ID),
+       );
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
@@ -304,7 +356,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
             'cb'           => '<input type="checkbox" />', 
             'NAME'         => 'Name',
             'PLAYERTYPE'   => 'Player Type',
-            'PLAYERSTATUS' => 'Player Status'
+            'PLAYERSTATUS' => 'Player Status',
+            'CHARACTERLIST' => 'Characters'
         );
         return $columns;
 		
@@ -314,7 +367,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
         $sortable_columns = array(
             'NAME'         => array('NAME',true),
             'PLAYERTYPE'   => array('PLAYERTYPE',false),
-            'PLAYERSTATUS' => array('PLAYERSTATUS',false)
+            'PLAYERSTATUS' => array('PLAYERSTATUS',false),
        );
         return $sortable_columns;
     }
@@ -424,6 +477,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
         		
         $this->process_bulk_action();
 		
+		
 		/* Get the data from the database */
 		$sql = "SELECT players.ID, players.NAME, types.NAME as PLAYERTYPE, status.NAME as PLAYERSTATUS
 				FROM 
@@ -432,7 +486,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 					" . VTM_TABLE_PREFIX . "PLAYER_STATUS status
 				WHERE	
 					types.ID = players.PLAYER_TYPE_ID
-					AND status.ID = players.PLAYER_STATUS_ID";
+					AND status.ID = players.PLAYER_STATUS_ID
+					AND players.DELETED = 'N'";
 				
 		if ( "all" !== $this->active_playertype)
 			$sql .= " AND types.ID = '" . $this->active_playertype . "'";
@@ -465,5 +520,34 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 
 }
 
-
+function vtm_player_delete($id) {
+	global $wpdb;
+	
+	$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PLAYER WHERE ID = %s",$id));
+	$list = vtm_listCharactersForPlayer($id);
+	if (vtm_count($list) == 0) {
+		echo "<ul><li>No characters to delete</li></ul>";
+	} else {
+		echo "<ul>";
+		foreach ($list as $char) {
+			echo "<li>";
+			echo vtm_deleteCharacter($char->ID);
+			echo "</li>";
+		}
+		echo "</ul>";
+	}
+	
+	$result = $wpdb->update(VTM_TABLE_PREFIX . "PLAYER",
+		array("DELETED" => 'Y'),
+		array ('ID' => $id)	
+	);
+	if ($result) 
+		echo "<p style='color:green'>Deleted player " . vtm_formatOutput($name) . "</p>";
+	else if ($result === 0) 
+		echo "<p style='color:orange'>Character " . vtm_formatOutput($name) . " already deleted - no changes made</p>";
+	else {
+		$wpdb->print_error();
+		echo "<p style='color:red'>Could not delete " . vtm_formatOutput($name) . " ($id)</p>";
+	}
+}
 ?>
