@@ -253,11 +253,13 @@ function vtm_get_generations() {
 	
 	return $list;
 }
-function vtm_get_sects() {
+function vtm_get_sects($visible_only = false) {
 
 	global $wpdb;
 
-	$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX . "SECT;";
+	$where = $visible_only ? "WHERE VISIBLE = 'Y'" : "";
+
+	$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX . "SECT $where;";
 	$list = $wpdb->get_results($sql);
 	
 	return $list;
@@ -503,6 +505,7 @@ function vtm_get_character_email($characterID) {
                              " . $table_prefix . "PLAYER_TYPE ptype
                         WHERE player.player_status_id = pstatus.id
                           AND player.player_type_id   = ptype.id
+						  AND player.deleted = 'N'
                           " . $statusClause . $typeClause . "
                         ORDER BY {$sortby}";
 
@@ -604,6 +607,17 @@ function vtm_get_character_email($characterID) {
         $offices = $wpdb->get_results($sql);
         return $offices;
     }
+
+	function vtm_listCharactersForPlayer($playerID){
+       global $wpdb;
+        $table_prefix = VTM_TABLE_PREFIX;
+		$table = $table_prefix . "CHARACTER";
+		
+		$sql = "SELECT ID,NAME,VISIBLE FROM $table WHERE PLAYER_ID = %s AND DELETED = 'N'";
+        $results = $wpdb->get_results($wpdb->prepare($sql, $playerID));
+		
+		return $results;
+	}
 
     function vtm_listCharacters($group, $activeCharacter, $playerName, $activePlayer, $showNotVisible) {
         global $wpdb;
