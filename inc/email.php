@@ -113,6 +113,13 @@ function vtm_send_email($email, $subject, $content) {
 	$result = wp_mail($email, $subject, $body, $headers);
 	remove_filter( 'wp_mail_content_type', 'vtm_mail_content_type' );
 	
+	if (!$result) {
+			global $phpmailer;
+			print ("<pre>");
+			print_r($phpmailer->ErrorInfo);
+			print ("</pre>");
+	}
+	
 	return $result;
 }
 
