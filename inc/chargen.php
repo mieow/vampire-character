@@ -642,7 +642,7 @@ function vtm_render_basic_info($step) {
 	}
 	else {
 		$output .= "<select name='sect'>\n";
-		foreach (vtm_get_sects() as $sect) {
+		foreach (vtm_get_sects(true) as $sect) {
 			if ($vtmglobal['settings']['limit-sect-method'] != 'exclude' ||
 			    ($vtmglobal['settings']['limit-sect-method'] == 'exclude' && $vtmglobal['settings']['limit-sect-id'] != $sect->ID)) 
 				$output .= "<option value='{$sect->ID}' " . selected( $sect->ID, $sectid, false) . ">" . vtm_formatOutput($sect->NAME) . "</option>\n";		
@@ -1414,8 +1414,10 @@ function vtm_render_chargen_freebies($step) {
 	$output = "";
 	
 	// Work out how much points are currently available
-	$points = $vtmglobal['settings']['freebies-points'];
-	$spent = vtm_get_freebies_spent();
+	$spends = vtm_get_freebies_spent();
+	$spent = $spends["spent"];
+	$gained = $spends["gained"];
+	$points = $vtmglobal['settings']['freebies-points'] + $gained;
 	$remaining = $points - $spent;
 	$submitted = $vtmglobal['charGenStatus'] == 'Submitted';
 	
@@ -3441,7 +3443,8 @@ function vtm_save_basic_info() {
 		$dataarray = array (
 			'NAME' 				=> $_POST['player'],
 			'PLAYER_TYPE_ID' 	=> $playertypeid,
-			'PLAYER_STATUS_ID' 	=> $playerstatusid
+			'PLAYER_STATUS_ID' 	=> $playerstatusid,
+			'DELETED'      		=> 'N'
 		);
 		
 		$wpdb->insert(VTM_TABLE_PREFIX . "PLAYER",
@@ -3450,6 +3453,7 @@ function vtm_save_basic_info() {
 						'%s',
 						'%s',
 						'%s',
+						'%s'
 					)
 				);
 		
@@ -3904,6 +3908,7 @@ function vtm_get_freebies_spent() {
 	global $vtmglobal;
 
 	$spent = 0;
+	$gained = 0;
 		
 	if (isset($_POST['freebie_stat'])       || isset($_POST['freebie_skill']) ||
 		isset($_POST['freebie_discipline']) || isset($_POST['freebie_background']) ||
@@ -3958,7 +3963,10 @@ function vtm_get_freebies_spent() {
 				// Level to: $levelto</li>";
 
 				$cost = isset($freebiecosts[$type][$costkey][$levelfrom][$levelto]) ? $freebiecosts[$type][$costkey][$levelfrom][$levelto] : 0;
-				$spent += $cost;
+				if ($cost >= 0)
+					$spent += $cost;
+				else
+					$gained += -$cost;
 				//echo "<li>Running total is $spent. Bought $key to $levelto ($cost)</li>\n";
 				
 			}
@@ -3968,13 +3976,17 @@ function vtm_get_freebies_spent() {
 
 	} else {
 		$sql = "SELECT SUM(AMOUNT) FROM " . VTM_TABLE_PREFIX . "PENDING_FREEBIE_SPEND
-				WHERE CHARACTER_ID = %s";
+				WHERE CHARACTER_ID = %s AND AMOUNT >= 0" ;
 		$sql = $wpdb->prepare($sql, $vtmglobal['characterID']);
 		$spent = $wpdb->get_var($sql) * 1;
+		$sql = "SELECT SUM(AMOUNT) FROM " . VTM_TABLE_PREFIX . "PENDING_FREEBIE_SPEND
+				WHERE CHARACTER_ID = %s AND AMOUNT < 0";
+		$sql = $wpdb->prepare($sql, $vtmglobal['characterID']);
+		$gained = $wpdb->get_var($sql) * -1;
 		
 	}
 
-	return $spent;
+	return array("spent" => $spent, "gained" => $gained);
 }
 function vtm_get_chargen_virtues($selectedpath) {
 	global $wpdb;
@@ -5311,7 +5323,7 @@ function vtm_get_player_id($playername, $guess = false) {
 		$test = '=';
 	}
 	
-	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "PLAYER WHERE NAME $test %s";
+	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "PLAYER WHERE NAME $test %s AND DELETED = 'N'";
 	$sql = $wpdb->prepare($sql, $playername);
 	//echo "<p>SQL: $sql</p>\n";
 	
@@ -6755,19 +6767,21 @@ function vtm_validate_freebies($usepost = 1) {
 	
 	$points = $vtmglobal['settings']['freebies-points'];
 	
-	$spent = vtm_get_freebies_spent();
+	$spends = vtm_get_freebies_spent();
+	$spent = $spends["spent"];
+	$gained = $spends["gained"];
 	
-	if ($spent == 0) {
-		$errormessages .= "<li>WARNING: You have not spent any dots</li>\n";
+	if ($spent == 0 && $gained == 0) {
+		$errormessages .= "<li>WARNING: You have not spent any points</li>\n";
 		$complete = 0;
 	}
-	elseif ($spent > $points) {
-		$errormessages .= "<li>ERROR: You have spent too many dots</li>\n";
+	elseif ($spent > $points + $gained) {
+		$errormessages .= "<li>ERROR: You have spent too many points</li>\n";
 		$ok = 0;
 		$complete = 0;
 	}
-	elseif ($spent < $points) {
-		$errormessages .= "<li>WARNING: You haven't spent enough dots</li>\n";
+	elseif ($spent < $points + $gained) {
+		$errormessages .= "<li>WARNING: You haven't spent enough points</li>\n";
 		$complete = 0;
 	}
 	
