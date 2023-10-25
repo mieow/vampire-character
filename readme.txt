@@ -30,6 +30,7 @@ Features are:
 * Send a newsletter with Experience point totals
 * Can send notification emails via Mail or SMTP
 * Export and import the database to create and restore backups
+* (new) Custom Wordpress REST API endpoints to allow integration with other applications
 
 == Installation ==
 
@@ -655,8 +656,8 @@ Display the times of sunset and sunrise.
 
 = WordPress REST API Endpoints =
 
-* _/wp-json/vampire-character/v1/character_ : return a list of the active characters
-* _/wp-json/vampire-character/v1/character/<characterID>_ : return character information by character ID
+* _/wp-json/vampire-character/v1/character_ : return a list of the active characters (Storyteller only)
+* _/wp-json/vampire-character/v1/character/<characterID>_ : return character information by character ID (Storyteller only)
 * _/wp-json/vampire-character/v1/character/wpid&wordpress_id=<username>_ : return character information by wordpress username
 * _/wp-json/vampire-character/v1/character/me_ : return character information for logged-in user
 
