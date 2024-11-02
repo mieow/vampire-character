@@ -426,7 +426,7 @@ function vtm_get_option_tablink($tab, $text, $default = ""){
 function vtm_character_datatables() {
 	global $vtmglobal;
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( __( 'You do not have sufficient permissions to access this page.', 'vampire-character' ) );
 	}
 	?>
 	<div class="wrap">

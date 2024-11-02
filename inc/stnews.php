@@ -6,23 +6,23 @@ $vtmglobal['cronbatch'] = 5; // emails per batch
 function vtm_news_post_type() {
 
 	$labels = array(
-		'name'                => _x( 'Storyteller Posts', 'Post Type General Name', 'text_domain' ),
-		'singular_name'       => _x( 'Storyteller Post', 'Post Type Singular Name', 'text_domain' ),
-		'menu_name'           => __( 'Storyteller News', 'text_domain' ),
-		'parent_item_colon'   => __( 'Parent Item:', 'text_domain' ),
-		'all_items'           => __( 'All Items', 'text_domain' ),
-		'view_item'           => __( 'View Item', 'text_domain' ),
-		'add_new_item'        => __( 'Add New Item', 'text_domain' ),
-		'add_new'             => __( 'Add New', 'text_domain' ),
-		'edit_item'           => __( 'Edit Item', 'text_domain' ),
-		'update_item'         => __( 'Update Item', 'text_domain' ),
-		'search_items'        => __( 'Search Item', 'text_domain' ),
-		'not_found'           => __( 'Not found', 'text_domain' ),
-		'not_found_in_trash'  => __( 'Not found in Trash', 'text_domain' ),
+		'name'                => _x( 'Storyteller Posts', 'Post Type General Name', 'vampire-character' ),
+		'singular_name'       => _x( 'Storyteller Post', 'Post Type Singular Name', 'vampire-character' ),
+		'menu_name'           => __( 'Storyteller News', 'vampire-character' ),
+		'parent_item_colon'   => __( 'Parent Item:', 'vampire-character' ),
+		'all_items'           => __( 'All Items', 'vampire-character' ),
+		'view_item'           => __( 'View Item', 'vampire-character' ),
+		'add_new_item'        => __( 'Add New Item', 'vampire-character' ),
+		'add_new'             => __( 'Add New', 'vampire-character' ),
+		'edit_item'           => __( 'Edit Item', 'vampire-character' ),
+		'update_item'         => __( 'Update Item', 'vampire-character' ),
+		'search_items'        => __( 'Search Item', 'vampire-character' ),
+		'not_found'           => __( 'Not found', 'vampire-character' ),
+		'not_found_in_trash'  => __( 'Not found in Trash', 'vampire-character' ),
 	);
 	$args = array(
-		'label'               => __( 'vtmpost', 'text_domain' ),
-		'description'         => __( 'Game News and Blog Posts', 'text_domain' ),
+		'label'               => __( 'vtmpost', 'vampire-character' ),
+		'description'         => __( 'Game News and Blog Posts', 'vampire-character' ),
 		'labels'              => $labels,
 		'supports'            => array( ),
 		'taxonomies'          => array( ),
@@ -49,7 +49,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 	
 	// Change the columns for the edit CPT screen
 	function vtm_news_change_columns( $cols ) {
-	  $cols['vtmstatus'] =  __( 'Send Status', 'trans' );
+	  $cols['vtmstatus'] =  __( 'Send Status', 'vampire-character' );
 	  return $cols;
 	}
 	add_filter( "manage_vtmpost_posts_columns", "vtm_news_change_columns" );

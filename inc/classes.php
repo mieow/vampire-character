@@ -1049,8 +1049,8 @@ class vtmclass_WP_List_Table {
 
 		if ( empty( $this->modes ) ) {
 			$this->modes = array(
-				'list'    => __( 'List View' ),
-				'excerpt' => __( 'Excerpt View' )
+				'list'    => __( 'List View', 'vampire-character' ),
+				'excerpt' => __( 'Excerpt View', 'vampire-character' )
 			);
 		}
 	}
@@ -1206,7 +1206,7 @@ class vtmclass_WP_List_Table {
 	 * @access public
 	 */
 	public function no_items() {
-		_e( 'No items found.' );
+		_e( 'No items found.', 'vampire-character' );
 	}
 
 	/**
@@ -1332,9 +1332,9 @@ class vtmclass_WP_List_Table {
 		if ( empty( $this->_actions ) )
 			return;
 
-		echo "<label for='bulk-action-selector-" . esc_attr( $which ) . "' class='screen-reader-text'>" . __( 'Select bulk action' ) . "</label>";
+		echo "<label for='bulk-action-selector-" . esc_attr( $which ) . "' class='screen-reader-text'>" . __( 'Select bulk action', 'vampire-character' ) . "</label>";
 		echo "<select name='action$two' id='bulk-action-selector-" . esc_attr( $which ) . "'>\n";
-		echo "<option value='-1' selected='selected'>" . __( 'Bulk Actions' ) . "</option>\n";
+		echo "<option value='-1' selected='selected'>" . __( 'Bulk Actions', 'vampire-character' ) . "</option>\n";
 
 		foreach ( $this->_actions as $name => $title ) {
 			$class = 'edit' == $name ? ' class="hide-if-no-js"' : '';
@@ -1344,7 +1344,7 @@ class vtmclass_WP_List_Table {
 
 		echo "</select>\n";
 
-		submit_button( __( 'Apply' ), 'action', false, false, array( 'id' => "doaction$two" ) );
+		submit_button( __( 'Apply', 'vampire-character' ), 'action', false, false, array( 'id' => "doaction$two" ) );
 		echo "\n";
 	}
 
@@ -1432,9 +1432,9 @@ class vtmclass_WP_List_Table {
 
 		$m = isset( $_GET['m'] ) ? (int) $_GET['m'] : 0;
 ?>
-		<label for="filter-by-date" class="screen-reader-text"><?php _e( 'Filter by date' ); ?></label>
+		<label for="filter-by-date" class="screen-reader-text"><?php _e( 'Filter by date', 'vampire-character' ); ?></label>
 		<select name="m" id="filter-by-date">
-			<option<?php selected( $m, 0 ); ?> value="0"><?php _e( 'All dates' ); ?></option>
+			<option<?php selected( $m, 0 ); ?> value="0"><?php _e( 'All dates', 'vampire-character' ); ?></option>
 <?php
 		foreach ( $months as $arc_row ) {
 			if ( 0 == $arc_row->year )
@@ -1447,7 +1447,7 @@ class vtmclass_WP_List_Table {
 				selected( $m, $year . $month, false ),
 				esc_attr( $arc_row->year . $month ),
 				/* translators: 1: month name, 2: 4-digit year */
-				sprintf( __( '%1$s %2$d' ), $wp_locale->get_month( $month ), $year )
+				sprintf( __( '%1$s %2$d', 'vampire-character' ), $wp_locale->get_month( $month ), $year )
 			);
 		}
 ?>
@@ -1494,7 +1494,8 @@ class vtmclass_WP_List_Table {
 	 * @param int $pending_comments Number of pending comments.
 	 */
 	protected function comments_bubble( $post_id, $pending_comments ) {
-		$pending_phrase = sprintf( __( '%s pending' ), number_format( $pending_comments ) );
+		/* translators: see me */
+		$pending_phrase = sprintf( __( '%s pending', 'vampire-character' ), number_format( $pending_comments ) );
 
 		if ( $pending_comments )
 			echo '<strong>';
@@ -1573,7 +1574,8 @@ class vtmclass_WP_List_Table {
 			$infinite_scroll = $this->_pagination_args['infinite_scroll'];
 		}
 
-		$output = '<span class="displaying-num">' . sprintf( _n( '1 item', '%s items', $total_items ), number_format_i18n( $total_items ) ) . '</span>';
+		/* translators: see me */
+		$output = '<span class="displaying-num">' . sprintf( _n( '%s item', '%s items', $total_items, 'vampire-character' ), number_format_i18n( $total_items ) ) . '</span>';
 
 		$current = $this->get_pagenum();
 
@@ -1592,14 +1594,14 @@ class vtmclass_WP_List_Table {
 		}
 		$page_links[] = sprintf( "<a class='%s' title='%s' href='%s'>%s</a>",
 			'first-page' . $disable_first,
-			esc_attr__( 'Go to the first page' ),
+			esc_attr__( 'Go to the first page', 'vampire-character' ),
 			esc_url( remove_query_arg( 'paged', $current_url ) ),
 			'&laquo;'
 		);
 
 		$page_links[] = sprintf( "<a class='%s' title='%s' href='%s'>%s</a>",
 			'prev-page' . $disable_first,
-			esc_attr__( 'Go to the previous page' ),
+			esc_attr__( 'Go to the previous page', 'vampire-character' ),
 			esc_url( add_query_arg( 'paged', max( 1, $current-1 ), $current_url ) ),
 			'&lsaquo;'
 		);
@@ -1608,25 +1610,26 @@ class vtmclass_WP_List_Table {
 			$html_current_page = $current;
 		} else {
 			$html_current_page = sprintf( "%s<input class='current-page' id='current-page-selector' title='%s' type='text' name='paged' value='%s' size='%d' />",
-				'<label for="current-page-selector" class="screen-reader-text">' . __( 'Select Page' ) . '</label>',
-				esc_attr__( 'Current page' ),
+				'<label for="current-page-selector" class="screen-reader-text">' . __( 'Select Page', 'vampire-character' ) . '</label>',
+				esc_attr__( 'Current page', 'vampire-character' ),
 				$current,
 				strlen( $total_pages )
 			);
 		}
 		$html_total_pages = sprintf( "<span class='total-pages'>%s</span>", number_format_i18n( $total_pages ) );
-		$page_links[] = '<span class="paging-input">' . sprintf( _x( '%1$s of %2$s', 'paging' ), $html_current_page, $html_total_pages ) . '</span>';
+		/* translators: whatever */
+		$page_links[] = '<span class="paging-input">' . sprintf( _x( '%1$s of %2$s', 'paging', 'vampire-character' ), $html_current_page, $html_total_pages ) . '</span>';
 
 		$page_links[] = sprintf( "<a class='%s' title='%s' href='%s'>%s</a>",
 			'next-page' . $disable_last,
-			esc_attr__( 'Go to the next page' ),
+			esc_attr__( 'Go to the next page', 'vampire-character' ),
 			esc_url( add_query_arg( 'paged', min( $total_pages, $current+1 ), $current_url ) ),
 			'&rsaquo;'
 		);
 
 		$page_links[] = sprintf( "<a class='%s' title='%s' href='%s'>%s</a>",
 			'last-page' . $disable_last,
-			esc_attr__( 'Go to the last page' ),
+			esc_attr__( 'Go to the last page', 'vampire-character' ),
 			esc_url( add_query_arg( 'paged', $total_pages, $current_url ) ),
 			'&raquo;'
 		);
@@ -1763,7 +1766,7 @@ class vtmclass_WP_List_Table {
 
 		if ( ! empty( $columns['cb'] ) ) {
 			static $cb_counter = 1;
-			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All' ) . '</label>'
+			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All', 'vampire-character' ) . '</label>'
 				. '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />';
 			$cb_counter++;
 		}
@@ -1995,7 +1998,8 @@ class vtmclass_WP_List_Table {
 
 		if ( isset( $this->_pagination_args['total_items'] ) ) {
 			$response['total_items_i18n'] = sprintf(
-				_n( '1 item', '%s items', $this->_pagination_args['total_items'] ),
+				/* translators: whatever */
+				_n( '%s item', '%s items', $this->_pagination_args['total_items'], 'vampire-character' ),
 				number_format_i18n( $this->_pagination_args['total_items'] )
 			);
 		}
@@ -2060,7 +2064,7 @@ class vtmclass_MultiPage_ListTable extends vtmclass_WP_List_Table {
 
 		if ( ! empty( $columns['cb'] ) ) {
 			static $cb_counter = 1;
-			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All' ) . '</label>'
+			$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All', 'vampire-character' ) . '</label>'
 				. '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />';
 			$cb_counter++;
 		}
@@ -2312,7 +2316,7 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 
 			if ( ! empty( $columns['cb'] ) ) {
 					static $cb_counter = 1;
-					$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All' ) . '</label>'
+					$columns['cb'] = '<label class="screen-reader-text" for="cb-select-all-' . $cb_counter . '">' . __( 'Select All', 'vampire-character' ) . '</label>'
 							. '<input id="cb-select-all-' . $cb_counter . '" type="checkbox" />';
 					$cb_counter++;
 			}
@@ -2704,7 +2708,7 @@ class vtmclass_restapi extends WP_REST_Controller {
       array(
         'methods'             => WP_REST_Server::READABLE,
         'callback'            => array( $this, 'get_item_by_wpid' ),
-        'permission_callback' => array( $this, 'get_items_permissions_check' ),
+        'permission_callback' => array( $this, 'get_item_by_wpid_permissions_check' ),
 		'args'                => array(
 			'wordpress_id'	=> array(
 				'validate_callback' => function($param, $request, $key) {
@@ -2790,7 +2794,43 @@ class vtmclass_restapi extends WP_REST_Controller {
 	$mycharacter = new vtmclass_character();
 	$mycharacter->load($characterID);
 
-    $data = $this->prepare_item_for_response( $mycharacter, $request );
+	if (vtm_isST()) {
+		$data = $this->prepare_item_for_response( $mycharacter, $request );
+		
+	} else {
+		// only allow public character information
+		$filtered = array();
+		
+		// public addresses
+		$filtered["addresses"] = array();
+		$tmp = $mycharacter->addresses;
+		foreach ($tmp as $address) {
+			if ($address->VISIBLE == "Y") {
+					array_push($filtered["addresses"], $address);
+			}
+		}
+		// Status
+		$filtered["backgrounds"] = array();
+		$tmp = $mycharacter->backgrounds;
+		foreach ($tmp as $background) {
+			if ($background->background == "Status") {
+					array_push($filtered["backgrounds"], $background);
+			}
+		}
+		// general
+		$filtered["char_status"] = $mycharacter->char_status;
+		$filtered["clan"] = $mycharacter->clan;
+		$filtered["display_name"] = $mycharacter->display_name;
+		$filtered["domain"] = $mycharacter->domain;
+		$filtered["name"] = $mycharacter->name;
+		$filtered["offices"] = $mycharacter->offices;
+		$filtered["player"] = $mycharacter->player;
+		$filtered["portrait"] = $mycharacter->portrait;
+		
+		$data = $this->prepare_item_for_response( $filtered, $request );
+		
+	}
+
 
     return new WP_REST_Response( $data, 200 );
 
@@ -2834,7 +2874,9 @@ class vtmclass_restapi extends WP_REST_Controller {
   public function get_items_permissions_check( $request ) {
     return vtm_isST();
   }
-
+  public function get_item_by_wpid_permissions_check( $request ) {
+    return true;
+  }
   /**
    * Prepare the item for the REST response
    *

@@ -5,7 +5,7 @@
 
 function vtm_character_experience() {
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
 	<div class="wrap">
@@ -899,7 +899,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 
 function vtm_character_xp_assign() {
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
 	<div class="wrap">

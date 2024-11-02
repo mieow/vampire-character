@@ -12,23 +12,23 @@
 function vtm_PM_post_type() {
 
 	$labels = array(
-		'name'                => _x( 'Character messages', 'Post Type General Name', 'text_domain' ),
-		'singular_name'       => _x( 'Character message', 'Post Type Singular Name', 'text_domain' ),
-		'menu_name'           => __( 'Character Mail', 'text_domain' ),
-		'parent_item_colon'   => __( 'Parent Message:', 'text_domain' ),
-		'all_items'           => __( 'All Messages', 'text_domain' ),
-		'view_item'           => __( 'View Message', 'text_domain' ),
-		'add_new_item'        => __( 'Send New Message', 'text_domain' ),
-		'add_new'             => __( 'Send New', 'text_domain' ),
-		'edit_item'           => __( 'Edit Message', 'text_domain' ),
-		'update_item'         => __( 'Update Message', 'text_domain' ),
-		'search_items'        => __( 'Search Message', 'text_domain' ),
-		'not_found'           => __( 'Not found', 'text_domain' ),
-		'not_found_in_trash'  => __( 'Not found in Trash', 'text_domain' ),
+		'name'                => _x( 'Character messages', 'Post Type General Name', 'vampire-character' ),
+		'singular_name'       => _x( 'Character message', 'Post Type Singular Name', 'vampire-character' ),
+		'menu_name'           => __( 'Character Mail', 'vampire-character' ),
+		'parent_item_colon'   => __( 'Parent Message:', 'vampire-character' ),
+		'all_items'           => __( 'All Messages', 'vampire-character' ),
+		'view_item'           => __( 'View Message', 'vampire-character' ),
+		'add_new_item'        => __( 'Send New Message', 'vampire-character' ),
+		'add_new'             => __( 'Send New', 'vampire-character' ),
+		'edit_item'           => __( 'Edit Message', 'vampire-character' ),
+		'update_item'         => __( 'Update Message', 'vampire-character' ),
+		'search_items'        => __( 'Search Message', 'vampire-character' ),
+		'not_found'           => __( 'Not found', 'vampire-character' ),
+		'not_found_in_trash'  => __( 'Not found in Trash', 'vampire-character' ),
 	);
 	$args = array(
-		'label'               => __( 'inbox', 'text_domain' ),
-		'description'         => __( 'Private Message', 'text_domain' ),
+		'label'               => __( 'inbox', 'vampire-character' ),
+		'description'         => __( 'Private Message', 'vampire-character' ),
 		'labels'              => $labels,
 		'supports'            => array( ),
 		'taxonomies'          => array( ),
@@ -98,12 +98,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 	// Add extra columns for the List Messages screen
 	// --------------------------------------------
 	function vtm_pm_change_columns( $cols ) {
-		$cols['vtmpmstatus'] =  __( 'Send Status', 'trans' );
-		$cols['vtmfrom']     =  __( 'From', 'trans' );
-		$cols['vtmto']       =  __( 'To', 'trans' );
+		$cols['vtmpmstatus'] =  __( 'Send Status', 'vampire-character' );
+		$cols['vtmfrom']     =  __( 'From', 'vampire-character' );
+		$cols['vtmto']       =  __( 'To', 'vampire-character' );
 		
 		if (vtm_isST())
-			$cols['author'] =  __( 'Actually From', 'trans' );
+			$cols['author'] =  __( 'Actually From', 'vampire-character' );
 	  return $cols;
 	}
 	add_filter( "manage_vtmpm_posts_columns", "vtm_pm_change_columns" );
@@ -215,16 +215,16 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		$actions = array();
 		if ( $can_edit_post && 'trash' != $post->post_status ) {
-			$actions['edit'] = '<a href="' . get_edit_post_link( $post->ID ) . '" title="' . esc_attr__( 'Edit this item' ) . '">' . __( 'Edit' ) . '</a>';
-			$actions['inline hide-if-no-js'] = '<a href="#" class="editinline" title="' . esc_attr__( 'Edit this item inline' ) . '">' . __( 'Quick&nbsp;Edit' ) . '</a>';
+			$actions['edit'] = '<a href="' . get_edit_post_link( $post->ID ) . '" title="' . esc_attr__( 'Edit this item', 'vampire-character' ) . '">' . __( 'Edit', 'vampire-character' ) . '</a>';
+			$actions['inline hide-if-no-js'] = '<a href="#" class="editinline" title="' . esc_attr__( 'Edit this item inline', 'vampire-character' ) . '">' . __( 'Quick&nbsp;Edit', 'vampire-character' ) . '</a>';
 		}
 		if ( current_user_can( 'delete_post', $post->ID ) ) {
 			if ( 'trash' == $post->post_status )
-				$actions['untrash'] = "<a title='" . esc_attr__( 'Restore this item from the Trash' ) . "' href='" . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . "'>" . __( 'Restore' ) . "</a>";
+				$actions['untrash'] = "<a title='" . esc_attr__( 'Restore this item from the Trash', 'vampire-character' ) . "' href='" . wp_nonce_url( admin_url( sprintf( $post_type_object->_edit_link . '&amp;action=untrash', $post->ID ) ), 'untrash-post_' . $post->ID ) . "'>" . __( 'Restore', 'vampire-character' ) . "</a>";
 			elseif ( EMPTY_TRASH_DAYS )
-				$actions['trash'] = "<a class='submitdelete' title='" . esc_attr__( 'Move this item to the Trash' ) . "' href='" . get_delete_post_link( $post->ID ) . "'>" . __( 'Trash' ) . "</a>";
+				$actions['trash'] = "<a class='submitdelete' title='" . esc_attr__( 'Move this item to the Trash', 'vampire-character' ) . "' href='" . get_delete_post_link( $post->ID ) . "'>" . __( 'Trash', 'vampire-character' ) . "</a>";
 			if ( 'trash' == $post->post_status || !EMPTY_TRASH_DAYS )
-				$actions['delete'] = "<a class='submitdelete' title='" . esc_attr__( 'Delete this item permanently' ) . "' href='" . get_delete_post_link( $post->ID, '', true ) . "'>" . __( 'Delete Permanently' ) . "</a>";
+				$actions['delete'] = "<a class='submitdelete' title='" . esc_attr__( 'Delete this item permanently', 'vampire-character' ) . "' href='" . get_delete_post_link( $post->ID, '', true ) . "'>" . __( 'Delete Permanently', 'vampire-character' ) . "</a>";
 		}
 		if ( $post_type_object->public ) {
 			if ( in_array( $post->post_status, array( 'pending', 'draft', 'future' ) ) ) {
@@ -232,10 +232,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					$preview_link = set_url_scheme( get_permalink( $post->ID ) );
 					/** This filter is documented in wp-admin/includes/meta-boxes.php */
 					$preview_link = apply_filters( 'preview_post_link', add_query_arg( 'preview', 'true', $preview_link ), $post );
-					$actions['view'] = '<a href="' . esc_url( $preview_link ) . '" title="' . esc_attr( sprintf( __( 'Preview &#8220;%s&#8221;' ), $title ) ) . '" rel="permalink">' . __( 'Preview' ) . '</a>';
+					/* translators: contact me for help */
+					$actions['view'] = '<a href="' . esc_url( $preview_link ) . '" title="' . esc_attr( sprintf( __( 'Preview &#8220;%s&#8221;', 'vampire-character' ), $title ) ) . '" rel="permalink">' . __( 'Preview', 'vampire-character' ) . '</a>';
 				}
 			} elseif ( 'trash' != $post->post_status ) {
-				$actions['view'] = '<a href="' . get_permalink( $post->ID ) . '" title="' . esc_attr( sprintf( __( 'View &#8220;%s&#8221;' ), $title ) ) . '" rel="permalink">' . __( 'View' ) . '</a>';
+					/* translators: contact me for help */
+				$actions['view'] = '<a href="' . get_permalink( $post->ID ) . '" title="' . esc_attr( sprintf( __( 'View &#8220;%s&#8221;', 'vampire-character' ), $title ) ) . '" rel="permalink">' . __( 'View', 'vampire-character' ) . '</a>';
 			}
 		}
 
@@ -488,24 +490,24 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 <div class="submitbox" id="submitpost">
 
 <div class="misc-pub-section misc-pub-post-status">
-<?php _e( 'Message Status:' ) ?> <span id="post-status-display"><?php
+<?php _e( 'Message Status:', 'vampire-character' ) ?> <span id="post-status-display"><?php
 
 		switch ( $post->post_status ) {
 			case 'private':
-				_e('Privately Published');
+				_e('Privately Published', 'vampire-character');
 				break;
 			case 'publish':
-				_e('Published');
+				_e('Published', 'vampire-character');
 				break;
 			case 'future':
-				_e('Scheduled');
+				_e('Scheduled', 'vampire-character');
 				break;
 			case 'pending':
-				_e('Pending Review');
+				_e('Pending Review', 'vampire-character');
 				break;
 			case 'draft':
 			case 'auto-draft':
-				_e('Draft');
+				_e('Draft', 'vampire-character');
 				break;
 		}
 ?>
@@ -516,7 +518,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 
 <?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
 <div style="display:none;">
-<?php submit_button( __( 'Save' ), '', 'save' ); ?>
+<?php submit_button( __( 'Save', 'vampire-character' ), '', 'save' ); ?>
 </div>
 		
 
@@ -525,10 +527,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 <?php if ( 'publish' != $post->post_status && 
 	'future' != $post->post_status && 
 	'pending' != $post->post_status ) { ?>
-<input <?php if ( 'private' == $post->post_status ) { ?>style="display:none"<?php } ?> type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save Draft'); ?>" class="button" />
+<input <?php if ( 'private' == $post->post_status ) { ?>style="display:none"<?php } ?> type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save Draft', 'vampire-character'); ?>" class="button" />
 <span class="spinner"></span>
 <?php } elseif ( 'pending' == $post->post_status && $can_publish ) { ?>
-<input type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save as Pending'); ?>" class="button" />
+<input type="submit" name="save" id="save-post" value="<?php esc_attr_e('Save as Pending', 'vampire-character'); ?>" class="button" />
 <span class="spinner"></span>
 <?php } ?>
 </div>
@@ -539,9 +541,9 @@ if ( is_post_type_viewable( $post_type_object ) ) : ?>
 <?php
 $preview_link = esc_url( get_preview_post_link( $post ) );
 if ( 'publish' == $post->post_status ) {
-	$preview_button = __( 'Preview Changes' );
+	$preview_button = __( 'Preview Changes', 'vampire-character' );
 } else {
-	$preview_button = __( 'Preview' );
+	$preview_button = __( 'Preview', 'vampire-character' );
 }
 ?>
 <a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview-<?php echo (int) $post->ID; ?>" id="post-preview"><?php echo $preview_button; ?></a>
@@ -592,9 +594,9 @@ do_action( 'post_submitbox_start' );
 <?php
 if ( current_user_can( "delete_post", $post->ID ) ) {
 	if ( !EMPTY_TRASH_DAYS )
-		$delete_text = __('Delete Permanently');
+		$delete_text = __('Delete Permanently', 'vampire-character');
 	else
-		$delete_text = __('Move to Trash');
+		$delete_text = __('Move to Trash', 'vampire-character');
 	?>
 <a class="submitdelete deletion" href="<?php echo get_delete_post_link($post->ID); ?>"><?php echo $delete_text; ?></a><?php
 } ?>
@@ -605,12 +607,12 @@ if ( current_user_can( "delete_post", $post->ID ) ) {
 <?php
 if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) {
 	?>
-	<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Publish') ?>" />
-	<?php submit_button( __( 'Send' ), 'primary large', 'publish', false ); ?>
+	<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Publish', 'vampire-character') ?>" />
+	<?php submit_button( __( 'Send', 'vampire-character' ), 'primary large', 'publish', false ); ?>
 <?php
 } else { ?>
-		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update') ?>" />
-		<input name="save" type="submit" class="button button-primary button-large" id="publish" value="<?php esc_attr_e( 'Update' ) ?>" />
+		<input name="original_publish" type="hidden" id="original_publish" value="<?php esc_attr_e('Update', 'vampire-character') ?>" />
+		<input name="save" type="submit" class="button button-primary button-large" id="publish" value="<?php esc_attr_e( 'Update', 'vampire-character' ) ?>" />
 <?php
 } ?>
 </div>
@@ -1376,11 +1378,11 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 
 		$new_views = array(
 				//'all'    => __('ZAll'),
-				'unread' => __('Unread'),
-				'read'   => __('Read'),
-				'draft'  => __('Draft'),
-				'sent'   => __('Sent'),
-				'trash'  => __('Trash')
+				'unread' => __('Unread', 'vampire-character'),
+				'read'   => __('Read', 'vampire-character'),
+				'draft'  => __('Draft', 'vampire-character'),
+				'sent'   => __('Sent', 'vampire-character'),
+				'trash'  => __('Trash', 'vampire-character')
 				);
 
 		foreach( $new_views as $view => $name ) {
@@ -1514,7 +1516,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			if($result->found_posts > 0 || $view == 'unread') {
 
 				$views[$view] = sprintf(
-					'<a href="%s"'. $class .'>'.__($name).' <span class="count">(%d)</span></a>',
+					'<a href="%s"'. $class .'>'.$name.' <span class="count">(%d)</span></a>',
 					admin_url('edit.php?'.$url_query_var.'&post_type='.$post_type),
 					$result->found_posts
 				);
@@ -1551,11 +1553,16 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 
 		//print_r($bulk_messages);
 		$bulk_messages['vtmpm'] = array(
-			'updated'   => _n( '%s message updated.', '%s messages updated.', $bulk_counts['updated'] ),
-			'locked'    => _n( '%s message not updated, somebody is editing it.', '%s messages not updated, somebody is editing them.', $bulk_counts['locked'] ),
-			'deleted'   => _n( '%s message permanently deleted.', '%s messages permanently deleted.', $bulk_counts['deleted'] ),
-			'trashed'   => _n( '%s message moved to the Trash.', '%s messages moved to the Trash.', $bulk_counts['trashed'] ),
-			'untrashed' => _n( '%s message restored from the Trash.', '%s messages restored from the Trash.', $bulk_counts['untrashed'] ),
+			/* translators: reporting message counts */
+			'updated'   => _n( '%s message updated.', '%s messages updated.', $bulk_counts['updated'], 'vampire-character' ),
+			/* translators: reporting message counts */
+			'locked'    => _n( '%s message not updated, somebody is editing it.', '%s messages not updated, somebody is editing them.', $bulk_counts['locked'], 'vampire-character' ),
+			/* translators: reporting message counts */
+			'deleted'   => _n( '%s message permanently deleted.', '%s messages permanently deleted.', $bulk_counts['deleted'], 'vampire-character' ),
+			/* translators: reporting message counts */
+			'trashed'   => _n( '%s message moved to the Trash.', '%s messages moved to the Trash.', $bulk_counts['trashed'], 'vampire-character' ),
+			/* translators: reporting message counts */
+			'untrashed' => _n( '%s message restored from the Trash.', '%s messages restored from the Trash.', $bulk_counts['untrashed'], 'vampire-character' ),
 		);
 
 		return $bulk_messages;
@@ -1934,7 +1941,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					// $actions['read'] = "<a href='$link'>$actiontxt</a>" ;
 				} 
 				elseif (get_post_meta( $post->ID, '_vtmpm_to_status', true ) == 'trash') {
-					$actions['view'] = str_replace(__( 'View' ),__( 'View/Untrash' ),$actions['view']) ;
+					$actions['view'] = str_replace(__( 'View', 'vampire-character' ),__( 'View/Untrash', 'vampire-character' ),$actions['view']) ;
 					unset( $actions['trash'] );
 				}
 			}

@@ -3,7 +3,7 @@
 function vtm_character_temp_stats() {
 	global $wpdb;
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	
 	$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT ORDER BY ID";

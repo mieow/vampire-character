@@ -18,7 +18,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 	 		'vtmplugin_widget', // Base ID
 			'Character Login Widget', // Name
 			array(
-				'description' => __( 'For login/logout and useful links', 'text_domain' ),
+				'description' => __( 'For login/logout and useful links', 'vampire-character' ),
 				'customize_selective_refresh' => true,
 			) // Args
 		);
@@ -149,24 +149,24 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 
 		?>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'charsheet_link' ); ?>"><?php _e( 'Show Character Sheet Link:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'charsheet_link' ); ?>"><?php _e( 'Show Character Sheet Link:', 'vampire-character' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'charsheet_link' ); ?>" name="<?php echo $this->get_field_name( 'charsheet_link' ); ?>" type="checkbox" <?php echo checked( $charsheet_link, true ); ?> />
  		</p><p>
-		<label for="<?php echo $this->get_field_id( 'profile_link' ); ?>"><?php _e( 'Show Profile Link:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'profile_link' ); ?>"><?php _e( 'Show Profile Link:', 'vampire-character' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'profile_link' ); ?>" name="<?php echo $this->get_field_name( 'profile_link' ); ?>" type="checkbox" <?php echo checked( $profile_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo $this->get_field_id( 'spendxp_link' ); ?>"><?php _e( 'Show Spend XP Link:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'spendxp_link' ); ?>"><?php _e( 'Show Spend XP Link:', 'vampire-character' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'spendxp_link' ); ?>" name="<?php echo $this->get_field_name( 'spendxp_link' ); ?>" type="checkbox" <?php echo checked( $spendxp_link, true ); ?> />
 		</p><?php
 		if (get_option( 'vtm_feature_pm', '0' ) == 1) {
 		?><p>
-		<label for="<?php echo $this->get_field_id( 'inbox_link' ); ?>"><?php _e( 'Inbox Link:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'inbox_link' ); ?>"><?php _e( 'Inbox Link:', 'vampire-character' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'inbox_link' ); ?>" name="<?php echo $this->get_field_name( 'inbox_link' ); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo $this->get_field_id( 'addresses_link' ); ?>"><?php _e( 'My Addresses Link:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'addresses_link' ); ?>"><?php _e( 'My Addresses Link:', 'vampire-character' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'addresses_link' ); ?>" name="<?php echo $this->get_field_name( 'addresses_link' ); ?>" type="checkbox" <?php echo checked( $addresses_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo $this->get_field_id( 'addressbook_link' ); ?>"><?php _e( 'Addressbook Link:' ); ?></label>
+		<label for="<?php echo $this->get_field_id( 'addressbook_link' ); ?>"><?php _e( 'Addressbook Link:', 'vampire-character' ); ?></label>
  		<input id="<?php echo $this->get_field_id( 'addressbook_link' ); ?>" name="<?php echo $this->get_field_name( 'addressbook_link' ); ?>" type="checkbox" <?php echo checked( $addressbook_link, true ); ?> />
 		</p>
 		<?php
@@ -189,7 +189,7 @@ class vtmclass_Plugin_Background_Widget extends WP_Widget {
 		parent::__construct(
 	 		'vtmplugin_background_widget', // Base ID
 			'Character Background Widget', // Name
-			array( 'description' => __( 'Percentage background complete', 'text_domain' ),
+			array( 'description' => __( 'Percentage background complete', 'vampire-character' ),
 				'customize_selective_refresh' => true, ) // Args
 		);
 	}
@@ -359,7 +359,7 @@ class StuSolarCalc_Widget extends WP_Widget {
 		parent::__construct(
 	 		'solar', // Base ID
 			'Sunset/Sunrise Times', // Name
-			array( 'description' => __( 'A simple plug-in widget to allow the display of sunrise/set data.', 'text_domain' ), 
+			array( 'description' => __( 'A simple plug-in widget to allow the display of sunrise/set data.', 'vampire-character' ), 
 				'customize_selective_refresh' => true,) // Args
 		);
 	}	

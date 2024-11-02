@@ -5,7 +5,7 @@ function vtm_character_options() {
 	global $wpdb;
 
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	
 	$iconurl = plugins_url('adminpages/icons/',dirname(__FILE__));
@@ -47,19 +47,19 @@ function vtm_character_options() {
 	$noclan_url = remove_query_arg( 'clan', $current_url );
 	?>
 	<div class="wrap">
-		<h2>Characters <a class="add-new-h2" href="<?php echo get_page_link(vtm_get_stlink_page('editCharSheet')) ; ?>">Add New</a></h2>
+		<h2>Characters <a class="add-new-h2" href="<?php esc_url(get_page_link(vtm_get_stlink_page('editCharSheet'))) ; ?>">Add New</a></h2>
 
 		<?php 
 		
 		if (isset($_REQUEST['action']) && $_REQUEST['action'] == 'delete' && $_REQUEST['characterID'] != 0) {
 		
 			?>
-			<p>Confirm deletion of character <?php echo vtm_formatOutput($_REQUEST['characterName']); ?></p>
+			<p>Confirm deletion of character <?php echo esc_html($_REQUEST['characterName']); ?></p>
 			<div class="char_delete">
 				
-				<form id="character-delete" method="get" action='<?php print $current_url; ?>'>
-				<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-				<input type="hidden" name="characterID" value="<?php print $_REQUEST['characterID'] ?>" />
+				<form id="character-delete" method="get" action='<?php print esc_url($current_url); ?>'>
+				<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+				<input type="hidden" name="characterID" value="<?php print esc_html($_REQUEST['characterID']) ?>" />
 				<input type='submit' name="cConfirm" value="Confirm Delete" />
 				<input type='submit' name="cCancel" value="Cancel" />
 				</form>
@@ -70,32 +70,32 @@ function vtm_character_options() {
 		} else {
 		
 			if (isset($_REQUEST['cConfirm'])) {
-				echo vtm_deleteCharacter($_REQUEST['characterID']);
+				echo esc_html(vtm_deleteCharacter($_REQUEST['characterID']));
 			} 
 
 		?>
 		
 		<div class="char_clan_menu">
 		<?php
-			$arr = array('<a href="' . htmlentities($noclan_url) . '" class="nav_clan">All</a>');
+			$arr = array('<a href="' . esc_url($noclan_url) . '" class="nav_clan">All</a>');
 			foreach (vtm_get_clans() as $clan) {
 				$clanurl = add_query_arg('clan', $clan->ID);
-				array_push($arr, '<a href="' . htmlentities($clanurl) . '" class="nav_clan">' . vtm_formatOutput($clan->NAME) . '</a>');
+				array_push($arr, '<a href="' . esc_url($clanurl) . '" class="nav_clan">' . esc_html($clan->NAME) . '</a>');
 			}
 			$text = implode(' | ', $arr);
-			echo $text;
+			echo wp_kses($text, vtm_menulist_allowedhtml());
 		?>
 		</div>
 		<div class="char_filters">
 			
-			<form id="character-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-				<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+			<form id="character-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+				<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 				<label>Player Status: </label>
 				<select name='player_status'>
 					<?php foreach( $options_player_status as $key => $value ) {
 							echo '<option value="' . esc_attr( $key ) . '" ';
 							selected( $active_player_status, $key );
-							echo '>' . vtm_formatOutput( $value ) . '</option>';
+							echo '>' . esc_html( $value ) . '</option>';
 						}
 					?>
 				</select>
@@ -104,7 +104,7 @@ function vtm_character_options() {
 					<?php foreach( $options_character_type as $key => $value ) {
 							echo '<option value="' . esc_attr( $key ) . '" ';
 							selected( $active_character_type, $key );
-							echo '>' . vtm_formatOutput( $value ) . '</option>';
+							echo '>' . esc_html( $value ) . '</option>';
 						}
 					?>
 				</select>
@@ -113,7 +113,7 @@ function vtm_character_options() {
 					<?php foreach( $options_character_status as $key => $value ) {
 							echo '<option value="' . esc_attr( $key ) . '" ';
 							selected( $active_character_status, $key );
-							echo '>' . vtm_formatOutput( $value ) . '</option>';
+							echo '>' . esc_html( $value ) . '</option>';
 						}
 					?>
 				</select>
@@ -136,7 +136,7 @@ function vtm_character_options() {
 					<?php foreach( $options_chargen_status as $key => $value ) {
 							echo '<option value="' . esc_attr( $key ) . '" ';
 							selected( $active_chargen_status, $key );
-							echo '>' . vtm_formatOutput( $value ) . '</option>';
+							echo '>' . esc_html( $value ) . '</option>';
 						}
 					?>
 				</select>
@@ -236,7 +236,7 @@ function vtm_character_options() {
 		
 			$i = 0;
 			foreach ($result as $character) {
-				$name = vtm_formatOutput($character->charactername);
+				$name = esc_html($character->charactername);
 			
 				echo "<tr";
 				if ($i % 2) echo " class='alternate'";
@@ -244,51 +244,51 @@ function vtm_character_options() {
 				echo "<th>";
 				
 				//if ($character->chargen_status != 'Approved')
-				//	echo $name . " [" . vtm_formatOutput($character->template) . "]";
+				//	echo $name . " [" . esc_html($character->template) . "]";
 				//elseif (!empty($character->wordpress_id))
 				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?CHARACTER='. urlencode($character->wordpress_id) . '">' . $name . '</a>';
 				//else
 				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?characterID='. urlencode($character->ID) . '">' . $name . '</a>';
 				if ($character->chargen_status != 'Approved')
-					echo vtm_formatOutput($character->charactername) . " [" . vtm_formatOutput($character->template) . "]";
+					echo esc_html($character->charactername) . " [" . esc_html($character->template) . "]";
 				elseif (!empty($character->wordpress_id))
-					echo vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->wordpress_id, "CHARACTER", $character->charactername);
+					echo wp_kses(vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->wordpress_id, "CHARACTER", $character->charactername), array('a' => array('href' => array())));
 				else
-					echo vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->ID, "characterID", $character->charactername);
+					echo wp_kses(vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->ID, "characterID", $character->charactername), array('a' => array('href' => array())));
 				
 				echo "</th><td>";
 				echo '<div>';
 				if ($character->chargen_status == 'Approved')
-					echo vtm_get_page_icon(vtm_get_stlink_page('editCharSheet'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit');
+					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('editCharSheet'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit'),vtm_page_icon_allowedhtml());
 				else
-					echo vtm_get_page_icon(vtm_get_stlink_page('viewCharGen'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit');
+					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewCharGen'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit'),vtm_page_icon_allowedhtml());
 				//	echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('editCharSheet')) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
 				//	echo '&nbsp;<a href="' . get_page_link($stlinks['viewCharGen']->WP_PAGE_ID) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
 
 				$delete_url = add_query_arg('action', 'delete', $current_url);
 				$delete_url = add_query_arg('characterID', $character->ID, $delete_url);
 				$delete_url = add_query_arg('characterName', urlencode($character->wordpress_id), $delete_url);
-				echo '&nbsp;<a href="' . htmlentities($delete_url) . '"><img src="' . $iconurl . 'delete.png" alt="Delete" title="Delete Character" /></a>';
+				echo '&nbsp;<a href="' . esc_url($delete_url) . '"><img src="' . esc_url($iconurl) . 'delete.png" alt="Delete" title="Delete Character" /></a>';
 				//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('printCharSheet'))  . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'print.png" alt="Print" title="Print Character" /></a>';
-				echo vtm_get_page_icon(vtm_get_stlink_page('printCharSheet'), $character->ID, 'characterID', 'print.png', 'Print Character', 'Print');
+				echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('printCharSheet'), $character->ID, 'characterID', 'print.png', 'Print Character', 'Print'),vtm_page_icon_allowedhtml());
 				
 				if (!empty($character->wordpress_id) && $character->chargen_status == 'Approved') {
-					echo vtm_get_page_icon(vtm_get_stlink_page('viewProfile'), $character->wordpress_id, 'CHARACTER', 'profile.png', 'View Profile', 'Profile');
-					echo vtm_get_page_icon(vtm_get_stlink_page('viewXPSpend'), $character->wordpress_id, 'CHARACTER', 'spendxp.png', 'Spend Experience', 'XP Spend');
-					echo vtm_get_page_icon(vtm_get_stlink_page('viewExtBackgrnd'), $character->wordpress_id, 'CHARACTER', 'background.png', 'Extended Background', 'Background');
-					echo vtm_get_page_icon(vtm_get_stlink_page('viewCustom'), $character->wordpress_id, 'CHARACTER', 'custom.png', 'View Custom Page as Character', 'Custom');
+					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewProfile'), $character->wordpress_id, 'CHARACTER', 'profile.png', 'View Profile', 'Profile'),vtm_page_icon_allowedhtml());
+					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewXPSpend'), $character->wordpress_id, 'CHARACTER', 'spendxp.png', 'Spend Experience', 'XP Spend'),vtm_page_icon_allowedhtml());
+					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewExtBackgrnd'), $character->wordpress_id, 'CHARACTER', 'background.png', 'Extended Background', 'Background'),vtm_page_icon_allowedhtml());
+					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewCustom'), $character->wordpress_id, 'CHARACTER', 'custom.png', 'View Custom Page as Character', 'Custom'),vtm_page_icon_allowedhtml());
 					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewProfile'))     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'profile.png" alt="Profile" title="View Profile" /></a>';
 					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewXPSpend'))     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'spendxp.png" alt="XP Spend" title="Spend Experience" /></a>';
 					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewExtBackgrnd')) . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'background.png" alt="Background" title="Extended Background" /></a>';
 					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewCustom'))      . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'custom.png" alt="Custom" title="View Custom Page as Character" /></a>';
 				}
 				echo "</div></td>";
-				echo "<td>" . vtm_formatOutput($character->clan) . "</td>";
-				echo "<td>" . vtm_formatOutput($character->player) . "</td>";
-				echo "<td>" . vtm_formatOutput($character->player_status) . "</td>";
-				echo "<td>" . vtm_formatOutput($character->character_type) . "</td>";
-				echo "<td>" . vtm_formatOutput($character->character_status) . "</td>";
-				echo "<td>{$character->visible}</td>";
+				echo "<td>" . esc_html($character->clan) . "</td>";
+				echo "<td>" . esc_html($character->player) . "</td>";
+				echo "<td>" . esc_html($character->player_status) . "</td>";
+				echo "<td>" . esc_html($character->character_type) . "</td>";
+				echo "<td>" . esc_html($character->character_status) . "</td>";
+				echo "<td>" . esc_html($character->visible) . "</td>";
 				echo "</tr>\n";
 				$i++;
 			}
@@ -452,17 +452,17 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$characterDetails = $wpdb->get_results($wpdb->prepare($sql, $characterID));
 
 			foreach ($characterDetails as $characterDetail) {
-				$characterName             = vtm_formatOutput($characterDetail->NAME);
+				$characterName             = esc_html($characterDetail->NAME);
 				$characterPublicClanId     = $characterDetail->PUBLIC_CLAN_ID;
 				$characterPrivateClanId    = $characterDetail->PRIVATE_CLAN_ID;
 				$characterGenerationId     = $characterDetail->GENERATION_ID;
 				$characterDateOfBirth      = $characterDetail->DATE_OF_BIRTH;
 				$characterDateOfEmbrace    = $characterDetail->DATE_OF_EMBRACE;
-				$characterSire             = vtm_formatOutput($characterDetail->SIRE);
+				$characterSire             = esc_html($characterDetail->SIRE);
 				$characterPlayerId         = $characterDetail->PLAYER_ID;
 				$characterTypeId           = $characterDetail->CHARACTER_TYPE_ID;
 				$characterStatusId         = $characterDetail->CHARACTER_STATUS_ID;
-				$characterStatusComment    = vtm_formatOutput($characterDetail->CHARACTER_STATUS_COMMENT);
+				$characterStatusComment    = esc_html($characterDetail->CHARACTER_STATUS_COMMENT);
 				$characterRoadOrPathId     = $characterDetail->ROAD_OR_PATH_ID;
 				$characterRoadOrPathRating = $characterDetail->ROAD_OR_PATH_RATING;
 				$characterDomainId         = $characterDetail->DOMAIN_ID;
@@ -484,7 +484,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$characterProfiles = $wpdb->get_results($wpdb->prepare($sql, $characterID));
 
 			foreach ($characterProfiles as $characterProfile) {
-				$characterHarpyQuote  = vtm_formatOutput($characterProfile->QUOTE);
+				$characterHarpyQuote  = esc_html($characterProfile->QUOTE);
 				$characterPortraitURL = $characterProfile->PORTRAIT;
 			}
 			
@@ -536,7 +536,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($player->ID == $characterPlayerId) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($player->name) . "</option>";
+			$output .= ">" . esc_html($player->name) . "</option>";
 		}
 		$output .= "</select></td></tr>";
 		$output .= "<tr><td>WordPress Account</td>
@@ -548,7 +548,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($template->ID == $characterTemplateID) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($template->NAME) . "</option>";
+			$output .= ">" . esc_html($template->NAME) . "</option>";
 		}
 		$output .= "</select></td></tr>";
 		$output .= "<tr><td>Public Clan</td><td><select name='charPubClan'>";
@@ -557,7 +557,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($clan->ID == $characterPublicClanId) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($clan->name) . "</option>";
+			$output .= ">" . esc_html($clan->name) . "</option>";
 		}
 		$output .= "</select></td></tr>\n";	
 		$output .= "<tr><td>Private Clan</td><td><select name='charPrivClan'>";
@@ -566,7 +566,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($clan->ID == $characterPrivateClanId) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($clan->name) . "</option>";
+			$output .= ">" . esc_html($clan->name) . "</option>";
 		}
 		$output .= "</select></td></tr>\n";
 		$output .= "<tr><td>Generation</td><td><select name='charGen'>";
@@ -575,7 +575,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($generation->ID == $characterGenerationId) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($generation->name) . "th</option>";
+			$output .= ">" . esc_html($generation->name) . "th</option>";
 		}
 		$output .= "</select></td></tr>\n";	
 		$output .= "<tr><td>Character Type</td><td><select name='charType'>";
@@ -584,7 +584,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($characterType->ID == $characterTypeId || ($characterID == 0 && $characterType->name == 'PC')) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($characterType->name) . "</option>";
+			$output .= ">" . esc_html($characterType->name) . "</option>";
 		}
 		$output .= "</select></td></tr>\n";	
 		$output .= "<tr><td>Character Status</td><td><select name='charStatus'>";
@@ -593,7 +593,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($characterStatus->ID == $characterStatusId) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($characterStatus->name) . "</option>";
+			$output .= ">" . esc_html($characterStatus->name) . "</option>";
 		}
 		$output .= "</select></td></tr>\n";
 		$output .= "<tr><td>Character Status Comment</td><td><input type='text' maxlength=30 name='charStatusComment' value='" . $characterStatusComment . "' /></td></tr>\n";
@@ -609,7 +609,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($roadOrPath->ID == $characterRoadOrPathId || ($characterID == 0 && $roadOrPath->ID == get_option( 'vtm_chargen_humanity', '1' ))) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($roadOrPath->name) . "</option>";
+			$output .= ">" . esc_html($roadOrPath->name) . "</option>";
 		}
 		$output .= "</select>";
 		$output .= "</td></tr>\n";
@@ -638,7 +638,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 				if ($nature->ID == $characterNatureId) {
 					$output .= "SELECTED";
 				}
-				$output .= ">" . vtm_formatOutput($nature->NAME) . "</option>";
+				$output .= ">" . esc_html($nature->NAME) . "</option>";
 			}
 			$output .= "</select></td></tr><tr><td>Demeanour</td><td>";
 			$output .= "<select name = 'charDemeanour'>";
@@ -648,7 +648,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 				if ($nature->ID == $characterDemeanourId) {
 					$output .= "SELECTED";
 				}
-				$output .= ">" . vtm_formatOutput($nature->NAME) . "</option>";
+				$output .= ">" . esc_html($nature->NAME) . "</option>";
 			}
 			$output .= "</select></td></tr>\n";
 		}
@@ -659,7 +659,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($sect->ID == $characterSectId || ($characterID == 0 && $sect->NAME == 'Camarilla')) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($sect->NAME) . "</option>";
+			$output .= ">" . esc_html($sect->NAME) . "</option>";
 		}
 		$output .= "</select></td></tr>";		
 		$output .= "<tr><td>Domain</td><td><select name='charDomain'>";
@@ -668,7 +668,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			if ($domain->ID == $characterDomainId) {
 				$output .= "SELECTED";
 			}
-			$output .= ">" . vtm_formatOutput($domain->name) . "</option>";
+			$output .= ">" . esc_html($domain->name) . "</option>";
 		}
 		$output .= "</select></td></tr>";
 		$output .= "<tr><td>Sire</td><td><input type='text' maxlength=60 name='charSire' value='" . $characterSire . "' /></td></tr>";
@@ -721,19 +721,19 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$thisgroup = $stat->grouping;
 			
 			if ($thisgroup != $lastgroup) {
-				$output .= "<tr><td colspan=4><h4>" . vtm_formatOutput($thisgroup) . "</h4></td></tr>$head";
+				$output .= "<tr><td colspan=4><h4>" . esc_html($thisgroup) . "</h4></td></tr>$head";
 			}
 
 			$statName = $stat->name;
 			$currentStat = $arr[$statName];
-			$output .= "<tr><td>" . vtm_formatOutput($stat->name);
+			$output .= "<tr><td>" . esc_html($stat->name);
 			switch($stat->name) {
 				case 'Willpower': $output .= "*"; break;
 			}
 			
 			$output .= "</td>"
 				. "<td>" . vtm_printSelectCounter($statName, $currentStat->level, 1, 10) . "</td>"
-				. "<td><input type='text' name='" . $statName . "Comment' value='" . vtm_formatOutput($currentStat->comment) . "' /></td>"
+				. "<td><input type='text' name='" . $statName . "Comment' value='" . esc_html($currentStat->comment) . "' /></td>"
 				. "<td>";
 
 			if ($currentStat->grouping == "Virtue"  && $statName != "Courage") {
@@ -771,13 +771,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 		foreach($characterSkills as $characterSkill) {
 			$thisgroup = $characterSkill->grouping;
 			if ($thisgroup != $lastgroup) {
-				$output .= "<tr><td colspan=4><h4>" . vtm_formatOutput($thisgroup) . "</h4></td></tr>$head";
+				$output .= "<tr><td colspan=4><h4>" . esc_html($thisgroup) . "</h4></td></tr>$head";
 			}
 
 			$skillName = "skill" . $skillCount;
-			$output .= "<tr><td>" . vtm_formatOutput($characterSkill->name) . "</td>"
+			$output .= "<tr><td>" . esc_html($characterSkill->name) . "</td>"
 				. "<td>" . vtm_printSelectCounter($skillName, $characterSkill->level, 1, 10) . "</td>"
-				. "<td><input type='text' name='"     . $skillName . "Comment' value='" . vtm_formatOutput($characterSkill->comment) . "' /></td>"
+				. "<td><input type='text' name='"     . $skillName . "Comment' value='" . esc_html($characterSkill->comment) . "' /></td>"
 				. "<td><input type='checkbox' name='" . $skillName . "Delete' value='"  . $characterSkill->cskillid . "' />"
 				.     "<input type='HIDDEN' name='"   . $skillName . "ID' value='"      . $characterSkill->cskillid . "' /></td></tr>";
 
@@ -792,7 +792,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$output .= "<table id='gvid_uctskn'><tr><td colspan=4><h4>New Abilities</h4></td></tr>$head";
 			$skillBlock = "";
 			foreach ($skills as $skill) {
-				$skillBlock .= "<option value='" . $skill->id . "'>" . vtm_formatOutput($skill->name) . "</option>";
+				$skillBlock .= "<option value='" . $skill->id . "'>" . esc_html($skill->name) . "</option>";
 			}
 
 			for ($i = 0; $i < 20; ) {
@@ -857,7 +857,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$output .= "<tr>";
 
 			$disciplineName = "discipline" . $disciplineCount;
-			$output .= "<td class='vtmcol_key'>" . vtm_formatOutput($characterDiscipline->name) . "</td>"
+			$output .= "<td class='vtmcol_key'>" . esc_html($characterDiscipline->name) . "</td>"
 				. "<td>" . vtm_printSelectCounter($disciplineName, $characterDiscipline->level, 1, 10) . "</td>";
 			
 			$output .= "<td>";
@@ -868,7 +868,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 						$output .= "<select name='"     . $disciplineName . "PrimaryPath' >";
 						foreach ($paths as $path) {
 							if ($path->disname == $characterDiscipline->name) {
-								$output .= "<option value='" . $path->id . "' " . selected($path->id, $defaultpp[$characterDiscipline->disid]->pathid, false) . ">" . vtm_formatOutput($path->name) . "</option>";
+								$output .= "<option value='" . $path->id . "' " . selected($path->id, $defaultpp[$characterDiscipline->disid]->pathid, false) . ">" . esc_html($path->name) . "</option>";
 							}
 						}
 						$output .= "</select>\n";
@@ -883,7 +883,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 				$output .= "<select name='"     . $disciplineName . "PrimaryPath' >";
 				foreach ($paths as $path) {
 					if ($path->disname == $characterDiscipline->name) {
-						$output .= "<option value='" . $path->id . "' " . selected($path->id, $characterDiscipline->pathid, false) . ">" . vtm_formatOutput($path->name) . "</option>";
+						$output .= "<option value='" . $path->id . "' " . selected($path->id, $characterDiscipline->pathid, false) . ">" . esc_html($path->name) . "</option>";
 					}
 				}
 				$output .= "</select>\n";
@@ -905,12 +905,12 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 		$disciplineBlock = "";
 		$disciplines = vtm_listDisciplines("Y");
 		foreach ($disciplines as $discipline) {
-			$disciplineBlock .= "<option value='" . $discipline->id . "'>" . vtm_formatOutput($discipline->name) . "</option>";
+			$disciplineBlock .= "<option value='" . $discipline->id . "'>" . esc_html($discipline->name) . "</option>";
 		}
 		$pathBlock = "";
 		$pathBlock .= "<option value='0'>No Value</option>";
 		foreach ($paths as $path) {
-			$pathBlock .= "<option value='" . $path->id . "'>" . vtm_formatOutput($path->name) . " (" . vtm_formatOutput($path->disname) . ")</option>";
+			$pathBlock .= "<option value='" . $path->id . "'>" . esc_html($path->name) . " (" . esc_html($path->disname) . ")</option>";
 		}
 
 		for ($i = 0; $i < 4; ) {
@@ -968,7 +968,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 				$output .= "<tr>";
 
 				$backgroundName = "background" . $backgroundCount;
-				$output .= "<td>" . vtm_formatOutput($characterBackground->name) . "</td>"
+				$output .= "<td>" . esc_html($characterBackground->name) . "</td>"
 					. "<td>" . vtm_printSelectCounter($backgroundName, $characterBackground->level, 1, 10) . "</td>"
 					. "<td>";
 				if ($characterBackground->has_sector == 'Y') {
@@ -986,7 +986,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 					$output .= "<input type='hidden' name='" . $backgroundName . "Sector' value='' />";
 				}
 				$output .= "</td>"
-					. "<td><input type='text' name='"     . $backgroundName . "Comment' value='" . vtm_formatOutput($characterBackground->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $backgroundName . "Comment' value='" . esc_html($characterBackground->comment)  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $backgroundName . "Delete' value='"  . $characterBackground->cbackgroundid . "' />"
 					.     "<input type='HIDDEN' name='"   . $backgroundName . "ID' value='"      . $characterBackground->cbackgroundid . "' /></td>";
 
@@ -999,7 +999,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$backgroundBlock = "";
 			foreach ($backgrounds as $background) {
-				$backgroundBlock .= "<option value='" . $background->id . "'>" . vtm_formatOutput($background->name) . "</option>";
+				$backgroundBlock .= "<option value='" . $background->id . "'>" . esc_html($background->name) . "</option>";
 			}
 
 			for ($i = 0; $i < 6; ) {
@@ -1046,9 +1046,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterMerits as $characterMerit) {
 				$meritName = "merit" . $meritCount;
-				$output .= "<tr><td>" . vtm_formatOutput($characterMerit->name) . " (" . $characterMerit->value . ")</td>"
+				$output .= "<tr><td>" . esc_html($characterMerit->name) . " (" . $characterMerit->value . ")</td>"
 					. "<td>" . vtm_printSelectCounter($meritName, $characterMerit->level, -7, 7) . "</td>"
-					. "<td><input type='text' name='"     . $meritName . "Comment' value='" . vtm_formatOutput($characterMerit->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $meritName . "Comment' value='" . esc_html($characterMerit->comment)  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $meritName . "Delete' value='"  . $characterMerit->cmeritid . "' />"
 					.     "<input type='HIDDEN' name='"   . $meritName . "ID' value='"      . $characterMerit->cmeritid . "' /></td></tr>";
 
@@ -1060,7 +1060,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$meritBlock = "";
 			foreach ($merits as $merit) {
-				$meritBlock .= "<option value='" . $merit->id . "'>" . vtm_formatOutput($merit->name) . " (" . $merit->value . ")</option>";
+				$meritBlock .= "<option value='" . $merit->id . "'>" . esc_html($merit->name) . " (" . $merit->value . ")</option>";
 			}
 
 			for ($i = 0; $i < 6; $i++) {
@@ -1102,9 +1102,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterComboDisciplines as $characterComboDiscipline) {
 				$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
-				$output .= "<tr><td>" . vtm_formatOutput($characterComboDiscipline->name) . "</td>"
+				$output .= "<tr><td>" . esc_html($characterComboDiscipline->name) . "</td>"
 					. "<td>Learned<input type='HIDDEN' name='" . $comboDisciplineName . "' value='0' /></td>"
-					. "<td><input type='text' name='"     . $comboDisciplineName . "Comment' value='" . vtm_formatOutput($characterComboDiscipline->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $comboDisciplineName . "Comment' value='" . esc_html($characterComboDiscipline->comment)  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $comboDisciplineName . "Delete' value='"  . $characterComboDiscipline->ccombo_disciplineid . "' />"
 					.     "<input type='HIDDEN' name='"   . $comboDisciplineName . "ID' value='"      . $characterComboDiscipline->ccombo_disciplineid . "' /></td></tr>";
 
@@ -1114,13 +1114,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$comboDisciplineBlock = "";
 			foreach ($comboDisciplines as $comboDiscipline) {
-				$comboDisciplineBlock .= "<option value='" . $comboDiscipline->id . "'>" .vtm_formatOutput( $comboDiscipline->name) . "</option>";
+				$comboDisciplineBlock .= "<option value='" . $comboDiscipline->id . "'>" .esc_html( $comboDiscipline->name) . "</option>";
 			}
 
 			$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
 			$output .= "<tr><td><select name='" . $comboDisciplineName . "SID'>" . $comboDisciplineBlock . "</select></td>"
 				. "<td><select name='" . $comboDisciplineName . "'><option value='-100'>Not Learned</option><option value='1'>Learned</option></select></td>"
-				. "<td><input type='text' name='" . vtm_formatOutput($comboDisciplineName) . "Comment' /></td>"
+				. "<td><input type='text' name='" . esc_html($comboDisciplineName) . "Comment' /></td>"
 				. "<td></td></tr>";
 			$comboDisciplineCount++;
 
@@ -1172,13 +1172,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterPaths as $characterPath) {
 				$pathName = "path" . $pathCount;
-				$output .= "<tr><td>" . vtm_formatOutput($characterPath->name) . " (" . vtm_formatOutput(substr($characterPath->disname, 0, 5))  .")";
+				$output .= "<tr><td>" . esc_html($characterPath->name) . " (" . esc_html(substr($characterPath->disname, 0, 5))  .")";
 				if (isset($characterMajikDisc[$characterPath->pathid])) {
 					$output .= " (Primary Path)";
 				} 
 				$output .= "</td><td>";
 				$output .= vtm_printSelectCounter($pathName, $characterPath->level, 1, 5) . "</td>";
-				$output .= "<td><input type='text' name='"     . $pathName . "Comment' value='" . vtm_formatOutput($characterPath->comment)  . "' /></td>"
+				$output .= "<td><input type='text' name='"     . $pathName . "Comment' value='" . esc_html($characterPath->comment)  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $pathName . "Delete' value='"  . $characterPath->cpathid . "' />"
 					.     "<input type='HIDDEN' name='"   . $pathName . "ID' value='"      . $characterPath->cpathid . "' /></td></tr>";
 
@@ -1190,7 +1190,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$pathBlock = "";
 			foreach ($paths as $path) {
-				$pathBlock .= "<option value='" . $path->id . "'>" . vtm_formatOutput($path->name) . " (" . vtm_formatOutput(substr($path->disname, 0, 5))  .")</option>";
+				$pathBlock .= "<option value='" . $path->id . "'>" . esc_html($path->name) . " (" . esc_html(substr($path->disname, 0, 5))  .")</option>";
 			}
 
 			for ($i = 0; $i < 2; $i++) {
@@ -1237,9 +1237,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterRituals as $characterRitual) {
 				$ritualName = "ritual" . $ritualCount;
-				$output .= "<tr><td>" . vtm_formatOutput($characterRitual->name) . " (" . vtm_formatOutput(substr($characterRitual->disname, 0, 5))  . " " . $characterRitual->ritlevel .")</td>"
+				$output .= "<tr><td>" . esc_html($characterRitual->name) . " (" . esc_html(substr($characterRitual->disname, 0, 5))  . " " . $characterRitual->ritlevel .")</td>"
 					. "<td>Learned<input type='HIDDEN' name='" . $ritualName . "' value='0' /></td>"
-					. "<td><input type='text' name='"     . $ritualName . "Comment' value='" . vtm_formatOutput($characterRitual->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $ritualName . "Comment' value='" . esc_html($characterRitual->comment)  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $ritualName . "Delete' value='"  . $characterRitual->critualid . "' />"
 					.     "<input type='HIDDEN' name='"   . $ritualName . "ID' value='"      . $characterRitual->critualid . "' /></td></tr>";
 
@@ -1251,7 +1251,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$ritualBlock = "";
 			foreach ($rituals as $ritual) {
-				$ritualBlock .= "<option value='" . $ritual->id . "'>" . vtm_formatOutput($ritual->name) . " (" . vtm_formatOutput(substr($ritual->disname, 0, 5))  . " " . $ritual->level . ")</option>";
+				$ritualBlock .= "<option value='" . $ritual->id . "'>" . esc_html($ritual->name) . " (" . esc_html(substr($ritual->disname, 0, 5))  . " " . $ritual->level . ")</option>";
 			}
 
 			for ($i = 0; $i < 5; $i++) {
@@ -1299,10 +1299,10 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterOffices as $characterOffice) {
 				$officeName = "office" . $officeCount;
-				$output .= "<tr><td>" . vtm_formatOutput($characterOffice->name) . "</td>"
-					. "<td>" . vtm_formatOutput($characterOffice->domainname) . "</td>"
+				$output .= "<tr><td>" . esc_html($characterOffice->name) . "</td>"
+					. "<td>" . esc_html($characterOffice->domainname) . "</td>"
 					. "<td>In office<input type='HIDDEN' name='" . $officeName . "' value='0' /></td>"
-					. "<td><input type='text' name='"     . $officeName . "Comment' value='" . vtm_formatOutput($characterOffice->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $officeName . "Comment' value='" . esc_html($characterOffice->comment)  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $officeName . "Delete' value='"  . $characterOffice->cofficeid . "' />"
 					.     "<input type='HIDDEN' name='"   . $officeName . "ID' value='"      . $characterOffice->cofficeid . "' /></td></tr>";
 				$i++;
@@ -1313,13 +1313,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$officeBlock = "";
 			foreach ($offices as $office) {
-				$officeBlock .= "<option value='" . $office->ID . "'>" . vtm_formatOutput($office->name) . "</option>";
+				$officeBlock .= "<option value='" . $office->ID . "'>" . esc_html($office->name) . "</option>";
 			}
 
 			$domainBlock = "";
 			$domains = vtm_listDomains();
 			foreach ($domains as $domain) {
-				$domainBlock .= "<option value='" . $domain->ID ."'>" . vtm_formatOutput($domain->name) . "</option>";
+				$domainBlock .= "<option value='" . $domain->ID ."'>" . esc_html($domain->name) . "</option>";
 			}
 
 			for ($i = 0; $i < 2; $i++) {
@@ -1393,17 +1393,17 @@ function vtm_processCharacterUpdate($characterID) {
 	
 	if (isset($characterWordPress) && $characterWordPress != "") {
 		if (!username_exists( $characterWordPress )) {
-			echo "<p class='vtm_warn'>Warning: Wordpress username $characterWordPress does not exist and will need to be created</p>";
+			echo "<p class='vtm_warn'>Warning: Wordpress username" . esc_html($characterWordPress) . " does not exist and will need to be created</p>";
 		}
 		if (vtm_wordpressid_used($characterWordPress, $characterID)) {
-			echo "<p class='vtm_error'>Error: Wordpress username $characterWordPress is used for another character</p>";
+			echo "<p class='vtm_error'>Error: Wordpress username " . esc_html($characterWordPress) . " is used for another character</p>";
 			$characterWordPress = "";
 		}
 	} else {
 			echo "<p class='vtm_warn'>Warning: No Wordpress username has been specified</p>";
 	}
 	if (vtm_charactername_used($characterName, $characterID)) {
-			echo "<p class='vtm_error'>Error: Character name " . vtm_formatOutput($characterName) . " already exists</p>";
+			echo "<p class='vtm_error'>Error: Character name " . esc_html($characterName) . " already exists</p>";
 			$characterName .= "(duplicate)";
 	}
 
@@ -1427,7 +1427,7 @@ function vtm_processCharacterUpdate($characterID) {
 		);
 		if (!$result && $result !== 0){
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update $characterName ($characterID)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($characterName) . " (" . esc_html($characterID) . ")</p>";
 			return $characterID;
 		}
 		
@@ -1442,7 +1442,7 @@ function vtm_processCharacterUpdate($characterID) {
 			$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "ROAD_OR_PATH WHERE ID = %s";
 			$pathname = $wpdb->get_var($wpdb->prepare($sql, $characterRoadOrPath));
 			
-			echo "<p class='vtm_error'>Error: You must enter a " . vtm_formatOutput($pathname) . " rating for the character</p>";
+			echo "<p class='vtm_error'>Error: You must enter a " . esc_html($pathname) . " rating for the character</p>";
 			$fail = 1;
 		}
 		if (!isset($_POST['Willpower']) || $_POST['Willpower'] == ""  || $_POST['Willpower'] == -100) {
@@ -1475,7 +1475,7 @@ function vtm_processCharacterUpdate($characterID) {
 		$wpdb->hide_errors();
 		$characterID = $wpdb->insert_id;
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> Character " . vtm_formatOutput($characterName) . " could not be added</p>";
+			echo "<p style='color:red'><b>Error:</b> Character " . esc_html($characterName) . " could not be added</p>";
 			$wpdb->print_error();
 			return $characterID;
 		} 
@@ -1493,13 +1493,13 @@ function vtm_processCharacterUpdate($characterID) {
 				array ('ID' => $tableIDs['profile']));
 	if (!$result && $result !== 0) {
 		$wpdb->print_error();
-		echo "<p style='color:red'>Could not update profile for " . vtm_formatOutput($characterName) . " ({$tableIDs['profile']})</p>";
+		echo "<p style='color:red'>Could not update profile for " . esc_html($characterName) . " (" . esc_html($tableIDs['profile']) . ")</p>";
 		return $characterID;
 	}
 	
 	// Update character generation template
 	if (empty(vtm_get_character_templateid($characterID))) {
-		echo "<p style='color:amber'>Adding template $characterTemplateID for old character</p>";
+		echo "<p style='color:amber'>Adding template " . esc_html($characterTemplateID) . " for old character</p>";
 		$result = $wpdb->insert($table_prefix . "CHARACTER_GENERATION",
 			array(
 				'CHARACTER_ID' => $characterID,
@@ -1517,7 +1517,7 @@ function vtm_processCharacterUpdate($characterID) {
 	}
 	if (!$result && $result !== 0) {
 		$wpdb->print_error();
-		echo "<p style='color:red'>Could not update character generation template for " . vtm_formatOutput($characterName) . "</p>";
+		echo "<p style='color:red'>Could not update character generation template for " . esc_html($characterName) . "</p>";
 		return $characterID;
 	}
 	
@@ -1546,7 +1546,7 @@ function vtm_processCharacterUpdate($characterID) {
 			$result = $wpdb->query($sql);
 			if (empty($sql) || (!$result && $result !== 0)) {
 				$wpdb->print_error();
-				echo "<p style='color:red'>Could not update " . vtm_formatOutput($currentStat) . " for " . vtm_formatOutput($characterName) . "</p>";
+				echo "<p style='color:red'>Could not update " . esc_html($currentStat) . " for " . esc_html($characterName) . "</p>";
 				return $characterID;
 			}
 		}
@@ -1934,7 +1934,7 @@ function vtm_deleteCharacter($characterID) {
 	$sqlOutput = "";
 
 	foreach ($characterNames as $characterName) {
-		$sqlOutput .= vtm_formatOutput($characterName->name) . " ";
+		$sqlOutput .= $characterName->name . " ";
 	}
 	
 	// Delete any pending XP spends for that character
@@ -2095,7 +2095,7 @@ function vtm_character_chargen_approval() {
 	global $wpdb;
 
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
+		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	
     $testListTable = new vtmclass_admin_charapproval_table();
@@ -2128,8 +2128,8 @@ function vtm_character_chargen_approval() {
 		
 		<?php vtm_render_chargen_approve_form($showform, isset($_REQUEST['character']) ? $_REQUEST['character'] : 0); ?>
 
-		<form id="chargen-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-			<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+		<form id="chargen-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+			<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 			<?php $testListTable->display() ?>
 		</form>
 	
@@ -2150,11 +2150,11 @@ function vtm_render_chargen_approve_form($showform, $characterID) {
 	
 	if ($showform) {
 	?>
-	<form id="new-approve-form" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
+	<form id="new-approve-form" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="characterID" value="<?php print esc_html($characterID); ?>" />
 		<table style='width:500px'>
 		<tr>
-			<td>Character: </td><td><?php print vtm_formatOutput($character); ?></td>
+			<td>Character: </td><td><?php print esc_html($character); ?></td>
 		</tr>
 		<tr>
 			<td>Denied Reason:  </td>
@@ -2232,14 +2232,14 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 									)
 								);
 					if ($wpdb->insert_id  == 0) {
-						echo "<p style='color:red'><b>Error:</b> XP spend not added to spent XP table for " . vtm_formatOutput($propername);
+						echo "<p style='color:red'><b>Error:</b> XP spend not added to spent XP table for " . esc_html($propername);
 						$failed = 1;
 					} 
 			
 				}
 				else {
 					$wpdb->print_error();
-					echo "<p style='color:red'>Could not update XP spend {$row->ITEMTABLE} " . vtm_formatOutput($propername) . " ({$row->CHARTABLE_ID})</p>";
+					echo "<p style='color:red'>Could not update XP spend " . esc_html($row->ITEMTABLE) . " " . esc_html($propername) . " (" . esc_html($row->CHARTABLE_ID) . ")</p>";
 					$failed = 1;
 				}
 			} else {
@@ -2255,7 +2255,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 				
 				$id = $wpdb->insert_id;
 				if ($id == 0) {
-					echo "<p style='color:red'><b>Error XP spend:</b> {$row->ITEMTABLE} {$row->ITEMNAME} could not be inserted</p>";
+					echo "<p style='color:red'><b>Error XP spend:</b> " . esc_html($row->ITEMTABLE) . " " . esc_html($row->ITEMNAME) . " could not be inserted</p>";
 				} else {
 					//echo "<p style='color:green'>Added XP spend {$row->ITEMTABLE} $propername (ID: {$wpdb->insert_id})</p>";
 					$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND WHERE ID = %d;";
@@ -2282,7 +2282,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 									)
 								);
 					if ($wpdb->insert_id  == 0) {
-						echo "<p style='color:red'><b>Error:</b> XP spend not added to spent XP table for {$row->ITEMNAME}";
+						echo "<p style='color:red'><b>Error:</b> XP spend not added to spent XP table for " . esc_html($row->ITEMNAME);
 						$failed = 1;
 					} 
 				}
@@ -2328,7 +2328,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 				}
 				else {
 					$wpdb->print_error();
-					echo "<p style='color:red'>Could not update freebie spend {$row->ITEMTABLE} {$row->ITEMNAME} ({$row->CHARTABLE_ID})</p>";
+					echo "<p style='color:red'>Could not update freebie spend " . esc_html($row->ITEMTABLE) . " " . esc_html($row->ITEMNAME) . " (" . esc_html($row->CHARTABLE_ID) . ")</p>";
 					$failed = 1;
 				}
 			} else {
@@ -2344,7 +2344,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 				
 				$id = $wpdb->insert_id;
 				if ($id == 0) {
-					echo "<p style='color:red'><b>Error on freebie spend :</b> {$row->ITEMTABLE} {$row->ITEMNAME} could not be inserted</p>";
+					echo "<p style='color:red'><b>Error on freebie spend :</b> " . esc_html($row->ITEMTABLE) . " " . esc_html($row->ITEMNAME) . " could not be inserted</p>";
 				} else {
 					//echo "<p style='color:green'>Added freebie spend {$row->ITEMTABLE} {$row->ITEMNAME} (ID: {$wpdb->insert_id})</p>";
 					$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "PENDING_FREEBIE_SPEND WHERE ID = %d;";
@@ -2423,7 +2423,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 		}
 		
 		if ($wpid == -1) {
-			echo "<p>No changes made to administrator account '$login'</p>";
+			echo "<p>No changes made to administrator account '" . esc_html($login) . "'</p>";
 		}
 		elseif ($wpid == 0) {
 			$pass        = wp_generate_password();
@@ -2445,7 +2445,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 				}
 				return;
 			} else {
-				echo "<p style='color:green'>User created : $login (ID: $user_id) with '$role' role </p>";
+				echo "<p style='color:green'>" . esc_html("User created : $login (ID: $user_id) with '$role' role") . "</p>";
 				//print_r($userdata);
 			}
 			
@@ -2464,11 +2464,11 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 			if ( is_wp_error( $result ) ) {
 				// There was an error, probably that user doesn't exist.
 				$failed = 1;
-				echo "<p style='color:red'>Failed to updated user '$login'</p>";
+				echo "<p style='color:red'>Failed to updated user '" . esc_html("$login") . "'</p>";
 				print_r($userdata);
 				return;
 			} else {
-				echo "<p style='color:green'>User updated : $login (ID: $wpid) with '$role' role </p>";
+				echo "<p style='color:green'>" . esc_html("User updated : $login (ID: $wpid) with '$role' role") . "</p>";
 			}	
 		}
 		
@@ -2537,17 +2537,17 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
           case 'CLAN':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
           case 'PLAYER':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
           case 'WORDPRESS_ID':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
          case 'TEMPLATE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
          case 'CONCEPT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
          case 'NOTE_TO_ST':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
          default:
                 return print_r($item,true); 
         }
@@ -2556,10 +2556,10 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
     function column_name($item){
         
         $actions = array(
-            'view'      => sprintf('<a href="%s?characterID=%s">View</a>',get_page_link(vtm_get_stlink_page('viewCharGen')),$item->ID),
-            'print'     => sprintf('<a href="%s?characterID=%s">Print</a>',get_page_link(vtm_get_stlink_page('printCharSheet')),$item->ID),
-            'approveit' => sprintf('<a href="?page=%s&amp;action=%s&amp;character=%s">Approve</a>',$_REQUEST['page'],'approveit',$item->ID),
-            'denyit'    => sprintf('<a href="?page=%s&amp;action=%s&amp;character=%s">Deny</a>',$_REQUEST['page'],'denyit',$item->ID),
+            'view'      => sprintf('<a href="%s?characterID=%s">View</a>',esc_url(get_page_link(vtm_get_stlink_page('viewCharGen')),$item->ID)),
+            'print'     => sprintf('<a href="%s?characterID=%s">Print</a>',esc_url(get_page_link(vtm_get_stlink_page('printCharSheet')),$item->ID)),
+            'approveit' => sprintf('<a href="?page=%s&amp;action=%s&amp;character=%s">Approve</a>',esc_url($_REQUEST['page'],'approveit',$item->ID)),
+            'denyit'    => sprintf('<a href="?page=%s&amp;action=%s&amp;character=%s">Deny</a>',esc_url($_REQUEST['page'],'denyit',$item->ID)),
         );
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
@@ -2677,7 +2677,7 @@ function vtm_email_chargen_denied($characterID, $denyMessage) {
 	$result = vtm_send_email($email, "Review Character Generation: $name", $userbody);
 	
 	if (!$result)
-		echo "<p>Failed to send email. Character Ref: $ref</p>";
+		echo "<p>Failed to send email. Character Ref: ". esc_html($ref) . "</p>";
 		
 	return $result;
 }
@@ -2731,7 +2731,7 @@ function vtm_email_chargen_approved($characterID, $wpid, $password) {
 	$result = vtm_send_email($email, "Character Approved: $name", $userbody);
 	
 	if (!$result)
-		echo "<p>Failed to send email. Character: $name, Player: $player</p>";
+		echo "<p>Failed to send email. " .esc_html("Character: $name, Player: $player") . "</p>";
 		
 	return $result;
 }
@@ -2789,7 +2789,7 @@ function vtm_purge_character($characterID, $name) {
 		//echo "<p>New Character ID is $newid</p>";
 		
 		if ($totalxp != 0 && !empty($newid)) {
-			echo "Transferring $totalxp XP from $characterID to $newid</p>";
+			echo esc_html("Transferring $totalxp XP from $characterID to $newid") . "</p>";
 			
 			$sql = "SELECT LAST_UPDATED FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'";
 			$awarded = $wpdb->get_var($wpdb->prepare($sql, $characterID));
@@ -2803,7 +2803,7 @@ function vtm_purge_character($characterID, $name) {
 			);
 			if (!$result && $result !== 0){
 				$wpdb->print_error();
-				echo "<p style='color:red'>Could not clear XP spends for $name ($characterID)</p>";
+				echo "<p style='color:red'>" . esc_html("Could not clear XP spends for $name ($characterID)") . "</p>";
 
 			}
 			
@@ -2820,7 +2820,7 @@ function vtm_purge_character($characterID, $name) {
 					array ('%d', '%s', '%d', '%d', '%d', '%s')
 			);
 			if ($wpdb->insert_id == 0) {
-				echo "<p style='color:red'><b>Error:</b>Could not add $totalxp XP to $name</p>";
+				echo "<p style='color:red'><b>Error:</b>" . esc_html("Could not add $totalxp XP to $name") . "</p>";
 				$wpdb->print_error();
 			} 
 			
@@ -2853,22 +2853,22 @@ function vtm_purge_character($characterID, $name) {
 			echo "<li>Also deleted the player as they have no characters assigned</li>";
 		}
 		elseif ($result === 0) {
-			echo "<li>Delete failed (0) for player $playerid</li>";
+			echo "<li>Delete failed (0) for player ". esc_html($playerid) . "</li>";
 			$ok = 0;
 			$wpdb->show_errors();
 			$wpdb->print_error();
 		}
 		else {
-			echo "<li>Delete failed for player $playerid</li>";
+			echo "<li>Delete failed for player ". esc_html($playerid) . "</li>";
 			$ok = 0;
 		}
 
 	}
 	
 	if ($ok)
-		$result = "<li>Deleted " . vtm_formatOutput($name) . ", ID: $characterID</li>";
+		$result = "<li>Deleted " . esc_html($name) . ", ID: $characterID</li>";
 	else
-		$result = "<li style='color:red;'>Failed to delete " . vtm_formatOutput($name) . ", ID: $characterID</li>";
+		$result = "<li style='color:red;'>Failed to delete " . esc_html($name) . ", ID: $characterID</li>";
 		
 	return $result;
 }
@@ -2888,13 +2888,13 @@ function vtm_purge_table($characterID, $table, $column) {
 			//echo "<li>Delete OK for $table for ID $characterID</li>";
 		}
 		elseif ($result === 0) {
-			echo "<li>Delete failed (0) for $table for ID $characterID</li>";
+			echo "<li>" . esc_html("Delete failed (0) for $table for ID $characterID") . "</li>";
 			$ok = 0;
 			$wpdb->show_errors();
 			$wpdb->print_error();
 		}
 		else {
-			echo "<li>Delete failed for $table for ID $characterID</li>";
+			echo "<li>" . esc_html("Delete failed for $table for ID $characterID") . "</li>";
 			$ok = 0;
 		}
 	} //else {

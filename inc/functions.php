@@ -1626,6 +1626,31 @@ function vtm_get_page_icon($id, $characterID, $idname, $icon, $title, $alt) {
 	return sprintf('&nbsp;<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),$iconurl);
 	
 }
+function vtm_page_icon_allowedhtml() {
+	
+	return array (
+		'a' => array (
+			'href' => array(),
+			'title' => array()
+		),
+		'img' => array(
+			'src' => array(),
+			'alt' => array(),
+			'title' => array()
+		)
+	);
+	
+}
+function vtm_menulist_allowedhtml() {
+	
+	return array (
+		'a' => array (
+			'href' => array(),
+			'title' => array()
+		),
+	);
+	
+}
 
 function vtm_report_max_input_vars($content) {
 	
