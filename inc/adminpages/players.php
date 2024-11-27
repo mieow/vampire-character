@@ -115,7 +115,7 @@ function vtm_render_player_add_form($addaction) {
 						foreach( vtm_get_player_type() as $pltype ) {
 							echo '<option value="' . $pltype->ID . '" ';
 							selected( $typeid, $pltype->ID );
-							echo '>' . vtm_formatOutput( $pltype->NAME ) . '</option>';
+							echo '>' . esc_html( $pltype->NAME ) . '</option>';
 						}
 					?>
 				</select>
@@ -127,7 +127,7 @@ function vtm_render_player_add_form($addaction) {
 						foreach( vtm_get_player_status() as $plstat ) {
 							echo '<option value="' . $plstat->ID . '" ';
 							selected( $activeid, $plstat->ID );
-							echo '>' . vtm_formatOutput( $plstat->NAME ) . '</option>';
+							echo '>' . esc_html( $plstat->NAME ) . '</option>';
 						}
 					?>
 				</select>
@@ -248,12 +248,12 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated " . vtm_formatOutput($name) . "</p>";
+			echo "<p style='color:green'>Updated " . esc_html($name) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to " . vtm_formatOutput($name) . "</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($name) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update " . vtm_formatOutput($name) . " ($id)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($name) . " ($id)</p>";
 		}
 	}
  	function deleteplayer($id) {
@@ -271,7 +271,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 		if (vtm_count($list) > 0) {
 			echo "<ul>";
 			foreach ($list as $char) {
-				echo "<li>" . vtm_formatOutput($char->NAME) . "</li>";
+				echo "<li>" . esc_html($char->NAME) . "</li>";
 			}
 			echo "</ul>";
 		}
@@ -315,9 +315,9 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
           case 'PLAYERTYPE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
           case 'PLAYERSTATUS':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
           case 'CHARACTERLIST':
 			$list = vtm_listCharactersForPlayer($item->ID);
 			$a = array();
@@ -344,7 +344,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -421,7 +421,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 				foreach( $this->filter_type as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_playertype, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -433,7 +433,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 				foreach( $this->filter_status as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_playerstatus, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -542,12 +542,12 @@ function vtm_player_delete($id) {
 		array ('ID' => $id)	
 	);
 	if ($result) 
-		echo "<p style='color:green'>Deleted player " . vtm_formatOutput($name) . "</p>";
+		echo "<p style='color:green'>Deleted player " . esc_html($name) . "</p>";
 	else if ($result === 0) 
-		echo "<p style='color:orange'>Character " . vtm_formatOutput($name) . " already deleted - no changes made</p>";
+		echo "<p style='color:orange'>Character " . esc_html($name) . " already deleted - no changes made</p>";
 	else {
 		$wpdb->print_error();
-		echo "<p style='color:red'>Could not delete " . vtm_formatOutput($name) . " ($id)</p>";
+		echo "<p style='color:red'>Could not delete " . esc_html($name) . " ($id)</p>";
 	}
 }
 ?>

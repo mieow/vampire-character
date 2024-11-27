@@ -258,10 +258,10 @@ function vtm_render_bgdata_add_form($addaction) {
 		<table style='width:500px'>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 		
 			<td>Grouping:  </td>
-			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print vtm_formatOutput($group); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print esc_html($group); ?>" size=20 /></td>
 		
 			<td>Cost Model:  </td>
 			<td>
@@ -274,7 +274,7 @@ function vtm_render_bgdata_add_form($addaction) {
 						foreach (vtm_get_costmodels() as $costmodel) {
 							print "<option value='{$costmodel->ID}' ";
 							selected($costmodel->ID, $costmodel_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -307,14 +307,14 @@ function vtm_render_bgdata_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=7><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=90 /></td> <!-- check sizes -->
+			<td colspan=7><input type="text" name="<?php print $type; ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> <!-- check sizes -->
 		</tr>
 		<tr>
 			<td colspan=8>Extended Background question (leave blank to exclude background from Extended Backgrounds):  </td>
 		</tr>
 		<tr>
 			<td colspan=8>
-				<textarea name="<?php print $type; ?>_question" rows="2" cols="100"><?php print vtm_formatOutput($bgquestion); ?></textarea>
+				<textarea name="<?php print $type; ?>_question" rows="2" cols="100"><?php print esc_html($bgquestion); ?></textarea>
 			</td>
 		</tr>
 		</table>
@@ -378,7 +378,7 @@ function vtm_render_sector_add_form($addaction) {
 		<table style='width:500px'>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 		
 			<td>Visible to Players: </td><td>
 				<select name="<?php print $type; ?>_visible">
@@ -390,7 +390,7 @@ function vtm_render_sector_add_form($addaction) {
 		<tr>
 		
 			<td>Description:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=100 /></td> <!-- check sizes -->
+			<td colspan=3><input type="text" name="<?php print $type; ?>_desc" value="<?php print esc_html($desc); ?>" size=100 /></td> <!-- check sizes -->
 
 		</tr>
 		</table>
@@ -465,7 +465,7 @@ function vtm_render_question_add_form($addaction) {
 		<table style='width:500px'>
 		<tr>
 			<td>Title:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_title" value="<?php print vtm_formatOutput($title); ?>" size=60 /></td>
+			<td colspan=3><input type="text" name="<?php print $type; ?>_title" value="<?php print esc_html($title); ?>" size=60 /></td>
 		
 			<td>Visible:</td>
 			<td><select name="<?php print $type; ?>_visible">
@@ -478,7 +478,7 @@ function vtm_render_question_add_form($addaction) {
 			<td>Question Order: </td>
 			<td><input type="text" name="<?php print $type; ?>_order" value="<?php print $order; ?>" size=4 /></td>
 			<td>Group: </td>
-			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print vtm_formatOutput($group); ?>" size=30 /></td>
+			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print esc_html($group); ?>" size=30 /></td>
 			<td>At Char Gen:</td>
 			<td><select name="<?php print $type; ?>_reqdatchargen">
 				<option value="N" <?php selected($chargen, "N"); ?>>No</option>
@@ -489,7 +489,7 @@ function vtm_render_question_add_form($addaction) {
 		<tr>
 			<td>Question:  </td>
 			<td colspan=5>
-				<textarea name="<?php print $type; ?>_question" rows="2" cols="100" ><?php print vtm_formatOutput($question); ?></textarea>
+				<textarea name="<?php print $type; ?>_question" rows="2" cols="100" ><?php print esc_html($question); ?></textarea>
 			</td> 
 
 		</tr>
@@ -524,11 +524,11 @@ function vtm_render_approve_form($showform, $id, $data) {
 		<input type="hidden" name="extbackground" value="<?php print $id; ?>" />
 		<table style='width:500px'>
 		<tr>
-			<td>Description: </td><td><?php print vtm_formatOutput($pending); ?></td>
+			<td>Description: </td><td><?php print esc_html($pending); ?></td>
 		</tr>
 		<tr>
 			<td>Denied Reason:  </td>
-			<td><textarea name="<?php print $type; ?>_denied"><?php print vtm_formatOutput($denied); ?></textarea></td>
+			<td><textarea name="<?php print $type; ?>_denied"><?php print esc_html($denied); ?></textarea></td>
 		</tr>
 		</table>
 		<input type="submit" name="do_deny" class="button-primary" value="Deny" />
@@ -711,7 +711,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item['NAME']),
+            esc_html($item['NAME']),
             $item['ID'],
             $this->row_actions($actions)
         );
@@ -815,10 +815,10 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 		
 		$row = 0;
 		foreach ($tempdata as $tablerow) {
-			$description = "<strong>" . vtm_formatOutput($tablerow->background) . " {$tablerow->LEVEL}";
-			$description .= ($tablerow->sector) ? " (" . vtm_formatOutput($tablerow->sector) . ")" : "";
-			$description .= ($tablerow->COMMENT) ? " (" . vtm_formatOutput($tablerow->COMMENT) . ")" : "";
-			$description .= "</strong><br /><span>" . vtm_formatOutput($tablerow->PENDING_DETAIL) . "</span>";
+			$description = "<strong>" . esc_html($tablerow->background) . " {$tablerow->LEVEL}";
+			$description .= ($tablerow->sector) ? " (" . esc_html($tablerow->sector) . ")" : "";
+			$description .= ($tablerow->COMMENT) ? " (" . esc_html($tablerow->COMMENT) . ")" : "";
+			$description .= "</strong><br /><span>" . esc_html($tablerow->PENDING_DETAIL) . "</span>";
 			$description = wpautop($description);
 			
 			$data[$row] = array (
@@ -829,7 +829,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 				'TABLE.DETAIL' => $tablerow->PENDING_DETAIL,
 				'DESCRIPTION'  => $description,
 				'COMMENT'      => $tablerow->COMMENT,
-				'TABLE.OLD'    => wpautop("<span>" . vtm_formatOutput($tablerow->APPROVED_DETAIL) . "</span>")
+				'TABLE.OLD'    => wpautop("<span>" . esc_html($tablerow->APPROVED_DETAIL) . "</span>")
 			);
 			$row++;
 		}
@@ -856,10 +856,10 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 		//echo "<p>SQL: $sql</p>";
 		//print_r($tempdata);
 		foreach ($tempdata as $tablerow) {
-			$description = "<strong>" . vtm_formatOutput($tablerow->merit);
-			$description .= ($tablerow->COMMENT) ? " (" . vtm_formatOutput($tablerow->COMMENT) . ")" : "";
+			$description = "<strong>" . esc_html($tablerow->merit);
+			$description .= ($tablerow->COMMENT) ? " (" . esc_html($tablerow->COMMENT) . ")" : "";
 			$description .= "</strong><br />
-				<span>" . wpautop(vtm_formatOutput($tablerow->PENDING_DETAIL)) . "</span>";
+				<span>" . wpautop(esc_html($tablerow->PENDING_DETAIL)) . "</span>";
 			
 			$data[$row] = array (
 				'ID'          => $row,
@@ -869,7 +869,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 				'TABLE.DETAIL' => $tablerow->PENDING_DETAIL,
 				'DESCRIPTION'  => $description,
 				'COMMENT'      => $tablerow->COMMENT,
-				'TABLE.OLD'    => wpautop("<span>" . vtm_formatOutput($tablerow->APPROVED_DETAIL) . "</span>")
+				'TABLE.OLD'    => wpautop("<span>" . esc_html($tablerow->APPROVED_DETAIL) . "</span>")
 			);
 			$row++;
 		}
@@ -894,9 +894,9 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 		//echo "<p>SQL: $sql</p>";
 		//print_r($tempdata);
 		foreach ($tempdata as $tablerow) {
-			$description = "<strong>" . vtm_formatOutput($tablerow->TITLE) . " (" . 
-				vtm_formatOutput($tablerow->GROUPING) . ")</strong><br />
-				<span>" . wpautop(vtm_formatOutput($tablerow->PENDING_DETAIL)) . "</span>";
+			$description = "<strong>" . esc_html($tablerow->TITLE) . " (" . 
+				esc_html($tablerow->GROUPING) . ")</strong><br />
+				<span>" . wpautop(esc_html($tablerow->PENDING_DETAIL)) . "</span>";
 			
 			$data[$row] = array (
 				'ID'          => $row,
@@ -906,7 +906,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 				'TABLE.DETAIL' => $tablerow->PENDING_DETAIL,
 				'DESCRIPTION'  => $description,
 				'COMMENT'      => '',
-				'TABLE.OLD'    => wpautop("<span>" . vtm_formatOutput($tablerow->APPROVED_DETAIL) . "</span>")
+				'TABLE.OLD'    => wpautop("<span>" . esc_html($tablerow->APPROVED_DETAIL) . "</span>")
 			);
 			$row++;
 		}
@@ -992,7 +992,7 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:red'>Cannot delete as this question has been filled in for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>". vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>". esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -1034,7 +1034,7 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$title = vtm_formatOutput($title);
+		$title = esc_html($title);
 		if ($wpdb->insert_id == 0) {
 			echo "<p style='color:red'><b>Error:</b> $title could not be inserted (";
 			$wpdb->print_error();
@@ -1066,7 +1066,7 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$title = vtm_formatOutput($title);
+		$title = esc_html($title);
 		if ($result) 
 			echo "<p style='color:green'>Updated $title</p>";
 		else if ($result === 0) 
@@ -1082,9 +1082,9 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
             case 'ORDERING':
                 return $item->$column_name;
             case 'GROUPING':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'BACKGROUND_QUESTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -1103,7 +1103,7 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->TITLE),
+            esc_html($item->TITLE),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -1233,7 +1233,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:red'>Cannot delete as this sector is in use for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -1270,7 +1270,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = vtm_formatOutput($name);
+		$name = esc_html($name);
 		if ($wpdb->insert_id == 0) {
 			echo "<p style='color:red'><b>Error:</b> $name could not be inserted (";
 			$wpdb->print_error();
@@ -1299,7 +1299,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = vtm_formatOutput($name);
+		$name = esc_html($name);
 		if ($result) 
 			echo "<p style='color:green'>Updated $name</p>";
 		else if ($result === 0) 
@@ -1313,7 +1313,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'VISIBLE':
                 return $item->$column_name;
            default:
@@ -1330,7 +1330,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -1457,7 +1457,7 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:red'>Cannot delete as this background is in use for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -1505,7 +1505,7 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = vtm_formatOutput($name);
+		$name = esc_html($name);
 		if ($wpdb->insert_id == 0) {
 			echo "<p style='color:red'><b>Error:</b> $name could not be inserted (";
 			$wpdb->print_error();
@@ -1540,7 +1540,7 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = vtm_formatOutput($name);
+		$name = esc_html($name);
 		if ($result) 
 			echo "<p style='color:green'>Updated $name</p>";
 		else if ($result === 0) 
@@ -1554,13 +1554,13 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'GROUPING':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'VISIBLE':
                 return $item->$column_name;
             case 'COSTMODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            default:
                 return print_r($item,true); 
         }
@@ -1575,7 +1575,7 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );

@@ -1609,7 +1609,7 @@ function vtm_get_page_link($id, $characterID, $idname, $name) {
 		return "(Error: check configuration for page settings) " . $name;
 	} else {
 		$link = get_page_link($id);
-		return sprintf('<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),vtm_formatOutput($name));
+		return sprintf('<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),esc_html($name));
 	}
 	
 }

@@ -135,7 +135,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			echo vtm_formatOutput($info['FromFull'], 1);
 			break;
 	    case "vtmto":
-			echo vtm_formatOutput($info['ToFull']);
+			echo esc_html($info['ToFull']);
 			break;
 		}
 	}
@@ -424,7 +424,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					$code, $address->PM_TYPE_ID)));
 				
 				echo "<option value='$value' " . selected($value, $to, false) . ">" . 
-				vtm_formatOutput($title) . "</option>";
+				esc_html($title) . "</option>";
 				
 				$addrcount++;
 			}
@@ -432,7 +432,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		if (count($extra) > 0) {
 			foreach ($extra as $title => $value) {
 				echo "<option value='$value' " . selected($value, $to, false) . ">" . 
-				vtm_formatOutput($title) . "</option>";
+				esc_html($title) . "</option>";
 			}
 		}
 		echo "</select>";
@@ -460,7 +460,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				$code, $address->PM_TYPE_ID)));
 
 			echo "<option value='$value' " . selected($value, $from, false) .
-				">" . vtm_formatOutput($title) . "</option>";
+				">" . esc_html($title) . "</option>";
 		}
 		echo "</select>";
 		echo "Select how you are contacting the recipient. ";
@@ -798,7 +798,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 							foreach (vtm_get_characters() as $ch) {
 								print "<option value='{$ch->ID}' ";
 								($ch->ID == $characterID) ? print "selected" : print "";
-								echo ">" . vtm_formatOutput($ch->NAME) . "</option>";
+								echo ">" . esc_html($ch->NAME) . "</option>";
 							}
 						?>
 					</select>
@@ -811,7 +811,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			}
 			?><tr>
 				<td>Public Name:</td>
-				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 				<td>Type:</td>
 				<td>
 					<select name="<?php print $type; ?>_pmtype">
@@ -819,7 +819,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 							foreach (vtm_get_pm_types() as $pmtype) {
 								print "<option value='{$pmtype->ID}' ";
 								($pmtype->ID == $pm_type_id) ? print "selected" : print "";
-								echo ">" . vtm_formatOutput($pmtype->NAME) . "</option>";
+								echo ">" . esc_html($pmtype->NAME) . "</option>";
 							}
 						?>
 					</select>
@@ -827,7 +827,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			</tr>
 			<tr>
 				<td>Code/Number:</td>
-				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print esc_html($code); ?>" size=20 /></td>
 				<td>Show on public addressbook:</td>
 				<td>
 					<select name="<?php print $type; ?>_visible">
@@ -838,7 +838,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			</tr>
 			<tr>
 				<td>Description:</td>
-				<td><textarea name="<?php print $type; ?>_desc"><?php print vtm_formatOutput($desc); ?></textarea></td> 
+				<td><textarea name="<?php print $type; ?>_desc"><?php print esc_html($desc); ?></textarea></td> 
 				<td>Default for sending messages:</td>
 				<td>
 					<select name="<?php print $type; ?>_default">
@@ -921,13 +921,13 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			<table>
 			<tr>
 				<td>Name:</td>
-				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 				<td>Code/Number:</td>
-				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print esc_html($code); ?>" size=20 /></td>
 			</tr>
 			<tr>
 				<td>Description:</td>
-				<td colspan=3><textarea name="<?php print $type; ?>_desc"><?php print vtm_formatOutput($desc); ?></textarea></td> 
+				<td colspan=3><textarea name="<?php print $type; ?>_desc"><?php print esc_html($desc); ?></textarea></td> 
 			</tr>
 			</table>
 			<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
@@ -1680,8 +1680,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					<header class="entry-header">
 					<<?php echo $subjecthtag; ?> class="entry-title"><?php echo get_the_title($postID); ?></<?php echo $subjecthtag; ?>>
 					<div class="vtm_pmhead">
-						<span class="vtm_pmhead_to">To: <?php echo vtm_formatOutput($info['ToFull']); ?></span>
-						<span class="vtm_pmhead_from">From: <?php echo vtm_formatOutput($info['FromFull']); ?></span>
+						<span class="vtm_pmhead_to">To: <?php echo esc_html($info['ToFull']); ?></span>
+						<span class="vtm_pmhead_from">From: <?php echo esc_html($info['FromFull']); ?></span>
 						<span class="vtm_pmhead_sent">Sent: <?php echo get_the_time( get_option( 'date_format' ) ); ?></span>
 						<span class="vtm_pmhead_subject">Subject: <?php echo get_the_title($postID); ?></span>
 					</div>
@@ -2112,11 +2112,11 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['address_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['address_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added '" . vtm_formatOutput($_REQUEST['address_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added '" . esc_html($_REQUEST['address_name']) . "' (ID: {$wpdb->insert_id})</p>";
 		}
 	}
  	function edit() {
@@ -2166,12 +2166,12 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated address " . vtm_formatOutput($_REQUEST['address_name']) . "</p>";
+			echo "<p style='color:green'>Updated address " . esc_html($_REQUEST['address_name']) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to " . vtm_formatOutput($_REQUEST['address_name']) . "</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($_REQUEST['address_name']) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update address " . vtm_formatOutput($_REQUEST['address_name']) . "</p>";
+			echo "<p style='color:red'>Could not update address " . esc_html($_REQUEST['address_name']) . "</p>";
 		}
 		 
 	}
@@ -2201,9 +2201,9 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'ISDEFAULT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -2213,7 +2213,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
    function column_name($item){
         
 		if (vtm_isST()) {
-			return vtm_formatOutput($item->NAME);
+			return esc_html($item->NAME);
 		} else {
 			$actions = array(
 				'edit'      => sprintf('<a href="?post_type=%s&amp;page=%s&amp;action=%s&amp;address=%s">Edit</a>','vtmpm', $_REQUEST['page'],'edit',$item->ID),
@@ -2221,14 +2221,14 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		   );
 			
 			return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-				vtm_formatOutput($item->NAME),
+				esc_html($item->NAME),
 				$item->ID,
 				$this->row_actions($actions)
 			);
 		}
     }
     function column_pm_code($item){
-        return vtm_formatOutput($item->PM_CODE);
+        return esc_html($item->PM_CODE);
     }
     function column_charactername($item){
 		$actions = array(
@@ -2237,14 +2237,14 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		);
 
 		return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-			vtm_formatOutput(vtm_pm_getchfromid($item->CHARACTER_ID)),
+			esc_html(vtm_pm_getchfromid($item->CHARACTER_ID)),
 			$item->ID,
 			$this->row_actions($actions)
 		);
     }
     function column_pm_type($item){
 		global $wpdb;
-        return vtm_formatOutput($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $item->PM_TYPE_ID)));
+        return esc_html($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $item->PM_TYPE_ID)));
     }
 
     function get_columns(){
@@ -2355,11 +2355,11 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['address_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['address_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . vtm_formatOutput($_REQUEST['address_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($_REQUEST['address_name']) . "' (ID: {$wpdb->insert_id})</p>";
 		}
 	}
  	function edit() {
@@ -2404,7 +2404,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -2449,12 +2449,12 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 			if ($item->PM_CODE != '') {
 				$linkurl = add_query_arg('code',$item->PM_CODE,$linkurl);
 			}
-			$actions['message'] = sprintf('<a href="%s">Send Message</a>',vtm_formatOutput($linkurl));
+			$actions['message'] = sprintf('<a href="%s">Send Message</a>',$linkurl);
 		}
 
 		
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($name),
+            esc_html($name),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -2462,24 +2462,24 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
    function column_addressbook($item){
 		// actions only available for own addressbook entries
 		if ($item->ADDRESSBOOK == 'Post Office') {
-			return vtm_formatOutput(get_option( 'vtm_pm_ic_postoffice_location'));
+			return esc_html(get_option( 'vtm_pm_ic_postoffice_location'));
 		} else {
-			return vtm_formatOutput($item->ADDRESSBOOK);
+			return esc_html($item->ADDRESSBOOK);
 		}
     }
    function column_description($item){
 		if ($item->ADDRESSBOOK == 'Public') {
-			return vtm_formatOutput($item->NAME);
+			return esc_html($item->NAME);
 		} 
 		elseif ($item->ADDRESSBOOK == 'Private') {
-			return vtm_formatOutput($item->NAME . " : " . $item->DESCRIPTION);
+			return esc_html($item->NAME . " : " . $item->DESCRIPTION);
 		} 
 		else {
-			return vtm_formatOutput($item->DESCRIPTION);
+			return esc_html($item->DESCRIPTION);
 		}
     }
     function column_pm_code($item){
-        return vtm_formatOutput($item->PM_CODE);
+        return esc_html($item->PM_CODE);
     }
     function column_pm_type($item){
 		global $wpdb;
@@ -2487,7 +2487,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 		if ($item->PM_TYPE_ID == 0) {
 			$type = "Post Office";
 		} else {
-			$type = vtm_formatOutput($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $item->PM_TYPE_ID)));
+			$type = esc_html($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $item->PM_TYPE_ID)));
 		}
 		
         return $type;

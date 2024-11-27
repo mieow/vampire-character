@@ -158,7 +158,7 @@ function vtm_render_temp_stat_page($stat) {
 			foreach ($reasons as $reason) {
 				echo "<option value='{$reason->id}'";
 				selected($reason->id, $reasonID);
-				echo ">" . vtm_formatOutput($reason->name) . "</option>";
+				echo ">" . esc_html($reason->name) . "</option>";
 			}
 		?>
 		</select>
@@ -178,9 +178,9 @@ function vtm_render_temp_stat_page($stat) {
 				?>
 				<tr>
 					<?php 
-					echo "<td><input type='hidden' name='charname[]' value='" . vtm_formatOutput($item->CHARACTERNAME) . "'/>
+					echo "<td><input type='hidden' name='charname[]' value='" . esc_html($item->CHARACTERNAME) . "'/>
 						<input type='hidden' name='charID[]' value='{$item->ID}'/>
-						" . vtm_formatOutput($item->CHARACTERNAME) . "
+						" . esc_html($item->CHARACTERNAME) . "
 						<span style='color:silver'>(ID:{$item->ID})</span></td>";
 					echo "<td><input type='hidden' name='current[]' value='{$item->CURRENTSTAT}'/>
 						{$item->CURRENTSTAT}</td>";
@@ -188,7 +188,7 @@ function vtm_render_temp_stat_page($stat) {
 						{$item->$maxcol}</td>";
 					echo "<td><select name='temp_reason[]'>\n";
 					foreach ($reasons as $reason) {
-						echo "<option value='{$reason->id}'>" . vtm_formatOutput($reason->name) . "</option>\n";
+						echo "<option value='{$reason->id}'>" . esc_html($reason->name) . "</option>\n";
 					}
 					echo "</select></td>\n";
 					echo "<td><input type='text' name='amount[]' value='' size=4 /></td>";

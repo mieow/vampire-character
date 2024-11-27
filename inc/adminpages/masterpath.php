@@ -57,7 +57,7 @@ function vtm_render_master_path_page(){
 					$wpdb->print_error();
 					echo ")</p>";
 				} else {
-					echo "<p style='color:green'>Path change made for character $characterID</p>";
+					echo "<p style='color:green'>Path change made for character " . esc_html($characterID) . "</p>";
 					vtm_touch_last_updated($characterID);
 				}
 				
@@ -75,9 +75,9 @@ function vtm_render_master_path_page(){
   ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="<?php print $type ?>-filter" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="tab" value="<?php print $type ?>" />
+	<form id="<?php print esc_html($type) ?>-filter" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="tab" value="<?php print esc_html($type) ?>" />
 		
 		<?php $datatable->display(); ?>
 		
@@ -92,9 +92,9 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
    function column_default($item, $column_name){
         switch($column_name){
             case 'PATHNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'LEVEL':
                 return $item->$column_name;
            default:
@@ -105,7 +105,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 	function column_reason($item) {
 		$output = "<select name='path_reason[{$item->ID}]'>";
 		foreach ($this->pathreasons as $reason) {
-			$output .= "<option value='{$reason->id}' " . selected($reason->id, $this->defaultreason,false) . ">" . vtm_formatOutput($reason->name) . "</option>\n";
+			$output .= "<option value='{$reason->id}' " . selected($reason->id, $this->defaultreason,false) . ">" . esc_html($reason->name) . "</option>\n";
 		}		
 		$output .= "</select>";
 	
@@ -148,7 +148,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 				foreach( $this->filter_player_status as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_player_status, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -159,7 +159,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 				foreach( $this->filter_character_type as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_character_type, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -170,7 +170,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 				foreach( $this->filter_character_status as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_character_status, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -201,7 +201,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 			<tfoot><tr><?php $this->print_column_headers( false ); ?></tr></tfoot>
 			<tbody id="the-list"<?php
 				if ( $singular ) {
-					echo " data-wp-lists='list:$singular'";
+					echo " data-wp-lists='list:" . esc_html($singular) . "'";
 				} ?>>
 				<?php $this->display_rows_or_placeholder(); ?>
 			</tbody>

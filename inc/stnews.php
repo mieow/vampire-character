@@ -121,7 +121,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 			if (count($recipients) > 0) {
 				echo "<ul>";
 				foreach ($recipients as $rec) {
-					echo "<li>" . vtm_formatOutput($rec->name) . " (" . vtm_formatOutput($rec->status) . ")</li>";
+					echo "<li>" . esc_html($rec->name) . " (" . esc_html($rec->status) . ")</li>";
 				}
 				echo "</ul>";
 			} else {

@@ -26,19 +26,19 @@ function vtm_render_generation_data() {
 				$err = 0;
 				if (!is_numeric($bloodpools[$i]) || $bloodpools[$i] <= 0) {
 					$err = 1;
-					echo "<p style='color:red'>Bloodpool for {$names[$i]}th generation should be a number greater than zero</p>";
+					echo "<p style='color:red'>Bloodpool for " . esc_html($names[$i]) . "th generation should be a number greater than zero</p>";
 				}
 				if (!is_numeric($perround[$i]) || $perround[$i] <= 0) {
 					$err = 1;
-					echo "<p style='color:red'>Blood per Round for {$names[$i]}th generation should be a number greater than zero</p>";
+					echo "<p style='color:red'>Blood per Round for " . esc_html($names[$i]) . "th generation should be a number greater than zero</p>";
 				}
 				if (!is_numeric($maxrating[$i]) || $maxrating[$i] <= 0) {
 					$err = 1;
-					echo "<p style='color:red'>The maximum rating for {$names[$i]}th generation should be a number greater than zero</p>";
+					echo "<p style='color:red'>The maximum rating for " . esc_html($names[$i]) . "th generation should be a number greater than zero</p>";
 				}
 				if (!is_numeric($maxdisc[$i]) || $maxdisc[$i] <= 0) {
 					$err = 1;
-					echo "<p style='color:red'>The maximum Discipline rating for {$names[$i]}th generation should be a number greater than zero</p>";
+					echo "<p style='color:red'>The maximum Discipline rating for " . esc_html($names[$i]) . "th generation should be a number greater than zero</p>";
 				}
 			
 				// Update/Add
@@ -64,7 +64,7 @@ function vtm_render_generation_data() {
 						);
 						$id = $wpdb->insert_id;
 						if ($id == 0) {
-							echo "<p style='color:red'>Could not add {$names[$i]}th generation ({$generations[$i]})</p>";
+							echo "<p style='color:red'>Could not add " . esc_html($names[$i]) . "th generation (" . esc_html($generations[$i]) . ")</p>";
 						}
 					} else {
 						// update
@@ -81,12 +81,12 @@ function vtm_render_generation_data() {
 									)
 						);
 						if ($result) 
-							echo "<p style='color:green'>Updated {$names[$i]}th generation</p>";
+							echo "<p style='color:green'>Updated " . esc_html($names[$i]) . "th generation</p>";
 						else if ($result === 0) 
 							echo "";
 						else {
 							$wpdb->print_error();
-							echo "<p style='color:red'>Could not update {$names[$i]}th generation ({$generations[$i]})</p>";
+							echo "<p style='color:red'>Could not update " . esc_html($names[$i]) . "th generation (" . esc_html($generations[$i]) . ")</p>";
 						}
 					}
 				}
@@ -128,26 +128,26 @@ function vtm_render_generation_data() {
 			$class = $vtmglobal['config']->DEFAULT_GENERATION_ID == $data->ID ? "class='defaultgen'" : "";
 			?>
 			<tr>
-				<td <?php echo $class; ?>>
-					<input type="hidden" name="genID[]" value="<?php echo $data->ID; ?>" size=4>
-					<input type="hidden" name="genName[]" value="<?php echo vtm_formatOutput($data->NAME); ?>" size=4>
-					<?php echo $data->NAME; ?>th
+				<td <?php echo esc_html($class); ?>>
+					<input type="hidden" name="genID[]" value="<?php echo esc_html($data->ID); ?>" size=4>
+					<input type="hidden" name="genName[]" value="<?php echo esc_html($data->NAME); ?>" size=4>
+					<?php echo esc_html($data->NAME); ?>th
 				</td>
-				<td <?php echo $class; ?>>
-					<input type="number" name="bloodpool[]" value="<?php echo $data->BLOODPOOL; ?>" size=4>
+				<td <?php echo esc_html($class); ?>>
+					<input type="number" name="bloodpool[]" value="<?php echo esc_html($data->BLOODPOOL); ?>" size=4>
 				</td>
-				<td <?php echo $class; ?>>
-					<input type="number" name="bloodperrnd[]" value="<?php echo $data->BLOOD_PER_ROUND; ?>" size=4>
+				<td <?php echo esc_html($class); ?>>
+					<input type="number" name="bloodperrnd[]" value="<?php echo esc_html($data->BLOOD_PER_ROUND); ?>" size=4>
 				</td>
-				<td <?php echo $class; ?>>
-					<input type="number" name="maxrating[]" value="<?php echo $data->MAX_RATING; ?>" size=4>
+				<td <?php echo esc_html($class); ?>>
+					<input type="number" name="maxrating[]" value="<?php echo esc_html($data->MAX_RATING); ?>" size=4>
 				</td>
-				<td <?php echo $class; ?>>
-					<input type="number" name="maxdisc[]" value="<?php echo $data->MAX_DISCIPLINE; ?>" size=4>
+				<td <?php echo esc_html($class); ?>>
+					<input type="number" name="maxdisc[]" value="<?php echo esc_html($data->MAX_DISCIPLINE); ?>" size=4>
 				</td>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 					<?php if ($data->ID != $vtmglobal['config']->DEFAULT_GENERATION_ID) { ?>
-					<input type="checkbox" name="delete[<?php echo $data->ID; ?>]">
+					<input type="checkbox" name="delete[<?php echo esc_html($data->ID); ?>]">
 					<?php } ?>
 				</td>
 			</tr>
@@ -155,23 +155,23 @@ function vtm_render_generation_data() {
 		}
 	?>
 			<tr>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 					<input type="hidden" name="genID[]" value="0" size=4>
 					<input type="text" name="genName[]" value="" size=4>th
 				</td>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 					<input type="number" name="bloodpool[]" value="" size=4>
 				</td>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 					<input type="number" name="bloodperrnd[]" value="" size=4>
 				</td>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 					<input type="number" name="maxrating[]" value="" size=4>
 				</td>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 					<input type="number" name="maxdisc[]" value="" size=4>
 				</td>
-				<td <?php echo $class; ?>>
+				<td <?php echo esc_html($class); ?>>
 				</td>
 			</tr>
 	</table>

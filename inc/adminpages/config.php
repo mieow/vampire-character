@@ -134,7 +134,7 @@ function vtm_render_config_general() {
 					foreach (vtm_get_domains() as $domain) {
 						echo '<option value="' . $domain->ID . '" ';
 						selected( $options[0]->HOME_DOMAIN_ID, $domain->ID );
-						echo '>' . vtm_formatOutput($domain->NAME) . '</option>';
+						echo '>' . esc_html($domain->NAME) . '</option>';
 					}
 					?>
 				</select>
@@ -148,7 +148,7 @@ function vtm_render_config_general() {
 					foreach (vtm_get_sects() as $sect) {
 						echo '<option value="' . $sect->ID . '" ';
 						selected( $options[0]->HOME_SECT_ID, $sect->ID );
-						echo '>' . vtm_formatOutput($sect->NAME) . '</option>';
+						echo '>' . esc_html($sect->NAME) . '</option>';
 					}
 					?>
 				</select>
@@ -175,7 +175,7 @@ function vtm_render_config_general() {
 					foreach (vtm_get_backgrounds() as $bg) {
 						echo '<option value="' . $bg->ID . '" ';
 						selected( $options[0]->DISPLAY_BACKGROUND_IN_PROFILE, $bg->ID );
-						echo '>' . vtm_formatOutput($bg->NAME) , '</option>';
+						echo '>' . esc_html($bg->NAME) . '</option>';
 					}
 					?>
 				</select>
@@ -188,7 +188,7 @@ function vtm_render_config_general() {
 					foreach (vtm_get_generations() as $gen) {
 						echo '<option value="' . $gen->ID . '" ';
 						selected( $options[0]->DEFAULT_GENERATION_ID, $gen->ID );
-						echo '>' . vtm_formatOutput($gen->NAME) . '</option>';
+						echo '>' . esc_html($gen->NAME) . '</option>';
 					}
 					?>
 				</select>
@@ -278,15 +278,15 @@ function vtm_link_cb($args) {
 	}				
 
 	?>
-	<input type='hidden' name='<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>_newpage]' value='<?php echo vtm_formatOutput($newpage); ?>'>
+	<input type='hidden' name='<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>_newpage]' value='<?php echo esc_html($newpage); ?>'>
 	<select id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>]">
-	<option value='0'>[New Page: <?php echo vtm_formatOutput($newpage); ?>]</option>
+	<option value='0'>[New Page: <?php echo esc_html($newpage); ?>]</option>
 	<?php
 		$match = 0;
 		foreach ( $pagetitles as $pageid => $pagetitle ) {
 			echo "<option value='$pageid' ";
 			selected($pageid, $option);
-			echo ">" . vtm_formatOutput($pagetitle) . "</option>";
+			echo ">" . esc_html($pagetitle) . "</option>";
 		}								
 	?>
 	</select>
@@ -371,7 +371,7 @@ function vtm_render_config_chargen() {
 						foreach (vtm_listRoadsOrPaths() as $path) {
 							print "<option value='{$path->ID}' ";
 							($path->ID == $path_id) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($path->name) . "</option>";
+							echo ">" . esc_html($path->name) . "</option>";
 						}
 					?>
 				</select>
@@ -1127,10 +1127,10 @@ function vtm_render_config_database() {
 				<?php 
 				$list = vtm_listDeletedCharacters();
 				foreach ($list as $chID => $row) {
-					echo "<tr><td>$chID</td><td>" . vtm_formatOutput($row->NAME) . "</td>";
-					echo "<td>" . vtm_formatOutput($row->PLAYER) . "</td><td>{$row->LAST_UPDATED}</td><td>";
+					echo "<tr><td>$chID</td><td>" . esc_html($row->NAME) . "</td>";
+					echo "<td>" . esc_html($row->PLAYER) . "</td><td>{$row->LAST_UPDATED}</td><td>";
 					echo "<input type='checkbox' name='characters[{$chID}]' " . checked( 1, 1, 0) . ">";
-					echo "<input type='hidden'   name='names[{$chID}]' value='" . vtm_formatOutput($row->NAME) . "'>";
+					echo "<input type='hidden'   name='names[{$chID}]' value='" . esc_html($row->NAME) . "'>";
 					echo "</td></tr>";
 				}
 				?>
