@@ -31,9 +31,9 @@ function vtm_render_meritflaw_page($type){
    ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="<?php print $type ?>-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="tab" value="<?php print $type ?>" />
+	<form id="<?php print esc_html($type) ?>-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="tab" value="<?php print esc_html($type) ?>" />
  		<?php $testListTable[$type]->display() ?>
 	</form>
 
@@ -66,8 +66,8 @@ function vtm_render_rituals_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="rituals-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="rituals-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="ritual" />
  		<?php $testListTable["rituals"]->display() ?>
 	</form>
@@ -94,8 +94,8 @@ function vtm_render_sourcebook_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="books-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="books-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="book" />
  		<?php $testListTable["books"]->display() ?>
 	</form>
@@ -140,7 +140,7 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		/* print_r($data); */
 		
@@ -184,19 +184,19 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 	$current_url = remove_query_arg( 'action', $current_url );
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
-			<td><?php print ucfirst($type); ?> Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td> <!-- check sizes -->
+			<td><?php print esc_html(ucfirst($type)); ?> Name:  </td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td> <!-- check sizes -->
 			<td>Grouping:   </td>
-			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print vtm_formatOutput($group); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_group" value="<?php print esc_html($group); ?>" size=20 /></td>
 			<td>Visible to Players: </td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
@@ -205,21 +205,21 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 		<tr>
 			<td>Sourcebook: </td>
 			<td>
-				<select name="<?php print $type; ?>_sourcebook">
+				<select name="<?php print esc_html($type); ?>_sourcebook">
 					<?php
 						foreach ($booklist as $book) {
-							print "<option value='{$book->ID}' ";
+							print "<option value='" . esc_html($book->ID) . "' ";
 							($book->ID == $bookid) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($book->NAME) . "</option>";
+							echo ">" . esc_html($book->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Page Number: </td>
-			<td><input type="number" name="<?php print $type; ?>_page_number" value="<?php print $pagenum; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_page_number" value="<?php print esc_html($pagenum); ?>" /></td>
 			<td>Multiple?: </td>
 			<td>
-				<select name="<?php print $type; ?>_multiple">
+				<select name="<?php print esc_html($type); ?>_multiple">
 					<option value="N" <?php selected($multiple, "N"); ?>>No</option>
 					<option value="Y" <?php selected($multiple, "Y"); ?>>Yes</option>
 				</select>
@@ -227,11 +227,11 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 		</tr>
 		<tr>
 			<td>Freebie Point Cost: </td>
-			<td><input type="number" name="<?php print $type; ?>_cost" value="<?php print $cost; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_cost" value="<?php print esc_html($cost); ?>" /></td>
 			<td>Experience Cost: </td>
-			<td><input type="number" name="<?php print $type; ?>_xp_cost" value="<?php print $xpcost; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_xp_cost" value="<?php print esc_html($xpcost); ?>" /></td>
 			<td>Has Specialisation?: </td><td>
-				<select name="<?php print $type; ?>_has_specialisation">
+				<select name="<?php print esc_html($type); ?>_has_specialisation">
 					<option value="N" <?php selected($spec, "N"); ?>>No</option>
 					<option value="Y" <?php selected($spec, "Y"); ?>>Yes</option>
 				</select>
@@ -240,13 +240,13 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 		<tr>
 			<td colspan=4></td>
 			<td>Display in public profile: </td><td>
-				<select name="<?php print $type; ?>_profile">
+				<select name="<?php print esc_html($type); ?>_profile">
 					<option value="0" <?php selected($profile, "0"); ?>>Not displayed</option>
 					<?php
 						foreach (vtm_get_profile_display() as $opt) {
-							print "<option value='{$opt->ID}' ";
+							print "<option value='" . esc_html($opt->ID) . "' ";
 							($opt->ID == $profile) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($opt->NAME) . "</option>";
+							echo ">" . esc_html($opt->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -254,12 +254,12 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 		</tr>
 		<tr>
 			<td>Description: </td>
-			<td colspan=2><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=50 /></td>
+			<td colspan=2><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=50 /></td>
 			<td>Extended Background Question: </td>
-			<td colspan=2><input type="text" name="<?php print $type; ?>_question" value="<?php print vtm_formatOutput($question); ?>" size=50 /></td>
+			<td colspan=2><input type="text" name="<?php print esc_html($type); ?>_question" value="<?php print esc_html($question); ?>" size=50 /></td>
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save <?php print ucfirst($type); ?>" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save <?php print esc_html(ucfirst($type)); ?>" />
 	</form>
 	
 	<?php
@@ -305,7 +305,7 @@ function vtm_render_ritual_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		/* print_r($data); */
 		
@@ -344,17 +344,17 @@ function vtm_render_ritual_add_form($addaction) {
 	$current_url = remove_query_arg( 'action', $current_url );
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
-			<td><?php print ucfirst($type); ?> Name:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=60 /></td> <!-- check sizes -->
+			<td><?php print esc_html(ucfirst($type)); ?> Name:  </td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=60 /></td> <!-- check sizes -->
 			<td>Visible to Players: </td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select></td>
@@ -365,12 +365,12 @@ function vtm_render_ritual_add_form($addaction) {
 			<td>
 				<?php $disciplines = vtm_get_disciplines();
 				if (count($disciplines) > 0) { ?>
-				<select name="<?php print $type; ?>_disc">
+				<select name="<?php print esc_html($type); ?>_disc">
 					<?php
 						foreach ($disciplines as $disc) {
-							print "<option value='{$disc->ID}' ";
+							print "<option value='" . esc_html($disc->ID) . "' ";
 							($disc->ID == $disciplineid) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($disc->NAME) . "</option>";
+							echo ">" . esc_html($disc->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -379,38 +379,38 @@ function vtm_render_ritual_add_form($addaction) {
 				} ?>
 			</td> 
 			<td>Level:  </td>
-			<td><input type="text" name="<?php print $type; ?>_level" value="<?php print $level; ?>" size=3 /></td> <!-- check sizes -->
+			<td><input type="text" name="<?php print esc_html($type); ?>_level" value="<?php print esc_html($level); ?>" size=3 /></td> <!-- check sizes -->
 			<td>Experience Cost: </td>
-			<td><input type="number" name="<?php print $type; ?>_cost" value="<?php print $cost; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_cost" value="<?php print esc_html($cost); ?>" /></td>
 		</tr>
 		<tr>
 			<td>Sourcebook: </td>
 			<td>
-				<select name="<?php print $type; ?>_sourcebook">
+				<select name="<?php print esc_html($type); ?>_sourcebook">
 					<?php
 						foreach ($booklist as $book) {
-							print "<option value='{$book->ID}' ";
+							print "<option value='" . esc_html($book->ID) . "' ";
 							($book->ID == $bookid) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($book->NAME) . "</option>";
+							echo ">" . esc_html($book->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			
 			<td>Page Number: </td>
-			<td><input type="number" name="<?php print $type; ?>_page_number" value="<?php print $pagenum; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_page_number" value="<?php print esc_html($pagenum); ?>" /></td>
 			<td colspan=2>&nbsp;</td>
 		</tr>
 		<tr>
-			<td>Dicepool: </td><td><input type="text" name="<?php print $type; ?>_dicepool" value="<?php print $dicepool; ?>" /></td>
-			<td>Difficulty: </td><td><input type="number" name="<?php print $type; ?>_difficulty" value="<?php print $diff; ?>" /></td>
+			<td>Dicepool: </td><td><input type="text" name="<?php print esc_html($type); ?>_dicepool" value="<?php print esc_html($dicepool); ?>" /></td>
+			<td>Difficulty: </td><td><input type="number" name="<?php print esc_html($type); ?>_difficulty" value="<?php print esc_html($diff); ?>" /></td>
 			<td colspan=2>&nbsp;</td>
 		</tr>
 		<tr>
-			<td>Description: </td><td colspan=5><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=120 /></td>
+			<td>Description: </td><td colspan=5><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=120 /></td>
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save <?php print ucfirst($type); ?>" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save <?php print esc_html(ucfirst($type)); ?>" />
 	</form>
 	
 	<?php
@@ -442,7 +442,7 @@ function vtm_render_book_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		/* print_r($data); */
 		
@@ -465,29 +465,29 @@ function vtm_render_book_add_form($addaction) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table style='width:500px'>
 		<tr>
-			<td><?php print ucfirst($type); ?> Code:  </td>
-			<td><input type="text" name="<?php print $type; ?>_code" value="<?php print vtm_formatOutput($code); ?>" size=16 /></td> <!-- check sizes -->
+			<td><?php print esc_html(ucfirst($type)); ?> Code:  </td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_code" value="<?php print esc_html($code); ?>" size=16 /></td> <!-- check sizes -->
 		</tr>
 		<tr>
-			<td><?php print ucfirst($type); ?> Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=60 /></td> <!-- check sizes -->
+			<td><?php print esc_html(ucfirst($type)); ?> Name:  </td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=60 /></td> <!-- check sizes -->
 		</tr>
 		<tr>
 			<td>Visible to Players: </td><td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select></td>
 
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save <?php print ucfirst($type); ?>" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save <?php print esc_html(ucfirst($type)); ?>" />
 	</form>
 	
 	<?php
@@ -510,11 +510,11 @@ function vtm_merit_input_validation($type) {
 		if ($_REQUEST['action'] == 'add') {
 			$sql = $wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "MERIT
 				WHERE NAME = %s", $_REQUEST[$type . '_name']);
-			$match = $wpdb->get_var($sql);
+			$match = $wpdb->get_var("$sql");
 			//echo "<p>Result: $match, SQL: $sql</p>";
 			if (isset($match) && $match > 0) {
 				$doaction = "fix-$type";
-				echo "<p style='color:red'>ERROR: {$_REQUEST[$type . '_name']} already exists</p>";
+				echo "<p style='color:red'>ERROR: " . esc_html($_REQUEST[$type . '_name']) . " already exists</p>";
 			}
 		}
 
@@ -681,21 +681,21 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 		$sql = "select characters.NAME 
 			from " . VTM_TABLE_PREFIX . "CHARACTER_MERIT charmerits , " . VTM_TABLE_PREFIX . "CHARACTER characters
 			where charmerits.MERIT_ID = %d and charmerits.CHARACTER_ID = characters.ID;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 		if ($isused) {
-			echo "<p style='color:red'>Cannot delete as this {$this->type} is being used in the following characters:";
+			echo "<p style='color:red'>Cannot delete as this " . esc_html($this->type) . " is being used in the following characters:";
 			echo "<ul>";
 			foreach ($isused as $character)
-				echo "<li style='color:red'>" . stripslashes($character->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 			echo "</ul></p>";
 		} else {
 			$sql = "delete from " . VTM_TABLE_PREFIX . "MERIT where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted item $selectedID</p>";
+			echo "<p style='color:green'>Deleted item " . esc_html($selectedID) . "</p>";
 		}
 	}
  	function showhide_merit($selectedID, $showhide) {
@@ -717,12 +717,12 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 		);
 		
 		if ($result) 
-			echo "<p style='color:green'>" . ucfirst($showhide) . " item $selectedID successful</p>";
+			echo "<p style='color:green'>" . esc_html(ucfirst($showhide)) . " item " . esc_html($selectedID) . " successful</p>";
 		else if ($result === 0)
-			echo "<p style='color:orange'>Item $selectedID has not been changed</p>";
+			echo "<p style='color:orange'>Item " . esc_html($selectedID) . " has not been changed</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Item $selectedID could not be updated</p>";
+			echo "<p style='color:red'>Item " . esc_html($selectedID) . " could not be updated</p>";
 		}
 	}
 	
@@ -771,11 +771,11 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($meritname) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($meritname) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . vtm_formatOutput($meritgroup) . " merit/flaw '" . stripslashes($meritname) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($meritgroup) . " merit/flaw '" . esc_html($meritname) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_merit($meritid, $meritname, $meritgroup, $sourcebookid, $pagenum,
@@ -811,21 +811,21 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated " . vtm_formatOutput($meritname) . "</p>";
+			echo "<p style='color:green'>Updated " . esc_html($meritname) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to " . vtm_formatOutput($meritname) . "</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($meritname) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update " . vtm_formatOutput($meritname) . " ($meritid)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($meritname) . " (" . esc_html($meritid) . ")</p>";
 		}
 	}
    
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'GROUPING':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'COST':
                 return $item->$column_name;
              case 'XP_COST':
@@ -833,7 +833,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
             case 'PAGE_NUMBER':
                 return $item->$column_name;
             case 'SOURCEBOOK':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            default:
                 return print_r($item,true); 
         }
@@ -851,7 +851,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -920,7 +920,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
     
     function process_bulk_action() {
         
-		/* echo "<p>Bulk action " . $this->current_action() . ", currently on tab {$_REQUEST['tab']} and will do action if {$this->type}.</p>"; */
+		/* echo "<p>Bulk action " . $this->current_action() . ", currently on tab {$_REQUEST['tab']} and will do action if " . esc_html($this->type) . ".</p>"; */
 		
         if( 'delete'===$this->current_action() && $_REQUEST['tab'] == $this->type && isset($_REQUEST['merit'])) {
 			if ('string' == gettype($_REQUEST['merit'])) {
@@ -959,11 +959,11 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 			/* Select if visible */
 			echo "<span>Visiblity to Players: </span>";
 			if ( !empty( $this->filter_visible ) ) {
-				echo "<select name='{$this->type}_filter'>";
+				echo "<select name='" . esc_html($this->type) . "_filter'>";
 				foreach( $this->filter_visible as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_visible, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -971,11 +971,11 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 			/* Select Grouping */
 			echo "<span>Group: </span>";
 			if ( !empty( $this->filter_group ) ) {
-				echo "<select name='{$this->type}_group'>";
+				echo "<select name='" . esc_html($this->type) . "_group'>";
 				foreach( $this->filter_group as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_group, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -983,11 +983,11 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 			/* Select if multiple */
 			echo "<span>Multiple: </span>";
 			if ( !empty( $this->filter_multiple ) ) {
-				echo "<select name='{$this->type}_multiple'>";
+				echo "<select name='" . esc_html($this->type) . "_multiple'>";
 				foreach( $this->filter_multiple as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_multiple, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -1020,7 +1020,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 			);
 			
 		$sql = "SELECT DISTINCT GROUPING FROM " . VTM_TABLE_PREFIX . "MERIT merit;";
-		$groups =$wpdb->get_results($sql);
+		$groups =$wpdb->get_results("$sql");
 		$this->filter_group = vtm_make_filter($groups);
 			
 		if ( isset( $_REQUEST[$type . '_filter'] ) && array_key_exists( $_REQUEST[$type . '_filter'], $this->filter_visible ) ) {
@@ -1073,7 +1073,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 		$sql .= ";";
 		/* echo "<p>SQL: " . $sql . "</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -1120,22 +1120,22 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 		$sql = "select characters.NAME
 					from " . VTM_TABLE_PREFIX . "CHARACTER_RITUAL charrituals, " . VTM_TABLE_PREFIX . "CHARACTER characters
 					where charrituals.RITUAL_ID = %d and charrituals.CHARACTER_ID = characters.ID;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this ritual is being used in the following characters:";
 			echo "<ul>";
 			foreach ($isused as $character)
-				echo "<li style='color:red'>" . vtm_formatOutput($character->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 			echo "</ul></p>";
 		} else {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "RITUAL where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted ritual $selectedID</p>";
+			echo "<p style='color:green'>Deleted ritual " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -1177,11 +1177,11 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($ritualname) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($ritualname) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added ritual '" . vtm_formatOutput($ritualname) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added ritual '" . esc_html($ritualname) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_ritual($ritualid, $ritualname, $description, $level, $disciplineid, $dicepool,
@@ -1213,23 +1213,23 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated " . vtm_formatOutput($ritualname) . "</p>";
+			echo "<p style='color:green'>Updated " . esc_html($ritualname) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to " . vtm_formatOutput($ritualname) . "</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($ritualname) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update " . vtm_formatOutput($ritualname) . " ($ritualid)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($ritualname) . " (" . esc_html($ritualid) . ")</p>";
 		}
 	}
    
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'LEVEL':
                 return $item->$column_name;
             case 'DISCIPLINE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'DICE_POOL':
                 return $item->$column_name;
             case 'DIFFICULTY':
@@ -1239,7 +1239,7 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
             case 'PAGE_NUMBER':
                 return $item->$column_name;
             case 'SOURCEBOOK':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            default:
                 return print_r($item,true); 
         }
@@ -1254,7 +1254,7 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -1318,7 +1318,7 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 			echo "<div class='gvfilter'>";
 			echo "<span>Discipline: </span>";
 			if ( !empty( $this->filter_discipline ) ) {
-				echo "<select name='{$this->type}_discipline'>";
+				echo "<select name='" . esc_html($this->type) . "_discipline'>";
 				foreach( $this->filter_discipline as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_discipline, $key );
@@ -1329,7 +1329,7 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 			
 			echo "<span>Level: </span>";
 			if ( !empty( $this->filter_level ) ) {
-				echo "<select name='{$this->type}_flevel'>";
+				echo "<select name='" . esc_html($this->type) . "_flevel'>";
 				foreach( $this->filter_level as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_level, $key );
@@ -1340,7 +1340,7 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 			
 			echo "<span>Sourcebook: </span>";
 			if ( !empty( $this->filter_book ) ) {
-				echo "<select name='{$this->type}_book'>";
+				echo "<select name='" . esc_html($this->type) . "_book'>";
 				foreach( $this->filter_book as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_book, $key );
@@ -1367,19 +1367,19 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 		$sql = "SELECT DISTINCT disciplines.ID as ID, disciplines.NAME as NAME
 				FROM " . VTM_TABLE_PREFIX . "RITUAL rituals, " . VTM_TABLE_PREFIX . "DISCIPLINE disciplines
 				WHERE disciplines.ID = rituals.DISCIPLINE_ID;";
-		$disciplines = $wpdb->get_results($sql);
+		$disciplines = $wpdb->get_results("$sql");
 		$this->filter_discipline = vtm_make_filter($disciplines);
 		
 		/* Ritual Level filter */
 		$sql = "SELECT DISTINCT LEVEL FROM " . VTM_TABLE_PREFIX . "RITUAL;";
-		$levels = $wpdb->get_results($sql);
+		$levels = $wpdb->get_results("$sql");
 		$this->filter_level = vtm_make_filter($levels);
 			
 		/* Book filter */
 		$sql = "SELECT DISTINCT books.ID, books.NAME 
 				FROM " . VTM_TABLE_PREFIX . "RITUAL rituals, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books
 				WHERE rituals.SOURCE_BOOK_ID = books.ID;";
-		$books = $wpdb->get_results($sql);
+		$books = $wpdb->get_results("$sql");
 		$this->filter_book = vtm_make_filter($books);
 						
 		if ( isset( $_REQUEST[$type . '_discipline'] ) && array_key_exists( $_REQUEST[$type . '_discipline'], $this->filter_discipline ) ) {
@@ -1430,7 +1430,7 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -1471,12 +1471,12 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 		$sql = "select merits.NAME
 				from " . VTM_TABLE_PREFIX . "MERIT merits, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books
 				where books.ID = merits.SOURCE_BOOK_ID and merits.SOURCE_BOOK_ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this book is being used in the Merits and Flaws list:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 		}
@@ -1485,12 +1485,12 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 		$sql = "select rituals.NAME
 				from " . VTM_TABLE_PREFIX . "RITUAL rituals, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books
 				where books.ID = rituals.SOURCE_BOOK_ID and rituals.SOURCE_BOOK_ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this book is being used in the Rituals list:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 		}
@@ -1513,10 +1513,10 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "SOURCE_BOOK where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted book $selectedID</p>";
+			echo "<p style='color:green'>Deleted book " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -1542,13 +1542,13 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$bookname = vtm_formatOutput($bookname);
+		$bookname = esc_html($bookname);
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> $bookname could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b>" . esc_html($bookname) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added book '$bookname' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added book '" . esc_html($bookname) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_book($bookid, $bookname, $bookcode, $visible) {
@@ -1571,21 +1571,21 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$bookname = vtm_formatOutput($bookname);
+		$bookname = esc_html($bookname);
 		if ($result) 
-			echo "<p style='color:green'>Updated $bookname</p>";
+			echo "<p style='color:green'>Updated " . esc_html($bookname) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to $bookname</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($bookname) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update $bookname ($bookid)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($bookname) . " (" . esc_html($bookid) . ")</p>";
 		}
 	}
    
     function column_default($item, $column_name){
         switch($column_name){
             case 'CODE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            default:
                 return print_r($item,true); 
         }
@@ -1600,7 +1600,7 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -1676,7 +1676,7 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

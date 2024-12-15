@@ -26,8 +26,8 @@ function vtm_render_xp_approvals_page($type){
   ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="xpapprove-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="xpapprove-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="xpapprove" />
 		<?php $testListTable['xpapprove']->display() ?>
 	</form>
@@ -108,7 +108,7 @@ function vtm_render_costmodel_page($type){
 					}
 					
 					if ($fail) echo "<p style='color:red'>Could not add cost model</p>";
-					elseif ($updates) echo "<p style='color:green'>Added cost model (ID: {$id})</p>";
+					elseif ($updates) echo "<p style='color:green'>Added cost model (ID: " . esc_html($id) . ")</p>";
 					else echo "<p style='color:orange'>No additions made to cost model</p>";
 				}
 			} 
@@ -127,48 +127,48 @@ function vtm_render_costmodel_page($type){
 					$sql = "SELECT clans.NAME FROM " . VTM_TABLE_PREFIX . "CLAN clans
 							WHERE	clans.CLAN_COST_MODEL_ID = %s
 									OR clans.NONCLAN_COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare($sql, $id, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id, $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following clans:";
 						echo "<ul>";
 						foreach ($isused as $item)
-							echo "<li style='color:red'>{$item->NAME}</li>";
+							echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 						echo "</ul></p>";
 						$ok = 0;
 					}
 					/* stats */
 					$sql = "SELECT stats.NAME FROM " . VTM_TABLE_PREFIX . "STAT stats
 							WHERE stats.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare($sql, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following attributes:";
 						echo "<ul>";
 						foreach ($isused as $item)
-							echo "<li style='color:red'>{$item->NAME}</li>";
+							echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 						echo "</ul></p>";
 						$ok = 0;
 					}
 					/* skills */
 					$sql = "SELECT skills.NAME FROM " . VTM_TABLE_PREFIX . "SKILL skills
 							WHERE skills.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare($sql, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following abilities:";
 						echo "<ul>";
 						foreach ($isused as $item)
-							echo "<li style='color:red'>{$item->NAME}</li>";
+							echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 						echo "</ul></p>";
 						$ok = 0;
 					}
 					/* backgrounds */
 					$sql = "SELECT bgdnds.NAME FROM " . VTM_TABLE_PREFIX . "BACKGROUND bgdnds
 							WHERE bgdnds.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare($sql, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following backgrounds:";
 						echo "<ul>";
 						foreach ($isused as $item)
-							echo "<li style='color:red'>{$item->NAME}</li>";
+							echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 						echo "</ul></p>";
 						$ok = 0;
 					}
@@ -180,23 +180,23 @@ function vtm_render_costmodel_page($type){
 							WHERE 
 								paths.DISCIPLINE_ID = disciplines.ID
 								AND paths.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare($sql, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following paths:";
 						echo "<ul>";
 						foreach ($isused as $item)
-							echo "<li style='color:red'>{$item->DISCIPLINE} path {$item->NAME}</li>";
+							echo "<li style='color:red'>" . esc_html($item->DISCIPLINE) . " path " . esc_html($item->NAME) . "</li>";
 						echo "</ul></p>";
 						$ok = 0;
 					}
 					if ($ok) {
 						/* delete _step */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "COST_MODEL_STEP where COST_MODEL_ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 						/* delete cost model */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "COST_MODEL where ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
-						echo "<p style='color:green'>Deleted cost model {$_REQUEST['costmodel_name']}</p>";
+						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
+						echo "<p style='color:green'>Deleted cost model " . esc_html($_REQUEST['costmodel_name']) . "</p>";
 					}
 					
 					
@@ -273,14 +273,12 @@ function vtm_render_costmodel_page($type){
 	if ($id > 0) {
 		
 		$sql = "SELECT NAME, DESCRIPTION FROM " . VTM_TABLE_PREFIX . "COST_MODEL WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$result = $wpdb->get_results($sql);
+		$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 		$name        = $result[0]->NAME;
 		$description = $result[0]->DESCRIPTION;
 		
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "COST_MODEL_STEP WHERE COST_MODEL_ID = %s ORDER BY SEQUENCE ASC";
-		$sql = $wpdb->prepare($sql, $id);
-		$result = $wpdb->get_results($sql);
+		$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 			
 	} else {
 		$result = array();
@@ -298,9 +296,9 @@ function vtm_render_costmodel_page($type){
 	<p>If the XP Cost is set to 0 then XP cannot be used to buy up anything using that model</p>
 	<p>If the Freebie Cost is set to 0 then Freebie points cannot be used to buy the next level using that model</p>
 
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-	<input type="hidden" name="tab" value="<?php print $type; ?>" />
-	<input type="hidden" name="costmodel" value="<?php print $_REQUEST['costmodel']; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+	<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+	<input type="hidden" name="costmodel" value="<?php print esc_html($_REQUEST['costmodel']); ?>" />
 	<input type="hidden" name="action" value="save" />
 	<p>Cost Model Name:
 	<input type="text"   name="costmodel_name" value="<?php print esc_html($name); ?>"></p>
@@ -316,19 +314,19 @@ function vtm_render_costmodel_page($type){
 	<?php
 		for ($i=0;$i<11;$i++) {
 			echo "<tr>\n";
-			echo "<td class='costmodels'>$i";
+			echo "<td class='costmodels'>" . esc_html($i);
 			if (isset($result[$i])) {
-				echo "<input type='hidden' name='rowids[" . $i . "]'    value='" . $result[$i]->ID . "'>";
+				echo "<input type='hidden' name='rowids[" . esc_html($i) . "]'    value='" . esc_html($result[$i]->ID) . "'>";
 				echo "</td>\n";
-				echo "<td class='costmodels'><input type='text' name='nextvals[" . $i . "]'    value='" . $result[$i]->NEXT_VALUE . "' size=5 ></td>\n";
-				echo "<td class='costmodels'><input type='text' name='freebie[" . $i . "]'    value='" . $result[$i]->FREEBIE_COST . "' size=5 ></td>\n";
-				echo "<td class='costmodels'><input type='text' name='xpcost[" . $i . "]'    value='" . $result[$i]->XP_COST . "' size=5 ></td>\n";
+				echo "<td class='costmodels'><input type='text' name='nextvals[" . esc_html($i) . "]'    value='" . esc_html($result[$i]->NEXT_VALUE) . "' size=5 ></td>\n";
+				echo "<td class='costmodels'><input type='text' name='freebie[" . esc_html($i) . "]'    value='" . esc_html($result[$i]->FREEBIE_COST) . "' size=5 ></td>\n";
+				echo "<td class='costmodels'><input type='text' name='xpcost[" . esc_html($i) . "]'    value='" . esc_html($result[$i]->XP_COST) . "' size=5 ></td>\n";
 			} else {
-				echo "<input type='hidden' name='rowids[" . $i . "]'    value='" . 0 . "'>";
+				echo "<input type='hidden' name='rowids[" . esc_html($i) . "]'    value='" . 0 . "'>";
 				echo "</td>\n";
-				echo "<td class='costmodels'><input type='text' name='nextvals[" . $i . "]'    value='" . ($i == 10 ? 10 : $i + 1) . "' size=5 ></td>\n";
-				echo "<td class='costmodels'><input type='text' name='freebie[" . $i . "]'    value='" . 0 . "' size=5 ></td>\n";
-				echo "<td class='costmodels'><input type='text' name='xpcost[" . $i . "]'    value='" . 0 . "' size=5 ></td>\n";
+				echo "<td class='costmodels'><input type='text' name='nextvals[" . esc_html($i) . "]'    value='" . esc_html($i == 10 ? 10 : $i + 1) . "' size=5 ></td>\n";
+				echo "<td class='costmodels'><input type='text' name='freebie[" . esc_html($i) . "]'    value='" . 0 . "' size=5 ></td>\n";
+				echo "<td class='costmodels'><input type='text' name='xpcost[" . esc_html($i) . "]'    value='" . 0 . "' size=5 ></td>\n";
 			}
 			echo "</tr>";
 		}
@@ -336,9 +334,9 @@ function vtm_render_costmodel_page($type){
 	?>
 	
 	</table>
-	<input type="submit" name="do_save_<?php print $type; ?>" class="button-primary" value="Save" />
-	<input type="submit" name="do_new_<?php print $type; ?>" class="button-primary" value="New" />
-	<input type="submit" name="do_delete_<?php print $type; ?>" class="button-primary" value="Delete" />
+	<input type="submit" name="do_save_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
+	<input type="submit" name="do_new_<?php print esc_html($type); ?>" class="button-primary" value="New" />
+	<input type="submit" name="do_delete_<?php print esc_html($type); ?>" class="button-primary" value="Delete" />
 	</form>
 
 <?php
@@ -356,7 +354,7 @@ function vtm_render_select_model () {
 	echo "<option value='0'>[Select/New]</option>\n";
 	
 	foreach (vtm_get_costmodels() as $model) {
-		echo "<option value='{$model->ID}' ";
+		echo "<option value='" . esc_html($model->ID) . "' ";
 		selected($selected,$model->ID);
 		echo ">" . esc_html($model->NAME) . "</option>\n";
 	}
@@ -391,8 +389,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
 				WHERE ID = %d";
-		$sql = $wpdb->prepare($sql, $selectedID);
-		$data = $wpdb->get_results($sql);
+		$data = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 		$table    = $data[0]->CHARTABLE;
 		$approvalok = 0;
@@ -407,13 +404,13 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 				$statID = 1; //Willpower
 				
 				$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT_REASON WHERE NAME = %s";
-				$reasonID = $wpdb->get_var($wpdb->prepare($sql, 'Game spend'));
+				$reasonID = $wpdb->get_var($wpdb->prepare("$sql", 'Game spend'));
 				$sql = "SELECT LEVEL FROM " . VTM_TABLE_PREFIX . "CHARACTER_STAT WHERE CHARACTER_ID = %s AND STAT_ID = '15'" ;
-				$max = $wpdb->get_var($wpdb->prepare($sql, $data[0]->CHARACTER_ID));
+				$max = $wpdb->get_var($wpdb->prepare("$sql", $data[0]->CHARACTER_ID));
 				$sql = "SELECT SUM(AMOUNT) FROM " . VTM_TABLE_PREFIX . "CHARACTER_TEMPORARY_STAT WHERE CHARACTER_ID = %s AND TEMPORARY_STAT_ID = %s" ;
-				$current = $wpdb->get_var($wpdb->prepare($sql, $data[0]->CHARACTER_ID, $statID));
+				$current = $wpdb->get_var($wpdb->prepare("$sql", $data[0]->CHARACTER_ID, $statID));
 				$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s" ;
-				$char = $wpdb->get_var($wpdb->prepare($sql, $data[0]->CHARACTER_ID));
+				$char = $wpdb->get_var($wpdb->prepare("$sql", $data[0]->CHARACTER_ID));
 
 				vtm_update_temp_stat(
 					$data[0]->CHARACTER_ID, 
@@ -457,7 +454,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		if ($approvalok) {
 			/* update current XP */
 			$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "XP_REASON WHERE NAME = 'XP Spend'";
-			$result = $wpdb->get_results($sql);
+			$result = $wpdb->get_results("$sql");
 			
 			//$specialisation = $data[0]->SPECIALISATION ? ("(" . $data[0]->SPECIALISATION . ") ") : "";
 			vtm_touch_last_updated($data[0]->CHARACTER_ID);
@@ -513,10 +510,10 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			);
 			if (!$result && $result !== 0) {
 				$wpdb->print_error();
-				echo "<p style='color:red'>Failed to update {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}</p>\n";
+				echo "<p style='color:red'>" . esc_html("Failed to update {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}") . "</p>\n";
 			}
 			elseif ($result === 0) {
-				echo "<p style='color:orange'>No changes made to {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}</p>\n";
+				echo "<p style='color:orange'>" . esc_html("No changes made to {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}") . "</p>\n";
 				//$result = 1;
 			}
 		} else {
@@ -534,7 +531,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			);
 			if (!$wpdb->insert_id) {
 				$wpdb->print_error();
-				echo "<p style='color:red'>Failed to add {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}</p>";
+				echo "<p style='color:red'>" . esc_html("Failed to add {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}") . "</p>";
 			}
 			vtm_touch_last_updated($data2update->CHARACTER_ID);
 		}
@@ -558,7 +555,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			
 			$newpathlvl = min(5, $data2update->CHARTABLE_LEVEL);
 			$templateid = vtm_get_character_templateid($data2update->CHARACTER_ID);
-			$clanID = $wpdb->get_var($wpdb->prepare("SELECT PRIVATE_CLAN_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'", $data2update->CHARACTER_ID));
+			$clanID = $wpdb->get_var($wpdb->prepare("SELECT PRIVATE_CLAN_ID FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "CHARACTER", $data2update->CHARACTER_ID));
 			
 			$ppID = "";
 			$ppName = "";
@@ -570,9 +567,9 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			} else {
 				$ppdefault = vtm_get_primarypath_default($templateid, $data2update->ITEMTABLE_ID, $clanID);
 				if (count($ppdefault) == 0 ) {
-					$templatename = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE WHERE ID = '%s'", $templateid));
-					echo "<p style='color:red'>The Character Generation template used to create this character does not
-					have the Primary Paths defined.  Please update template '$templatename' before this spend can be approved.</p>";
+					$templatename = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE", $templateid));
+					echo "<p style='color:red'>" . esc_html("The Character Generation template used to create this character does not
+					have the Primary Paths defined.  Please update template '$templatename' before this spend can be approved.") . "</p>";
 					$pathok = 0;
 				} else {
 					$ppID   = $ppdefault[$data2update->ITEMTABLE_ID]->pathid;
@@ -593,19 +590,19 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 						array ('%d', '%d', '%d')
 					);
 					if ($wpdb->insert_id > 0) {
-						$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'", $data2update->CHARACTER_ID));
-						echo "<p style='color:green'>Added primary path $ppName to $name after purchasing a discipline with associated paths ({$data2update->COMMENT})</p>";
+						$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "CHARACTER", $data2update->CHARACTER_ID));
+						echo "<p style='color:green'>" . esc_html("Added primary path $ppName to $name after purchasing a discipline with associated paths ({$data2update->COMMENT})"). "</p>";
 					} else {
 						$wpdb->print_error();
-						echo "<p style='color:red'>Failed to add primary path $ppName for character ID {$data2update->CHARACTER_ID}</p>";
+						echo "<p style='color:red'>" . esc_html("Failed to add primary path $ppName for character ID {$data2update->CHARACTER_ID}") . "</p>";
 						$pathok = 0;
 					}
 					
 				}
 				
 				// Add/Update Path level
-				$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = '%s'", $data2update->CHARACTER_ID));
-				$cpID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_PATH WHERE CHARACTER_ID = '%s' AND PATH_ID = '%s'", $data2update->CHARACTER_ID, $ppID));
+				$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "CHARACTER", $data2update->CHARACTER_ID));
+				$cpID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE CHARACTER_ID = %s AND PATH_ID = %s", VTM_TABLE_PREFIX . "CHARACTER_PATH", $data2update->CHARACTER_ID, $ppID));
 				if ($cpID > 0) {
 					// update path level
 					$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PATH",
@@ -615,10 +612,10 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 					
 
 					if (!$result && $result !== 0) {
-						echo "<p style='color:red'>Failed to update primary path $ppName to level $newpathlvl for $name</p>\n";
+						echo "<p style='color:red'>" . esc_html("Failed to update primary path $ppName to level $newpathlvl for $name") . "</p>\n";
 						$pathok = 0;
 					} else {
-						echo "<p style='color:green'>Updated the primary path $ppName to level $newpathlvl for $name";
+						echo "<p style='color:green'>" . esc_html("Updated the primary path $ppName to level $newpathlvl for $name");
 					}
 				} else {
 					// add path level
@@ -631,11 +628,11 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 						array ('%d', '%d', '%d')
 					);
 					if ($wpdb->insert_id > 0) {
-						echo "<p style='color:green'>Set new primary path $ppName to level $newpathlvl for $name</p>";
+						echo "<p style='color:green'>" . esc_html("Set new primary path $ppName to level $newpathlvl for $name") . "</p>";
 					} else {
 						$wpdb->print_error();
 						$pathok = 0;
-						echo "<p style='color:red'>Failed to set primary path $ppName to level $newpathlvl for $name</p>";
+						echo "<p style='color:red'>" . esc_html("Failed to set primary path $ppName to level $newpathlvl for $name") . "</p>";
 					}
 					
 				}
@@ -679,7 +676,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		}
 		elseif ($data2update->CHARTABLE_ID != 0 && $data2update->CHARTABLE_LEVEL < 0) { /* remove flaw */
 			$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "CHARACTER_MERIT where ID = %d;";
-			$result = $wpdb->get_results($wpdb->prepare($sql, $data2update->CHARTABLE_ID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $data2update->CHARTABLE_ID));
 			$result = 1;
 		} 
 		else {
@@ -722,9 +719,9 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
 				WHERE ID = %d";
 		
-		$sql = $wpdb->prepare($sql, $selectedID);
+		$sql = $wpdb->prepare("$sql", $selectedID);
 		/* echo "<p>SQL: $sql</p>"; */
-		$result = $wpdb->get_results($sql);
+		$result = $wpdb->get_results("$sql");
 		
 	}
   
@@ -874,7 +871,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
 		
 		/* echo "<p>SQL: $sql</p>"; */
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
 		$this->items = $data;
         
 
@@ -915,7 +912,7 @@ function vtm_addPlayerXP($player, $character, $xpReason, $value, $comment) {
 	$table_prefix = VTM_TABLE_PREFIX;
 	$sql = "INSERT INTO " . $table_prefix . "PLAYER_XP (player_id, amount, character_id, xp_reason_id, comment, awarded)
 					VALUES (%d, %d, %d, %d, %s, SYSDATE())";
-	$wpdb->query($wpdb->prepare($sql, $player, ((int) $value), $character, $xpReason, $comment));
+	$wpdb->query($wpdb->prepare("$sql", $player, ((int) $value), $character, $xpReason, $comment));
 	
 	vtm_touch_last_updated($character);
 }
@@ -956,9 +953,9 @@ function vtm_render_xp_assign_page(){
   ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="<?php print $type ?>-filter" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="tab" value="<?php print $type ?>" />
+	<form id="<?php print esc_html($type) ?>-filter" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="tab" value="<?php print esc_html($type) ?>" />
 		
 		<table class="wp-list-table widefat">
 		<tr><th class="manage-column">Player</th>
@@ -1001,7 +998,7 @@ function vtm_render_xp_by_player() {
 				AND player.DELETED = 'N'
 			GROUP BY player.ID";
 	//echo "<p>SQL1: $sql</p>";
-	$player_xp = $wpdb->get_results($sql, OBJECT_K);
+	$player_xp = $wpdb->get_results("$sql", OBJECT_K);
 	
 	//print_r($player_xp);
 	
@@ -1034,7 +1031,7 @@ function vtm_render_xp_by_player() {
 			ORDER BY PLAYER, CHARACTERNAME, cstatus.ID";
 	
 	//echo "<p>SQL2: $sql</p>";
-	$results = $wpdb->get_results($sql);
+	$results = $wpdb->get_results("$sql");
 	
 	$output = "";
 	$lastplayer = "";
@@ -1051,16 +1048,16 @@ function vtm_render_xp_by_player() {
 		}
 		$lastplayer = $row->PLAYER;
 		
-		$charactername = esc_html($row->CHARACTERNAME);
+		$charactername = $row->CHARACTERNAME;
 		if ($row->CHARGENSTATUS == 'In Progress')
 			$charactername .= ' (chargen)';
 	
 		$output .= "<tr" . $rowclasses[$rowclass] . ">";
-		$output .= "<td>" . esc_html($player) . "<input name='xp_player[{$row->ID}]' value=\"{$row->PLAYER_ID}\" type=\"hidden\" /></td>";
+		$output .= "<td>" . ($player) . "<input name='xp_player[{$row->ID}]' value=\"{$row->PLAYER_ID}\" type=\"hidden\" /></td>";
 		$output .= "<td>$charactername</td><td>{$row->CSTATUS}</td><td>$xp</td>";
 		$output .= "<td><select name='xp_reason[{$row->ID}]'>\n";
 		foreach (vtm_listXpReasons() as $reason) {
-			$output .= "<option value='{$reason->id}'>" . esc_html($reason->name) . "</option>\n";
+			$output .= "<option value='{$reason->id}'>" . ($reason->name) . "</option>\n";
 		}
 		$output .= "</select></td>\n";
 		$output .= "<td><input name='xp_change[{$row->ID}]' value='' type='text' size=4 /></td>";
@@ -1068,7 +1065,7 @@ function vtm_render_xp_by_player() {
 		$output .= "</tr>";
 	}
 	
-	echo $output;
+	echo wp_kses($output, vtm_output_allowedhtml());
 
 }
 function vtm_render_xp_by_character () {
@@ -1107,7 +1104,7 @@ function vtm_render_xp_by_character () {
 			ORDER BY PLAYER, CHARACTERNAME, cstatus.ID, CHARACTER_XP";
 	
 	//echo "<p>SQL: $sql</p>";
-	$results = $wpdb->get_results($sql);
+	$results = $wpdb->get_results("$sql");
 	//print_r ($results);
 	
 	$output = "";
@@ -1129,7 +1126,7 @@ function vtm_render_xp_by_character () {
 		$output .= "</tr>";
 	}
 	
-	echo $output;
+	echo wp_kses($output, vtm_output_allowedhtml());
 
 }
 

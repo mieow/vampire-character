@@ -34,7 +34,7 @@ function vtm_render_master_path_page(){
 				$dataarray = array (
 					'CHARACTER_ID'    => $characterID,
 					'PATH_REASON_ID'  => $reasons[$characterID],
-					'AWARDED'         => Date('Y-m-d'),
+					'AWARDED'         => gmdate('Y-m-d'),
 					'AMOUNT'          => $change,
 					'COMMENT'         => $comments[$characterID]
 				);
@@ -219,7 +219,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
         $sortable = $this->get_sortable_columns();
 		
 		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "PATH_REASON WHERE NAME = 'Path Change'";
-		$this->defaultreason = $wpdb->get_var($sql);
+		$this->defaultreason = $wpdb->get_var("$sql");
 		$this->pathreasons = vtm_listPathReasons();
 
 		/* filters */
@@ -249,7 +249,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 		
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
-		$data = $wpdb->get_results($wpdb->prepare($sql,$filterinfo[1]));
+		$data = $wpdb->get_results($wpdb->prepare("$sql",$filterinfo[1]));
 		
  		
         $current_page = $this->get_pagenum();

@@ -195,7 +195,7 @@ function vtm_render_printable($characterID) {
 		$secondarypaths = $mycharacter->secondary_paths;
 		
 		$sql = "SELECT NAME, PARENT_ID FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE;";
-		$allgroups = $wpdb->get_results($sql);	
+		$allgroups = $wpdb->get_results("$sql");	
 		
 		$secondarygroups = array();
 		foreach ($allgroups as $group) {

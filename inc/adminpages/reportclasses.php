@@ -6,19 +6,19 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'MERIT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'LEVEL':
                 return $item->$column_name;
             case 'COMMENT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'DETAIL':
-                return wpautop(vtm_formatOutput($item->$column_name));
+                return wpautop(esc_html($item->$column_name));
             case 'SOURCEBOOK':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'PAGE_NUMBER':
                 return $item->$column_name;
            default:
@@ -157,7 +157,7 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
 		/* run query */
 		
 		/* echo "<p>SQL: $sql</p>"; */
-		$data =$wpdb->get_results($wpdb->prepare($sql,$filterinfo[1]));
+		$data =$wpdb->get_results($wpdb->prepare("$sql",$filterinfo[1]));
  		
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -181,11 +181,11 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CLAN':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'QUOTE':
                 return wpautop(vtm_formatOutput($item->$column_name, 1));
             default:
@@ -267,7 +267,7 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
 		/* run query */
 		
 		/* echo "<p>SQL: $sql</p>"; */
-		$data =$wpdb->get_results($wpdb->prepare($sql,$filterinfo[1]));
+		$data =$wpdb->get_results($wpdb->prepare("$sql",$filterinfo[1]));
  		
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -292,15 +292,15 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'PUBLIC_CLAN':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'PRIVATE_CLAN':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'COMMENT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'LEVEL':
                 return $item->$column_name;
             default:
@@ -339,9 +339,9 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 			echo "<select name='clanfilter'>\n";
 			echo '<option value="all">All</option>';
 			foreach (vtm_get_clans() as $clan) {
-				echo '<option value="' . $clan->ID . '" ';
+				echo '<option value="' . esc_html($clan->ID) . '" ';
 				selected( $this->active_filter_clan, $clan->ID );
-				echo '>' . $clan->NAME , '</option>';
+				echo '>' . esc_html($clan->NAME) , '</option>';
 			}
 			echo '</select>';
 
@@ -431,11 +431,10 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 		/* run query */
 
 		$args = array_merge($args, $args);
-		$sql = $wpdb->prepare($sql,$args);
 		//echo "<pre>SQL: $sql (>";
 		//print_r($args);
 		//echo ")</pre>";
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results($wpdb->prepare("$sql",$args));
  		
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -459,11 +458,11 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'BACKGROUND':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'SIGNATURE':
                 return $item->$column_name;
             default:
@@ -548,7 +547,7 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
 		$filterinfo = $this->get_filter_sql();
 		
 		$sql = "SELECT COUNT(ID) as total2do FROM " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND WHERE VISIBLE = 'Y'";
-		$this->totalqs = $wpdb->get_var($sql);
+		$this->totalqs = $wpdb->get_var("$sql");
 		
 		$sql = "SELECT characters.NAME as CHARACTERNAME, players.NAME as PLAYERNAME, \"\" as SIGNATURE,
 					CONCAT(FORMAT((IFNULL(SUM(bginfo.TOTALDONE),0) + IFNULL(SUM(mfinfo.TOTALDONE),0) + IFNULL(SUM(qinfo.TOTALDONE),0)) * 100 /
@@ -618,11 +617,7 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
         $this->process_bulk_action();
 		
 		/* run query */
-		$sql = $wpdb->prepare($sql,$filterinfo[1]);
-		//echo "<p>SQL: $sql (";
-		//print_r($filterinfo[1]);
-		//echo ")</p>";
-		$data = $wpdb->get_results($sql);
+		$data = $wpdb->get_results($wpdb->prepare("$sql",$filterinfo[1]));
 		//print_r($data);
  		
         $current_page = $this->get_pagenum();
@@ -648,11 +643,11 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'SECT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -686,9 +681,9 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
 			selected( $this->active_filter_selectsect, 'all' );
 			echo '>All</option>';
 			foreach (vtm_get_sects() as $sect) {
-				echo '<option value="' . $sect->ID . '" ';
+				echo '<option value="' . esc_html($sect->ID) . '" ';
 				echo selected( $this->active_filter_selectsect, $sect->ID );
-				echo '>' . vtm_formatOutput($sect->NAME) . '</option>';
+				echo '>' . esc_html($sect->NAME) . '</option>';
 			}
 			echo '</select>';
 			
@@ -748,11 +743,7 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
         $this->process_bulk_action();
 		
 		/* run query */
-		$sql = $wpdb->prepare($sql,$args);
-		/* echo "<p>SQL: $sql (";
-		print_r($filterinfo[1]);
-		echo ")</p>"; */
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results($wpdb->prepare("$sql",$args));
  		
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -775,9 +766,9 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'LAST_UPDATED':
                 return $item->$column_name;
             default:
@@ -841,11 +832,7 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
         $this->process_bulk_action();
 		
 		/* run query */
-		$sql = $wpdb->prepare($sql,$args);
-		//echo "<p>SQL: $sql (";
-		//print_r($filterinfo[1]);
-		//echo ")</p>";
-		$data = $wpdb->get_results($sql);
+		$data = $wpdb->get_results($wpdb->prepare("$sql",$args));
  		
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -868,15 +855,15 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'PLAYERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CHARACTERNAME':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'BACKGROUND':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'SECTOR':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'COMMENT':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'LEVEL':
                 return $item->$column_name;
            default:
@@ -913,9 +900,9 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
 			echo "<select name='bgfilter'>\n";
 			echo '<option value="all">All</option>';
 			foreach (vtm_get_backgrounds() as $background) {
-				echo '<option value="' . $background->ID . '" ';
+				echo '<option value="' . esc_html($background->ID) . '" ';
 				selected( $this->active_filter_background, $background->ID );
-				echo '>' . vtm_formatOutput($background->NAME) , '</option>';
+				echo '>' . esc_html($background->NAME) , '</option>';
 			}
 			echo '</select>';
 
@@ -981,11 +968,7 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
         $this->process_bulk_action();
 		
 		/* run query */
-		$sql = $wpdb->prepare($sql,$args);
-		//echo "<p>SQL: $sql (";
-		//print_r($filterinfo[1]);
-		//echo ")</p>";
-		$data = $wpdb->get_results($sql);
+		$data = $wpdb->get_results($wpdb->prepare("$sql",$args));
  		
         $current_page = $this->get_pagenum();
         $total_items = count($data);

@@ -22,8 +22,8 @@ function vtm_render_enlightenment_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="enlighten-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="enlighten-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="enlighten" />
  		<?php $testListTable["enlighten"]->display() ?>
 	</form>
@@ -50,8 +50,8 @@ function vtm_render_enlighten_add_form($type, $addaction) {
 
 	} elseif ('edit-' . $type == $addaction) {
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "ROAD_OR_PATH WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_results($sql);
+		$sql = $wpdb->prepare("$sql", $id);
+		$data =$wpdb->get_results("$sql");
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -99,48 +99,48 @@ function vtm_render_enlighten_add_form($type, $addaction) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
 			<td>Name:</td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 			<td>Sourcebook:  </td>
 			<td>
-			<select name="<?php print $type; ?>_sourcebook">
+			<select name="<?php print esc_html($type); ?>_sourcebook">
 					<?php
 						foreach (vtm_get_booknames() as $book) {
-							print "<option value='{$book->ID}' ";
+							print "<option value='" . esc_html($book->ID) . "' ";
 							($book->ID == $sourcebook_id) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($book->NAME) . "</option>";
+							echo ">" . esc_html($book->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Page number:  </td>
-			<td><input type="number" name="<?php print $type; ?>_pagenum" value="<?php print $pagenum; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_pagenum" value="<?php print esc_html($pagenum); ?>" /></td>
 		</tr>
 		<tr>
 			<td>Stat 1:</td>
 			<td>
-				<input type="radio" name="<?php print $type; ?>_stat1" value="<?php echo $conscience; ?>" <?php if ($stat1_id == $conscience || $stat1_id == 0) print "checked"; ?>>Conscience
-				<input type="radio" name="<?php print $type; ?>_stat1" value="<?php echo $conviction; ?>" <?php if ($stat1_id == $conviction) print "checked"; ?>>Conviction	
+				<input type="radio" name="<?php print esc_html($type); ?>_stat1" value="<?php echo esc_html($conscience); ?>" <?php if ($stat1_id == $conscience || $stat1_id == 0) print "checked"; ?>>Conscience
+				<input type="radio" name="<?php print esc_html($type); ?>_stat1" value="<?php echo esc_html($conviction); ?>" <?php if ($stat1_id == $conviction) print "checked"; ?>>Conviction	
 			</td>
 			<td>Stat 2:  </td>
 			<td>
-				<input type="radio" name="<?php print $type; ?>_stat2" value="<?php echo $selfcontrol; ?>" <?php if ($stat2_id == $selfcontrol || $stat2_id == 0) print "checked"; ?>>Self Control
-				<input type="radio" name="<?php print $type; ?>_stat2" value="<?php echo $instinct; ?>" <?php if ($stat2_id == $instinct) print "checked"; ?>>Instinct	
+				<input type="radio" name="<?php print esc_html($type); ?>_stat2" value="<?php echo esc_html($selfcontrol); ?>" <?php if ($stat2_id == $selfcontrol || $stat2_id == 0) print "checked"; ?>>Self Control
+				<input type="radio" name="<?php print esc_html($type); ?>_stat2" value="<?php echo esc_html($instinct); ?>" <?php if ($stat2_id == $instinct) print "checked"; ?>>Instinct	
 			</td>
 			<td>Cost Model:  </td>
 			<td colspan=3>
-				<select name="<?php print $type; ?>_costmodel">
+				<select name="<?php print esc_html($type); ?>_costmodel">
 					<?php
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $costmodel_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -148,17 +148,17 @@ function vtm_render_enlighten_add_form($type, $addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=90 /></td> 
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> 
 			<td>Visible to Players:</td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
 			</td>
 		</tr>
 		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="Save" />
+		<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
 	</form>
 	
 	<?php
@@ -247,11 +247,11 @@ class vtmclass_admin_enlighten_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['enlighten_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['enlighten_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . vtm_formatOutput($_REQUEST['enlighten_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($_REQUEST['enlighten_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
 
@@ -284,7 +284,7 @@ class vtmclass_admin_enlighten_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:orange'>No updates made</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update Road/Path ({$_REQUEST[$type . '_id']})</p>";
+			echo "<p style='color:red'>Could not update Road/Path (" . esc_html($_REQUEST[$type . '_id']) . ")</p>";
 		}
 		 
 	}
@@ -300,12 +300,12 @@ class vtmclass_admin_enlighten_table extends vtmclass_MultiPage_ListTable {
 				where characters.ROAD_OR_PATH_ID = paths.ID 
 					and paths.ID = %d;";
 					
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this road/path has been use for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -313,29 +313,29 @@ class vtmclass_admin_enlighten_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "ROAD_OR_PATH where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
-			echo "<p style='color:green'>Deleted road/path $selectedID</p>";
+			echo "<p style='color:green'>Deleted road/path " . esc_html($selectedID) . "</p>";
 		}
 	}
   
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'STAT1':
                 return $item->$column_name;
             case 'STAT2':
                 return $item->$column_name;
             case 'COSTMODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
     }
 	
 	function column_sourcebook($item) {
-		return vtm_formatOutput($item->bookname) . ", " . $item->PAGE_NUMBER;
+		return esc_html($item->bookname) . ", " . $item->PAGE_NUMBER;
 	}
 
    function column_name($item){
@@ -347,7 +347,7 @@ class vtmclass_admin_enlighten_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -440,7 +440,7 @@ class vtmclass_admin_enlighten_table extends vtmclass_MultiPage_ListTable {
 		
 		//echo "<p>SQL: $sql</p>";
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

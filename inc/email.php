@@ -36,7 +36,7 @@ function vtm_phpmailer_setup( $phpmailer ) {
 
 		}
 	elseif ($method != 'mail') {
-		echo "<p>Unknown mail transport method '$method'</p>";
+		echo "<p>Unknown mail transport method '" . esc_html($method) . "'</p>";
 	}
 }
 
@@ -49,9 +49,9 @@ function vtm_test_email($email) {
 	$result = vtm_send_email($email, "Test Email", "This is a test email\n");
 	
 	if ($result)
-		echo "<p style='color:green;'>Email sent to $email</p>";
+		echo "<p style='color:green;'>Email sent to " . esc_html($email) . "</p>";
 	else
-		echo "<p style='color:red;'>Failed to send email to $email</p>\n";
+		echo "<p style='color:red;'>Failed to send email to " . esc_html($email) . "</p>\n";
 	
 }
 
@@ -88,14 +88,14 @@ function vtm_send_email($email, $subject, $content) {
 		if (file_exists($path)) {
 			$template = $path;
 		} else {
-			print "<p>Failed to identify email template from $path or " . locate_template("vtmemail.html") . "</p>";
+			print "<p>Failed to identify email template from " . esc_html($path ) . "or " . esc_html(locate_template("vtmemail.html")) . "</p>";
 			return false;
 		}
 	}
 
 	$body = file_get_contents($template);
 	if ($body === false) {
-		print "<p>Failed to read email template from $template</p>";
+		print "<p>Failed to read email template from " . esc_html($template) . "</p>";
 		return false;
 	}
 	

@@ -35,14 +35,14 @@ function vtm_get_profile_content() {
 	
 	$sql = "SELECT pub.NAME as pubclan, priv.NAME as privclan
 			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER chars,
-				" . VTM_TABLE_PREFIX . "CLAN pub,
-				" . VTM_TABLE_PREFIX . "CLAN priv
+				" . $wpdb->prefix . "vtm_CHARACTER chars,
+				" . $wpdb->prefix . "vtm_CLAN pub,
+				" . $wpdb->prefix . "vtm_CLAN priv
 			WHERE
 				chars.PUBLIC_CLAN_ID = pub.ID
 				AND chars.PRIVATE_CLAN_ID = priv.ID
 				AND chars.ID = %s";
-	$result = $wpdb->get_row($wpdb->prepare($sql, $currentCharacterID));
+	$result = $wpdb->get_row($wpdb->prepare("$sql", $currentCharacterID));
 	
 	$observerClanPub  = isset($result->pubclan) ? $result->pubclan : '';
 	$observerClanPriv = isset($result->privclan) ? $result->privclan : '';
@@ -52,11 +52,11 @@ function vtm_get_profile_content() {
 		$showAll = true;
 
 	$sql = "SELECT ID 
-			FROM " . VTM_TABLE_PREFIX . "CHARACTER 
+			FROM " . $wpdb->prefix . "vtm_CHARACTER 
 			WHERE WORDPRESS_ID = %s
 			AND DELETED = 'N'";
-	$sql = $wpdb->prepare($sql, $character);
-	$characterID = $wpdb->get_var($sql);
+	$sql = $wpdb->prepare("$sql", $character);
+	$characterID = $wpdb->get_var("$sql");
 	
 	if (empty($characterID))
 		return "<p>No information found for $character</p>";
@@ -91,12 +91,12 @@ function vtm_get_profile_content() {
 			// SAVE email to database and wordpress account
 			if (is_email($newemailAddress)) {
 			
-				$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+				$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER",
 					array('EMAIL' => $newemailAddress),
 					array('ID'    => $characterID)
 				);
 				if (!$result && $result !== 0){
-					echo "<p style='color:red'>Could not save character email $newemailAddress ($characterID)</p>";
+					echo "<p style='color:red'>Could not save character email " . esc_html("$newemailAddress ($characterID)") . "</p>";
 				} else {
 					vtm_changeEmailByID($userID, $newemailAddress);
 					
@@ -135,7 +135,7 @@ function vtm_get_profile_content() {
 		
 		// Update Email Newsletter settings
 		if (isset($_POST['newsletterUpdate'])) {
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER",
 				array('GET_NEWSLETTER' => $_POST['vtm_news_optin']),
 				array('ID' => $characterID)
 			);
@@ -149,7 +149,7 @@ function vtm_get_profile_content() {
 
 		// Set Portrait settings
 		if (isset($_POST['set_vtm_portrait'])) {
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_PROFILE",
 				array('PORTRAIT' => $_POST['vtm_portrait_set']),
 				array('CHARACTER_ID' => $characterID)
 			);
@@ -161,7 +161,7 @@ function vtm_get_profile_content() {
 			$mycharacter->portrait = $_POST['vtm_portrait_set'];
 		}
 		if (isset($_POST['clear_vtm_portrait'])) {
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_PROFILE",
 				array('PORTRAIT' => ''),
 				array('CHARACTER_ID' => $characterID)
 			);
@@ -183,7 +183,7 @@ function vtm_get_profile_content() {
 			}
 			elseif (get_option('vtm_max_size', '0') != 0 
 				&& $_FILES['vtm_portrait']['size'] > get_option('vtm_max_size', '0')) {
-				echo "<p style='color:red'>Uploaded file is greater than the maximum size of " . get_option('vtm_max_size', '0') ." bytes</p>";
+				echo "<p style='color:red'>Uploaded file is greater than the maximum size of " . esc_html(get_option('vtm_max_size', '0')) ." bytes</p>";
 			}
 			else {
 				if (class_exists('Imagick')) {
@@ -198,11 +198,11 @@ function vtm_get_profile_content() {
 				
 				if (get_option('vtm_max_width', '0') != 0 &&
 					$sizex > get_option('vtm_max_width', '0') ){
-					echo "<p style='color:red'>Uploaded image is wider than the maximum width of " . get_option('vtm_max_width', '0') ." pixels</p>";
+					echo "<p style='color:red'>Uploaded image is wider than the maximum width of " . esc_html(get_option('vtm_max_width', '0')) ." pixels</p>";
 				}
 				elseif (get_option('vtm_max_height', '0') != 0 &&
 					$sizey > get_option('vtm_max_height', '0') ){
-					echo "<p style='color:red'>Uploaded image is taller than the maximum height of " . get_option('vtm_max_height', '0') ." pixels</p>";
+					echo "<p style='color:red'>Uploaded image is taller than the maximum height of " . esc_html(get_option('vtm_max_height', '0')) ." pixels</p>";
 				} else {
 					
 					require_once( ABSPATH . 'wp-admin/includes/image.php' );
@@ -227,7 +227,7 @@ function vtm_get_profile_content() {
 						// Save path to character
 						$portaitpath = $upload_dir['baseurl']  . "/" . $metadata['file'];
 						
-						$wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+						$wpdb->update($wpdb->prefix . "vtm_CHARACTER_PROFILE",
 							array ('PORTRAIT' => $portaitpath),
 							array ('CHARACTER_ID' => $characterID)
 						);
@@ -247,7 +247,7 @@ function vtm_get_profile_content() {
 		
 		// Update quote
 		if (isset($_POST['charHarpyQuote']) && get_option('vtm_user_set_quote', '0') == '1') {
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PROFILE",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_PROFILE",
 				array('QUOTE' => $_POST['charHarpyQuote']),
 				array('CHARACTER_ID' => $characterID)
 			);
@@ -262,7 +262,7 @@ function vtm_get_profile_content() {
 		
 		// Update Pronouns
 		if (isset($_POST['Pronouns'])) {
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER",
 				array('PRONOUNS' => $_POST['Pronouns']),
 				array('ID' => $characterID)
 			);
@@ -294,7 +294,7 @@ function vtm_get_profile_content() {
 	$output .= "<table class='gvplugin vtmprofile' id=\"gvid_prof_out\">\n";
 	$output .= "<tr><td class=\"gvcol_1 gvcol_val\">\n";
 	// Character Info
-	$output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />" . vtm_formatOutput($mycharacter->quote, 1) . "</p>\n";
+$output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />{$mycharacter->quote}</p>\n";
 	$output .= "<table class='gvplugin vtmprofile' id=\"gvid_prof_in\">\n";
     $output .= "<tr><td class=\"gvcol_1 gvcol_key\">Player:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->player) . "</td></tr>";
 	$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Clan:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->clan);
@@ -305,9 +305,9 @@ function vtm_get_profile_content() {
 	
 	// Background - Status
 	if ($vtmglobal['config']->DISPLAY_BACKGROUND_IN_PROFILE) {
-		$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "BACKGROUND
+		$sql = "SELECT NAME FROM " . $wpdb->prefix . "vtm_BACKGROUND
 				WHERE ID = %d";
-		$background = $wpdb->get_var($wpdb->prepare($sql, $vtmglobal['config']->DISPLAY_BACKGROUND_IN_PROFILE));	
+		$background = $wpdb->get_var($wpdb->prepare("$sql", $vtmglobal['config']->DISPLAY_BACKGROUND_IN_PROFILE));	
 	
 		$level = 0;
 		foreach ($mycharacter->backgrounds as $row) {
@@ -341,13 +341,13 @@ function vtm_get_profile_content() {
 	// Merits/Flaws - Clan Friendship/Enmity
 	$sql = "SELECT merits.NAME
 			FROM 
-				" . VTM_TABLE_PREFIX . "MERIT merits,
-				" . VTM_TABLE_PREFIX . "PROFILE_DISPLAY disp
+				" . $wpdb->prefix . "vtm_MERIT merits,
+				" . $wpdb->prefix . "vtm_PROFILE_DISPLAY disp
 			WHERE
 				merits.PROFILE_DISPLAY_ID = disp.ID
 				AND disp.NAME = 'If Clan Matches'
 			ORDER BY merits.NAME";
-	$displayMerits = $wpdb->get_col($sql);
+	$displayMerits = $wpdb->get_col("$sql");
 	foreach ($displayMerits as $displaymerit) {
 		foreach ($mycharacter->meritsandflaws as $charmerit) {
 			if ($displaymerit != $charmerit->name)

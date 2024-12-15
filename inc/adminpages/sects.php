@@ -22,8 +22,8 @@ function vtm_render_sect_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="sect-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="sect-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="sect" />
  		<?php $testListTable["sect"]->display() ?>
 	</form>
@@ -45,8 +45,7 @@ function vtm_render_sect_add_form($type, $addaction) {
 
 	} elseif ('edit-' . $type == $addaction) {
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "SECT WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_row($sql);
+		$data =$wpdb->get_row($wpdb->prepare("$sql", $id));
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -69,17 +68,17 @@ function vtm_render_sect_add_form($type, $addaction) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
 			<td>Name:</td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=30 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=30 /></td>
 			<td>Visible to Players:</td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
@@ -87,10 +86,10 @@ function vtm_render_sect_add_form($type, $addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=90 /></td> 
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> 
 		</tr>
 		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="Save" />
+		<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
 	</form>
 	
 	<?php
@@ -160,11 +159,11 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['sect_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['sect_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . vtm_formatOutput($_REQUEST['sect_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($_REQUEST['sect_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
 
@@ -192,7 +191,7 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:orange'>No updates made</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update Affiliation ({$_REQUEST['sect']})</p>";
+			echo "<p style='color:red'>Could not update Affiliation (" . esc_html($_REQUEST['sect']) . ")</p>";
 		}
 		 
 	}
@@ -209,12 +208,12 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 					characters.SECT_ID = sects.ID 
 					and sects.ID = %d;";
 					
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this affiliation has been use for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -222,16 +221,16 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "SECT where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
-			echo "<p style='color:green'>Deleted affiliation $selectedID</p>";
+			echo "<p style='color:green'>Deleted affiliation " . esc_html($selectedID) . "</p>";
 		}
 	}
   
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -247,7 +246,7 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -320,7 +319,7 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 				
 		//echo "<p>SQL: $sql</p>";
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

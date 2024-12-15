@@ -33,28 +33,28 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		global $wpdb;
 		extract( $args );
 		
-		echo $before_widget;
+		echo wp_kses($before_widget, vtm_output_allowedhtml());
 		
 		if ( is_user_logged_in() ) {
 			$current_user = wp_get_current_user();
 				$title = apply_filters( 'widget_title', 'Welcome, ' . $current_user->display_name );
-			echo $before_title . $title . $after_title;
+			echo wp_kses($before_title . $title . $after_title, vtm_output_allowedhtml());
 			?>
 			<ul>
 			<?php if ( isset( $instance[ 'charsheet_link' ] ) ) { ?>
-			<li><a href="<?php echo vtm_get_stlink_url('viewCharSheet'); ?>">Character Sheet</a></li>
+			<li><a href="<?php echo esc_url(vtm_get_stlink_url('viewCharSheet')); ?>">Character Sheet</a></li>
 			<?php } ?>
 			<?php if ( isset( $instance[ 'profile_link' ] ) ) { ?>
-			<li><a href="<?php echo vtm_get_stlink_url('viewProfile'); ?>">Character Profile</a></li>
+			<li><a href="<?php echo esc_url(vtm_get_stlink_url('viewProfile')); ?>">Character Profile</a></li>
 			<?php } ?>
 			<?php if ( isset( $instance[ 'spendxp_link' ] ) ) { ?>
-			<li><a href="<?php echo vtm_get_stlink_url('viewXPSpend'); ?>">Spend Experience</a></li>
+			<li><a href="<?php echo esc_url(vtm_get_stlink_url('viewXPSpend')); ?>">Spend Experience</a></li>
 			<?php } 
 			
 				$clanlink  = vtm_get_clan_link();
 				if ( !empty($clanlink) ) { 
 			?>
-					<li><a href="<?php echo $clanlink; ?>">Clan Page</a></li> 
+					<li><a href="<?php echo esc_url($clanlink); ?>">Clan Page</a></li> 
 			<?php } ?>
 			
 		 	<?php 
@@ -87,30 +87,30 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 					}
 				
 					?>
-					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm'); ?>">Character Inbox<?php echo $unread; ?></a></li>
+					<li><a href="<?php echo esc_url(admin_url('edit.php?post_type=vtmpm')); ?>">Character Inbox<?php echo esc_html($unread); ?></a></li>
 					<?php 
 				}
 				if ( isset( $instance[ 'addressbook_link' ] ) && !vtm_isST() ) { 
 					?>
-					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses'); ?>">Addressbook</a></li>
+					<li><a href="<?php echo esc_url(admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses')); ?>">Addressbook</a></li>
 					<?php 
 				}
 				if ( isset( $instance[ 'addresses_link' ] ) ) { 
 					?>
-					<li><a href="<?php echo admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails'); ?>">Contact Details</a></li>
+					<li><a href="<?php echo esc_url(admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails')); ?>">Contact Details</a></li>
 					<?php 
 				}
 			}?>
- 			<li><a href="<?php echo wp_logout_url( home_url() ); ?>" title="Logout">Logout</a></li>
+ 			<li><a href="<?php echo esc_url(wp_logout_url( home_url() )); ?>" title="Logout">Logout</a></li>
 			</ul>
 			<?php
 		} else {
 			$title = apply_filters( 'widget_title', 'Welcome' );
-				echo $before_title . $title . $after_title;
+				echo wp_kses($before_title . $title . $after_title, vtm_output_allowedhtml());
 			wp_login_form( $args );
 		}
 		
-		echo $after_widget;
+		echo wp_kses($after_widget, vtm_output_allowedhtml());
 	}
 
 	/**	 * Sanitize widget form values as they are saved.
@@ -127,7 +127,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		$instance['inbox_link']       = $new_instance['inbox_link'];
 		$instance['addresses_link']   = $new_instance['addresses_link'];
 		$instance['addressbook_link'] = $new_instance['addressbook_link'];
-		$instance['dl_category'] = strip_tags( $new_instance['dl_category'] );
+		$instance['dl_category'] = wp_strip_all_tags( $new_instance['dl_category'] );
 		return $instance;
 	}
 	/**
@@ -149,25 +149,25 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 
 		?>
 		<p>
-		<label for="<?php echo $this->get_field_id( 'charsheet_link' ); ?>"><?php _e( 'Show Character Sheet Link:', 'vampire-character' ); ?></label>
- 		<input id="<?php echo $this->get_field_id( 'charsheet_link' ); ?>" name="<?php echo $this->get_field_name( 'charsheet_link' ); ?>" type="checkbox" <?php echo checked( $charsheet_link, true ); ?> />
+		<label for="<?php echo esc_html($this->get_field_id( 'charsheet_link' )); ?>"><?php esc_html( 'Show Character Sheet Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'charsheet_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'charsheet_link' )); ?>" type="checkbox" <?php echo checked( $charsheet_link, true ); ?> />
  		</p><p>
-		<label for="<?php echo $this->get_field_id( 'profile_link' ); ?>"><?php _e( 'Show Profile Link:', 'vampire-character' ); ?></label>
- 		<input id="<?php echo $this->get_field_id( 'profile_link' ); ?>" name="<?php echo $this->get_field_name( 'profile_link' ); ?>" type="checkbox" <?php echo checked( $profile_link, true ); ?> />
+		<label for="<?php echo esc_html($this->get_field_id( 'profile_link' )); ?>"><?php esc_html( 'Show Profile Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'profile_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'profile_link' )); ?>" type="checkbox" <?php echo checked( $profile_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo $this->get_field_id( 'spendxp_link' ); ?>"><?php _e( 'Show Spend XP Link:', 'vampire-character' ); ?></label>
- 		<input id="<?php echo $this->get_field_id( 'spendxp_link' ); ?>" name="<?php echo $this->get_field_name( 'spendxp_link' ); ?>" type="checkbox" <?php echo checked( $spendxp_link, true ); ?> />
+		<label for="<?php echo esc_html($this->get_field_id( 'spendxp_link' )); ?>"><?php esc_html( 'Show Spend XP Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'spendxp_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'spendxp_link' )); ?>" type="checkbox" <?php echo checked( $spendxp_link, true ); ?> />
 		</p><?php
 		if (get_option( 'vtm_feature_pm', '0' ) == 1) {
 		?><p>
-		<label for="<?php echo $this->get_field_id( 'inbox_link' ); ?>"><?php _e( 'Inbox Link:', 'vampire-character' ); ?></label>
- 		<input id="<?php echo $this->get_field_id( 'inbox_link' ); ?>" name="<?php echo $this->get_field_name( 'inbox_link' ); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
+		<label for="<?php echo esc_html($this->get_field_id( 'inbox_link' )); ?>"><?php esc_html( 'Inbox Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'inbox_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'inbox_link' )); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo $this->get_field_id( 'addresses_link' ); ?>"><?php _e( 'My Addresses Link:', 'vampire-character' ); ?></label>
- 		<input id="<?php echo $this->get_field_id( 'addresses_link' ); ?>" name="<?php echo $this->get_field_name( 'addresses_link' ); ?>" type="checkbox" <?php echo checked( $addresses_link, true ); ?> />
+		<label for="<?php echo esc_html($this->get_field_id( 'addresses_link' )); ?>"><?php esc_html( 'My Addresses Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'addresses_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'addresses_link' )); ?>" type="checkbox" <?php echo checked( $addresses_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo $this->get_field_id( 'addressbook_link' ); ?>"><?php _e( 'Addressbook Link:', 'vampire-character' ); ?></label>
- 		<input id="<?php echo $this->get_field_id( 'addressbook_link' ); ?>" name="<?php echo $this->get_field_name( 'addressbook_link' ); ?>" type="checkbox" <?php echo checked( $addressbook_link, true ); ?> />
+		<label for="<?php echo esc_html($this->get_field_id( 'addressbook_link' )); ?>"><?php esc_html( 'Addressbook Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'addressbook_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'addressbook_link' )); ?>" type="checkbox" <?php echo checked( $addressbook_link, true ); ?> />
 		</p>
 		<?php
 		}
@@ -203,7 +203,7 @@ class vtmclass_Plugin_Background_Widget extends WP_Widget {
 		global $wpdb;
 		extract( $args );
 		
-		echo $before_widget;
+		echo wp_kses($before_widget, vtm_output_allowedhtml());
 		
 		if ( is_user_logged_in() ) {
 			$character = vtm_establishCharacter("");
@@ -211,7 +211,7 @@ class vtmclass_Plugin_Background_Widget extends WP_Widget {
 			
 						
 			$title = apply_filters( 'widget_title', 'Backgrounds' );
-			echo $before_title . $title . $after_title;
+			echo wp_kses($before_title . $title . $after_title, vtm_output_allowedhtml());
 			
 			if (empty($characterID)) {
 				echo '<p>No character selected</p>';
@@ -222,20 +222,20 @@ class vtmclass_Plugin_Background_Widget extends WP_Widget {
 				$mycharacter->load($characterID);
 				
 				if ($mycharacter->backgrounds_total <= 0) {
-					echo "<p>There are no <a href='" . vtm_get_stlink_url('viewExtBackgrnd') . "?CHARACTER=" . urlencode($character) . "'>character background</a> questions to complete</p>";
+					echo "<p>There are no <a href='" . esc_url(vtm_get_stlink_url('viewExtBackgrnd') . "?CHARACTER=" . $character) . "'>character background</a> questions to complete</p>";
 				} 
 				elseif ($mycharacter->backgrounds_done == $mycharacter->backgrounds_total) {
-					echo "<p>The <a href='" . vtm_get_stlink_url('viewExtBackgrnd') . "?CHARACTER=" . urlencode($character) . "'>character background</a> for $character has been completed</p>";
+					echo "<p>The <a href='" . esc_url(vtm_get_stlink_url('viewExtBackgrnd') . "?CHARACTER=" . $character) . "'>character background</a> for " . esc_html($character) . " has been completed</p>";
 				}
 				else {
-					echo "<p>The <a href='" . vtm_get_stlink_url('viewExtBackgrnd') . "?CHARACTER=" . urlencode($character) . "'>character background</a>  for $character is ";
-					echo sprintf ("%.0f%%", $mycharacter->backgrounds_done * 100 / $mycharacter->backgrounds_total);
+					echo "<p>The <a href='" . esc_url(vtm_get_stlink_url('viewExtBackgrnd') . "?CHARACTER=" . $character) . "'>character background</a>  for " . esc_html($character) . " is ";
+					echo esc_html(sprintf ("%.0f%%", $mycharacter->backgrounds_done * 100 / $mycharacter->backgrounds_total));
 					echo " complete</p>";
 				}
 			}
 		} 
 		
-		echo $after_widget;
+		echo wp_kses($after_widget, vtm_output_allowedhtml());
 	}
 	/**	 * Sanitize widget form values as they are saved.
 	 *	 * @see WP_Widget::update()
@@ -281,11 +281,11 @@ function vtm_get_clan_link() {
 	$characterID = vtm_establishCharacterID($character);
 
 	$sql = "SELECT clans.CLAN_PAGE_LINK 
-			FROM " . VTM_TABLE_PREFIX . "CLAN clans,
-				" . VTM_TABLE_PREFIX . "CHARACTER characters
+			FROM " . $wpdb->prefix . "vtm_CLAN clans,
+				" . $wpdb->prefix . "vtm_CHARACTER characters
 			WHERE clans.ID = characters.PRIVATE_CLAN_ID
 				AND characters.ID = %d;";
-	$result = $wpdb->get_var($wpdb->prepare($sql, $characterID));
+	$result = $wpdb->get_var($wpdb->prepare("$sql", $characterID));
 	
 	return $result;
 	
@@ -391,25 +391,25 @@ class StuSolarCalc_Widget extends WP_Widget {
 		$instance = wp_parse_args( (array) $instance, $defaults );
 		?>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'lat' ); ?>">Latitude (XX.XXXXX degrees):</label>
-			<input id="<?php echo $this->get_field_id( 'lat' ); ?>" name="<?php echo $this->get_field_name( 'lat' ); ?>" value="<?php echo $instance['lat']; ?>" style="width:100%;" />
+			<label for="<?php echo esc_html($this->get_field_id( 'lat' )); ?>">Latitude (XX.XXXXX degrees):</label>
+			<input id="<?php echo esc_html($this->get_field_id( 'lat' )); ?>" name="<?php echo esc_html($this->get_field_name( 'lat' )); ?>" value="<?php echo esc_html($instance['lat']); ?>" style="width:100%;" />
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'long' ); ?>">Longitude (+/-XXX.XXXXX):</label>
-			<input id="<?php echo $this->get_field_id( 'long' ); ?>" name="<?php echo $this->get_field_name( 'long' ); ?>" value="<?php echo $instance['long']; ?>" style="width:100%;" />
+			<label for="<?php echo esc_html($this->get_field_id( 'long' )); ?>">Longitude (+/-XXX.XXXXX):</label>
+			<input id="<?php echo esc_html($this->get_field_id( 'long' )); ?>" name="<?php echo esc_html($this->get_field_name( 'long' )); ?>" value="<?php echo esc_html($instance['long']); ?>" style="width:100%;" />
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'offset' ); ?>">Offset from GMT (hours):</label>
-			<input id="<?php echo $this->get_field_id( 'offset' ); ?>" name="<?php echo $this->get_field_name( 'offset' ); ?>" value="<?php echo $instance['offset']; ?>" style="width:100%;" />
+			<label for="<?php echo esc_html($this->get_field_id( 'offset' )); ?>">Offset from GMT (hours):</label>
+			<input id="<?php echo esc_html($this->get_field_id( 'offset' )); ?>" name="<?php echo esc_html($this->get_field_name( 'offset' )); ?>" value="<?php echo esc_html($instance['offset']); ?>" style="width:100%;" />
 		</p>
 		
 		<p>
-			<label for="<?php echo $this->get_field_id( 'location' ); ?>">Location name:</label>
-			<input id="<?php echo $this->get_field_id( 'location' ); ?>" name="<?php echo $this->get_field_name( 'location' ); ?>" value="<?php echo $instance['location']; ?>" style="width:100%;" />
+			<label for="<?php echo esc_html($this->get_field_id( 'location' )); ?>">Location name:</label>
+			<input id="<?php echo esc_html($this->get_field_id( 'location' )); ?>" name="<?php echo esc_html($this->get_field_name( 'location' )); ?>" value="<?php echo esc_html($instance['location']); ?>" style="width:100%;" />
 		</p>
 		<p>
-			<label for="<?php echo $this->get_field_id( 'dst' ); ?>">Daylight Savings Time in Effect?</label>
-			<input class="checkbox" type="checkbox" <?php checked( $instance['dst'], 'on' ); ?> id="<?php echo $this->get_field_id( 'dst' ); ?>" name="<?php echo $this->get_field_name( 'dst' ); ?>" />
+			<label for="<?php echo esc_html($this->get_field_id( 'dst' )); ?>">Daylight Savings Time in Effect?</label>
+			<input class="checkbox" type="checkbox" <?php checked( $instance['dst'], 'on' ); ?> id="<?php echo esc_html($this->get_field_id( 'dst' )); ?>" name="<?php echo esc_html($this->get_field_name( 'dst' )); ?>" />
 		</p>
 											
 		<?php
@@ -420,8 +420,8 @@ class StuSolarCalc_Widget extends WP_Widget {
 		else{
 			$timeGMT = gmdate("H:i", time() + 3600*$instance['offset']);  //  without Daylight Savings Time
 		}
-		echo 'Current Time: ' . $timeGMT;
-		echo $instance['dst'];		
+		echo 'Current Time: ' . esc_html($timeGMT);
+		echo esc_html($instance['dst']);		
 	}
 
 	function update($new_instance, $old_instance) {
@@ -440,7 +440,7 @@ class StuSolarCalc_Widget extends WP_Widget {
 	function widget($args, $instance) {
 		// Actual widget - displays a image file from a URL
 		extract($args);
-		echo $before_widget;
+		echo wp_kses($before_widget, vtm_output_allowedhtml());
 /*			echo $before_title.'Daily Sunrise/Sunset'.$after_title;	
 */
 		$instance['offset'] = isset($instance['offset']) ? $instance['offset'] : 0;
@@ -511,12 +511,12 @@ class StuSolarCalc_Widget extends WP_Widget {
 */
 
 	echo '<span class="solar">';
-	echo 'Current Time - ' . $timeGMT . '<br />' . "\n";
-	echo 'Sunrise - ' . $sunrisetime . '<br />' . "\n";
-	echo 'Sunset - ' . $sunsettime . '' . "\n";
+	echo 'Current Time - ' . esc_html($timeGMT) . '<br />' . "\n";
+	echo 'Sunrise - ' . esc_html($sunrisetime) . '<br />' . "\n";
+	echo 'Sunset - ' . esc_html($sunsettime) . '' . "\n";
 	echo '</span>';
 	
-	echo $after_widget;
+	echo wp_kses($after_widget, vtm_output_allowedhtml());
 	}
 }
 ?>

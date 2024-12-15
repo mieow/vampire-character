@@ -357,7 +357,7 @@ function vtm_tabdisplay($tab, $default="merit") {
 		$display = "class=default";
 	}
 		
-	print $display;
+	print esc_html($display);
 		
 }
 
@@ -426,36 +426,36 @@ function vtm_get_option_tablink($tab, $text, $default = ""){
 function vtm_character_datatables() {
 	global $vtmglobal;
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.', 'vampire-character' ) );
+		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
 	<div class="wrap">
 		<h2>Database Tables</h2>
 		<h2 class="nav-tab-wrapper">
-			<?php echo vtm_get_tablink('stat',        'Attributes and Stats', 'stat'); ?>
-			<?php echo vtm_get_tablink('skill',       'Abilities'); ?>
-			<?php echo vtm_get_tablink('skill_type',  'Ability Categories'); ?>
-			<?php echo vtm_get_tablink('clans',       'Clans'); ?>
-			<?php echo vtm_get_tablink('disc',        'Disciplines'); ?>
-			<?php echo vtm_get_tablink('bgdata',      'Backgrounds'); ?>
-			<?php if (isset($vtmglobal['config']->USE_NATURE_DEMEANOUR) && $vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') echo vtm_get_tablink('nature',  'Nature/Demeanour'); ?>
-			<?php echo vtm_get_tablink('merit',       'Merits'); ?>
-			<?php echo vtm_get_tablink('flaw',        'Flaws'); ?>
-			<?php echo vtm_get_tablink('ritual',      'Rituals'); ?>
-			<?php echo vtm_get_tablink('enlighten',   'Paths of Enlightenment'); ?>
-			<?php echo vtm_get_tablink('path',        'Paths of Magik'); ?>
-			<?php echo vtm_get_tablink('costmodel',   'Cost Models'); ?>
-			<?php echo vtm_get_tablink('book',        'Sourcebooks'); ?>
-			<?php echo vtm_get_tablink('question',    'Background Questions'); ?>
-			<?php echo vtm_get_tablink('sector',      'Sectors'); ?>
-			<?php echo vtm_get_tablink('domain',      'Cities/Locations'); ?>
-			<?php echo vtm_get_tablink('sect',        'Affiliations'); ?>
-			<?php echo vtm_get_tablink('office',      'Offices'); ?>
-			<?php echo vtm_get_tablink('combo',       'Combination Disciplines'); ?>
-			<?php echo vtm_get_tablink('generation',  'Generation'); ?>
-			<?php echo vtm_get_tablink('template',    'Character Templates'); ?>
-			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapowner', 'Map Owners'); ?>
-			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo vtm_get_tablink('mapdomain','Map Locations'); ?>
+			<?php echo wp_kses(vtm_get_tablink('stat',        'Attributes and Stats', 'stat'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('skill',       'Abilities'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('skill_type',  'Ability Categories'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('clans',       'Clans'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('disc',        'Disciplines'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('bgdata',      'Backgrounds'), vtm_tablink_allowedhtml()); ?>
+			<?php if (isset($vtmglobal['config']->USE_NATURE_DEMEANOUR) && $vtmglobal['config']->USE_NATURE_DEMEANOUR == 'Y') echo wp_kses(vtm_get_tablink('nature',  'Nature/Demeanour'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('merit',       'Merits'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('flaw',        'Flaws'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('ritual',      'Rituals'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('enlighten',   'Paths of Enlightenment'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('path',        'Paths of Magik'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('costmodel',   'Cost Models'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('book',        'Sourcebooks'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('question',    'Background Questions'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('sector',      'Sectors'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('domain',      'Cities/Locations'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('sect',        'Affiliations'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('office',      'Offices'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('combo',       'Combination Disciplines'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('generation',  'Generation'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('template',    'Character Templates'), vtm_tablink_allowedhtml()); ?>
+			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo wp_kses(vtm_get_tablink('mapowner', 'Map Owners'), vtm_tablink_allowedhtml()); ?>
+			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo wp_kses(vtm_get_tablink('mapdomain','Map Locations'), vtm_tablink_allowedhtml()); ?>
 		</h2>
 		<div class="gvadmin_content">
 		<?php

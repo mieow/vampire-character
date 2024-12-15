@@ -256,9 +256,9 @@ function vtm_get_pending($characterID) {
 	global $wpdb;
 
 	$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND WHERE CHARACTER_ID = %s";
-	$sql = $wpdb->prepare($sql, $characterID);
+	$sql = $wpdb->prepare("$sql", $characterID);
 	
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 
 	return $result;
 }
@@ -277,9 +277,9 @@ function vtm_get_xp_costs_per_level($table, $tableid, $level) {
 			AND steps.NEXT_VALUE > %s
 		ORDER BY steps.CURRENT_VALUE ASC";
 
-	$sql = $wpdb->prepare($sql, $tableid, $level);
+	$sql = $wpdb->prepare("$sql", $tableid, $level);
 	
-	return $wpdb->get_results($sql);
+	return $wpdb->get_results("$sql");
 
 }
 function vtm_get_discipline_xp_costs_per_level($disciplineid, $level, $clanid) {
@@ -301,7 +301,7 @@ function vtm_get_discipline_xp_costs_per_level($disciplineid, $level, $clanid) {
 					AND cdisciplines.ID = cclandisciplines.DISCIPLINE_ID
 					AND cdisciplines.ID = %s
 					AND steps.NEXT_VALUE > %s";
-	$clansql = $wpdb->prepare($clansql, $clanid, $disciplineid, $level);
+	$clansql = $wpdb->prepare("$clansql", $clanid, $disciplineid, $level);
 	$result = $wpdb->get_results($clansql);
 
 	
@@ -317,7 +317,7 @@ function vtm_get_discipline_xp_costs_per_level($disciplineid, $level, $clanid) {
 						AND steps.COST_MODEL_ID = ncmodels.ID
 						AND ncclans.ID = %s
 						AND steps.NEXT_VALUE > %s";
-		$nonsql = $wpdb->prepare($nonsql, $clanid, $level);
+		$nonsql = $wpdb->prepare("$nonsql", $clanid, $level);
 		$result = $wpdb->get_results($nonsql);
 	}			
 	
@@ -335,8 +335,8 @@ function vtm_get_character_maximums($characterID) {
 					 " . VTM_TABLE_PREFIX . "GENERATION gen
 				WHERE chara.generation_id = gen.id
 				  AND chara.ID = %s";
-	$sql = $wpdb->prepare($sql, $characterID);
-	$characterMaximums = $wpdb->get_results($sql);
+	$sql = $wpdb->prepare("$sql", $characterID);
+	$characterMaximums = $wpdb->get_results("$sql");
 
 	foreach ($characterMaximums as $charMax) {
 		$maxRating = $charMax->max_rating;
@@ -392,9 +392,9 @@ function vtm_render_details_section($characterID) {
 	// Query the character table
 	$charTableInfo = array();
 	foreach ($requestChTables as $chartable => $discard) {
-		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM " . VTM_TABLE_PREFIX . $chartable . " WHERE CHARACTER_ID = '%s'",$characterID);
+		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM i% WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
 		//print "SQL: $sql<br>";
-		$charTableInfo[$chartable] = $wpdb->get_results($sql, OBJECT_K);
+		$charTableInfo[$chartable] = $wpdb->get_results("$sql", OBJECT_K);
 	}
 	// print "<br>";
 	// print_r($charTableInfo);
@@ -589,9 +589,9 @@ function vtm_get_sql_stats($characterID) {
 				AND steps.CURRENT_VALUE = cha_item.level
 				AND cha_item.CHARACTER_ID = %s
 		   ORDER BY item.ordering";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID);
 	//echo "<p>SQL: $sql</p>";
-	//$character_stats_xp = $wpdb->get_results($sql);
+	//$character_stats_xp = $wpdb->get_results("$sql");
 		
 	//$rowoutput = vtm_render_spend_table('stat', $character_stats_xp, $maxRating, $vtmglobal['config']->WEB_COLUMNS, $xp_avail);
 	
@@ -628,7 +628,7 @@ function vtm_get_sql_skills($characterID) {
 					(SELECT *
 					FROM " . VTM_TABLE_PREFIX . "CHARACTER_SKILL
 					WHERE 
-						CHARACTER_ID = '%s'
+						CHARACTER_ID = %s
 					) as cha_item
 				ON
 					cha_item.SKILL_ID = item.ID
@@ -754,7 +754,7 @@ function vtm_get_sql_skills($characterID) {
 				AND item.SKILL_TYPE_ID = skilltype.ID
 				AND steps.CURRENT_VALUE = 0
 				AND item.MULTIPLE = 'Y'	
-				AND pending.CHARACTER_ID = '%s'
+				AND pending.CHARACTER_ID = %s
 				AND pending.ITEMTABLE = 'SKILL'
 				AND pending.ITEMTABLE_ID = item.ID
 				AND pending.CHARTABLE_ID = 0
@@ -770,7 +770,7 @@ function vtm_get_sql_skills($characterID) {
 			ORDER BY ordering, grp, item_name, cha_item_id";
 
 	//$sql = $sql_mult_ch_pend;
-	$sql = $wpdb->prepare($sql, $characterID, $characterID, $characterID, $characterID, $characterID);
+	$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID, $characterID, $characterID);
 	//print "SQL: $sql";
 	
 	return $sql;
@@ -863,9 +863,9 @@ function vtm_render_skills($characterID, $maxRating, $pendingSpends, $xp_avail) 
 			ORDER BY ordering, grp, name, level DESC, comment";
 	
 	
-	$sql = $wpdb->prepare($sql, $characterID, $characterID, $characterID, $characterID, $characterID);
+	$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID, $characterID, $characterID);
     //echo "<p>SQL: $sql</p>";
-	$character_skills_xp = vtm_reformat_skills_xp($wpdb->get_results($sql));
+	$character_skills_xp = vtm_reformat_skills_xp($wpdb->get_results("$sql"));
 	
 	$sql = "SELECT
 				skill.name as name, 
@@ -895,7 +895,7 @@ function vtm_render_skills($characterID, $maxRating, $pendingSpends, $xp_avail) 
 				AND skill.COST_MODEL_ID  = models.ID
 				AND skill.SKILL_TYPE_ID = skilltype.ID
 			ORDER BY ordering, grp, name";
-	$skills_list = $wpdb->get_results($sql);
+	$skills_list = $wpdb->get_results("$sql");
 	
     //echo "<p>SQL: $sql</p>";
 	//print_r($skills_list);
@@ -1058,7 +1058,7 @@ function vtm_get_sql_combo($characterID) {
 				prereq.COMBO_DISCIPLINE_ID = combo.ID
 				AND prereq.DISCIPLINE_ID = disciplines.ID
 			GROUP BY combo.NAME";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID);
 	
 	return $sql;
 }
@@ -1141,7 +1141,7 @@ function vtm_get_sql_disc($characterID) {
 					OR nonclansteps.CURRENT_VALUE = cha_item.level
 				)
 			ORDER BY grp, item.name";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID,$characterID);
 
 	return $sql;
 
@@ -1168,7 +1168,7 @@ function vtm_get_sql_path($characterID) {
 				LEFT JOIN (
 					SELECT PATH_ID, DISCIPLINE_ID
 					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PRIMARY_PATH
-					WHERE CHARACTER_ID = '%s'
+					WHERE CHARACTER_ID = %s
 				) primarypath
 				ON
 					primarypath.DISCIPLINE_ID = disc.ID,
@@ -1226,7 +1226,7 @@ function vtm_get_sql_path($characterID) {
 					OR steps.CURRENT_VALUE > 0
 				)
 		   ORDER BY grp, item.name";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID,$characterID);
 	
 	return $sql;
 
@@ -1319,7 +1319,7 @@ function vtm_get_sql_merit($characterID) {
 				AND merit.VISIBLE = 'Y'
 			ORDER BY grp DESC, curr_level DESC, item_name";
 			
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID);
  	//print "SQL: $sql";
 	return $sql;
 }
@@ -1377,7 +1377,7 @@ function vtm_get_sql_ritual($characterID) {
 				AND ritual.VISIBLE = 'Y'
 				AND (NOT(ISNULL(cha_ritual.level)) OR ritual.COST > 0)
 		   ORDER BY grp, ritual.level, ritual.name";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID);
 	
 	return $sql;
 }
@@ -1436,9 +1436,9 @@ function vtm_render_rituals($characterID, $maxRating, $pendingSpends, $xp_avail)
 				AND ritual.VISIBLE = 'Y'
 				AND (NOT(ISNULL(cha_ritual.level)) OR ritual.COST > 0)
 		   ORDER BY grp, ritual.level, ritual.name";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID,$characterID);
     //echo "<p>SQL: $sql</p>";
-	$character_data = $wpdb->get_results($sql);
+	$character_data = $wpdb->get_results("$sql");
 	
 	$columns = min(2, $vtmglobal['config']->WEB_COLUMNS);
 	
@@ -1510,9 +1510,9 @@ function vtm_render_combo($characterID, $pendingSpends, $xp_avail) {
 				prereq.COMBO_DISCIPLINE_ID = combo.ID
 				AND prereq.DISCIPLINE_ID = disciplines.ID
 			GROUP BY combo.NAME";
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID,$characterID);
     //echo "<p>SQL: $sql</p>";
-	$character_data = $wpdb->get_results($sql);
+	$character_data = $wpdb->get_results("$sql");
 	
 	//print_r($character_data);
 	
@@ -1588,9 +1588,9 @@ function vtm_render_merits($characterID, $pendingSpends, $xp_avail) {
 				AND merit.value >= 0
 			ORDER BY grp DESC, level DESC, name";
 			
-	$sql = $wpdb->prepare($sql, $characterID,$characterID,$characterID);
+	$sql = $wpdb->prepare("$sql", $characterID,$characterID,$characterID);
     //echo "<p>SQL: $sql</p>";
-	$character_merit_xp = vtm_reformat_skills_xp($wpdb->get_results($sql));
+	$character_merit_xp = vtm_reformat_skills_xp($wpdb->get_results("$sql"));
 	
 	$sql = "SELECT
 				merit.ID as item_id,
@@ -1605,7 +1605,7 @@ function vtm_render_merits($characterID, $pendingSpends, $xp_avail) {
 			FROM
 				" . VTM_TABLE_PREFIX . "MERIT merit
 			ORDER BY grp DESC, level DESC, name";
-	$merits_list = $wpdb->get_results($sql);
+	$merits_list = $wpdb->get_results("$sql");
     //echo "<p>SQL: $sql</p>";
 	$columns = min(2,$vtmglobal['config']->WEB_COLUMNS);
 	
@@ -2579,7 +2579,7 @@ function vtm_save_to_pending($data, $details, $playerID, $characterID) {
 		if ($newid  == 0) {
 			echo "<p style='color:red'><b>Error:</b> XP Spend failed for data (";
 			print_r($dataarray);
-			print $wpdb->last_error;
+			print esc_html($wpdb->last_error);
 			echo ")</p>";
 		} 
 	//}
@@ -2668,15 +2668,15 @@ function vtm_get_pending_xp($playerID = 0, $characterID = 0) {
 	global $vtmglobal;
 		
 	if ($vtmglobal['config']->ASSIGN_XP_BY_PLAYER == 'Y' && $playerID == 0 & $characterID != 0) {
-		$sql = $wpdb->prepare("SELECT PLAYER_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s", $characterID);
-		$playerID = $wpdb->get_var($sql);
+		$sql = $wpdb->prepare("SELECT PLAYER_ID FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "CHARACTER", $characterID);
+		$playerID = $wpdb->get_var("$sql");
 	}
 
 	if ($vtmglobal['config']->ASSIGN_XP_BY_PLAYER == 'N') {
 		$sql = "SELECT SUM(AMOUNT) as COST FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
 				WHERE CHARACTER_ID = %s";
-		$sql = $wpdb->prepare($sql, $characterID);
-		$result = $wpdb->get_results($sql);
+		$sql = $wpdb->prepare("$sql", $characterID);
+		$result = $wpdb->get_results("$sql");
 		//echo "<p>SQL: $sql</p>";
 		//print_r($result);
 	} else {
@@ -2687,9 +2687,9 @@ function vtm_get_pending_xp($playerID = 0, $characterID = 0) {
 				WHERE
 					ch.ID = pending.CHARACTER_ID
 					AND ch.PLAYER_ID = %s";
-		$sql = $wpdb->prepare($sql, $playerID);
+		$sql = $wpdb->prepare("$sql", $playerID);
 		//echo "<p>SQL: $sql</p>";
-		$result = $wpdb->get_results($sql);
+		$result = $wpdb->get_results("$sql");
 	}
 	
 	$xp_pending = $result[0]->COST * -1;
@@ -2701,8 +2701,8 @@ function vtm_establishPrivateClanID($characterID) {
 	global $wpdb;
 	
 	$sql = "SELECT PRIVATE_CLAN_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s";
-	$sql = $wpdb->prepare($sql, $characterID);
-	$result = $wpdb->get_results($sql);
+	$sql = $wpdb->prepare("$sql", $characterID);
+	$result = $wpdb->get_results("$sql");
 	
 	return $result[0]->PRIVATE_CLAN_ID;
 }
@@ -2713,8 +2713,8 @@ function vtm_cancel_pending($data) {
 	foreach ($data as $pendingid => $button) {
 		$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
 				WHERE ID = %d";
-		$sql = $wpdb->prepare($sql, $pendingid);
-		$result = $wpdb->get_results($sql);
+		$sql = $wpdb->prepare("$sql", $pendingid);
+		$result = $wpdb->get_results("$sql");
 	}
 }
 
@@ -2799,9 +2799,9 @@ function vtm_validate_details($characterID) {
 	// Query the character table
 	$charTableInfo = array();
 	foreach ($requestChTables as $chartable => $discard) {
-		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM " . VTM_TABLE_PREFIX . $chartable . " WHERE CHARACTER_ID = '%s'",$characterID);
+		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM %i WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
 		//print "SQL: $sql<br>";
-		$charTableInfo[$chartable] = $wpdb->get_results($sql, OBJECT_K);
+		$charTableInfo[$chartable] = $wpdb->get_results("$sql", OBJECT_K);
 	}
 
 	$outputError = "";

@@ -22,8 +22,8 @@ function vtm_render_owner_data(){
    ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="feedingmap_owner_section" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="feedingmap_owner_section" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="mapowner" />
  		<?php $ownerTable->display() ?>
 	</form>
@@ -62,8 +62,8 @@ function vtm_render_domain_data(){
    ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="feedingmap_domain_section" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="feedingmap_domain_section" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="mapdomain" />
  		<?php $domainTable->display() ?>
 	</form>
@@ -81,7 +81,7 @@ function vtm_render_owner_add_form() {
 		$id          = $_REQUEST['owner'];
 		
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "MAPOWNER WHERE ID = %d";
-		$data =$wpdb->get_row($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_row($wpdb->prepare("$sql", $id));
 		
 		$name        = $data->NAME;
 		$visible     = $data->VISIBLE;
@@ -99,16 +99,16 @@ function vtm_render_owner_add_form() {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-owner" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="owner" value="<?php print $id; ?>"/>
+	<form id="new-owner" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="owner" value="<?php print esc_html($id); ?>"/>
 		<input type="hidden" name="tab" value="mapowner" />
 		<input type="hidden" name="action" value="save" />
 		<table style='width:500px'>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="owner_name" value="<?php print vtm_formatOutput($name); ?>" /></td>
+			<td><input type="text" name="owner_name" value="<?php print esc_html($name); ?>" /></td>
 			<td>Fill Colour:  </td>
-			<td><input type="color" name="owner_fill" value="<?php print $fillcolour; ?>" /></td>
+			<td><input type="color" name="owner_fill" value="<?php print esc_html($fillcolour); ?>" /></td>
 			<td>Visible:  </td>
 			<td>
 				<select name="owner_visible">
@@ -147,7 +147,7 @@ function vtm_render_feedingdomain_add_form($inputsok) {
 			$id          = $_REQUEST['mapdomain'];
 			
 			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "MAPDOMAIN WHERE ID = %d";
-			$data =$wpdb->get_row($wpdb->prepare($sql, $id));
+			$data =$wpdb->get_row($wpdb->prepare("$sql", $id));
 			
 			$name        = $data->NAME;
 			$visible     = $data->VISIBLE;
@@ -166,8 +166,8 @@ function vtm_render_feedingdomain_add_form($inputsok) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-mapdomain" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="mapdomain" value="<?php print $id; ?>"/>
+	<form id="new-mapdomain" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="mapdomain" value="<?php print esc_html($id); ?>"/>
 		<input type="hidden" name="tab" value="mapdomain" />
 		<input type="hidden" name="action" value="save" />
 		<table style='width:500px'>
@@ -175,7 +175,7 @@ function vtm_render_feedingdomain_add_form($inputsok) {
 			<table>
 				<tr>
 					<td>Name:  </td>
-					<td colspan=3><input type="text" name="domain_name" value="<?php print vtm_formatOutput($name); ?>" /></td>
+					<td colspan=3><input type="text" name="domain_name" value="<?php print esc_html($name); ?>" /></td>
 				</tr>
 				<tr>
 					<td>Owner:  </td>
@@ -183,9 +183,9 @@ function vtm_render_feedingdomain_add_form($inputsok) {
 						<select name="domain_owner">
 						<?php
 							foreach (vtm_get_owners() as $id => $info) {
-								echo "<option value=\"$id\" ";
+								echo "<option value=\"" . esc_html($id) . "\" ";
 								selected($ownerid, $id);
-								echo ">" . vtm_formatOutput($info->NAME) . "</option>\n";
+								echo ">" . esc_html($info->NAME) . "</option>\n";
 							}
 						?>
 						</select>
@@ -201,13 +201,13 @@ function vtm_render_feedingdomain_add_form($inputsok) {
 				<tr>
 					<td>Description:  </td>
 					<td colspan=3>
-						<textarea name="domain_desc" rows=6 cols=40><?php print vtm_formatOutput($description); ?></textarea></td>
+						<textarea name="domain_desc" rows=6 cols=40><?php print esc_html($description); ?></textarea></td>
 				</tr>
 			</table>
 		</td>
 		<td style='vertical-align:top;'>Coordinates List:<i><br>lat,long<br>lat,long<br>...</i></td>
 		<td>
-			<textarea name="domain_coordinates" rows=10 cols=20><?php print $coordinates; ?></textarea>
+			<textarea name="domain_coordinates" rows=10 cols=20><?php print esc_html($coordinates); ?></textarea>
 		</td>
 		</tr>
 		</table>
@@ -225,7 +225,7 @@ function vtm_get_owners() {
 	global $wpdb;
 
 	$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX . "MAPOWNER;";
-	$list = $wpdb->get_results($sql,OBJECT_K);
+	$list = $wpdb->get_results("$sql", OBJECT_K);
 	
 	return $list;
 }
@@ -261,11 +261,11 @@ class vtmclass_owner_table extends WP_List_Table {
 					)
 				);
 		
-		$owner = vtm_formatOutput($_REQUEST['owner_name']);
+		$owner = esc_html($_REQUEST['owner_name']);
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> $owner could not be inserted</p>";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($owner) . " could not be inserted</p>";
 		} else {
-			echo "<p style='color:green'>Added owner '$owner' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added owner '" . esc_html($owner) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit() {
@@ -285,13 +285,13 @@ class vtmclass_owner_table extends WP_List_Table {
 					)
 				);
 		
-		$owner = vtm_formatOutput($_REQUEST['owner_name']);
+		$owner = esc_html($_REQUEST['owner_name']);
 		if ($result) 
-			echo "<p style='color:green'>Updated $owner</p>";
+			echo "<p style='color:green'>Updated " . esc_html($owner) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to $owner</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($owner) . "</p>";
 		else {
-			echo "<p style='color:red'>Could not update $owner ({$_REQUEST['owner']})</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($owner) . " (" . esc_html($_REQUEST['owner']) . ")</p>";
 		}
 	}
 	function delete($selectedID) {
@@ -302,21 +302,21 @@ class vtmclass_owner_table extends WP_List_Table {
 				" . VTM_TABLE_PREFIX . "MAPOWNER owners , 
 				" . VTM_TABLE_PREFIX . "MAPDOMAIN domains
 			where owners.ID = %d and domains.OWNER_ID = owners.ID;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as owner is assigned to the following locations:";
 			echo "<ul>";
 			foreach ($isused as $mapdomain)
-				echo "<li style='color:red'>" . vtm_formatOutput($mapdomain->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($mapdomain->NAME) . "</li>";
 			echo "</ul></p>";
 		} else {
 			$sql = "delete from " . VTM_TABLE_PREFIX . "MAPOWNER where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted item $selectedID</p>";
+			echo "<p style='color:green'>Deleted item " . esc_html($selectedID) . "</p>";
 		}
 	}
  	function showhide($selectedID, $showhide) {
@@ -339,12 +339,12 @@ class vtmclass_owner_table extends WP_List_Table {
 		);
 		
 		if ($result) 
-			echo "<p style='color:green'>" . ucfirst($showhide) . " item $selectedID successful</p>";
+			echo "<p style='color:green'>" . esc_html(ucfirst($showhide)) . " item " . esc_html($selectedID) . " successful</p>";
 		else if ($result === 0)
-			echo "<p style='color:orange'>Item $selectedID has not been changed</p>";
+			echo "<p style='color:orange'>Item " . esc_html($selectedID) . " has not been changed</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Item $selectedID could not be updated</p>";
+			echo "<p style='color:red'>Item " . esc_html($selectedID) . " could not be updated</p>";
 		}
 	}
   
@@ -373,7 +373,7 @@ class vtmclass_owner_table extends WP_List_Table {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -460,7 +460,7 @@ class vtmclass_owner_table extends WP_List_Table {
         $this->process_bulk_action();
 		
 		$sql  = "SELECT * FROM " . VTM_TABLE_PREFIX . "MAPOWNER ORDER BY NAME";
-		$data = $wpdb->get_results($sql);
+		$data = $wpdb->get_results("$sql");
 
 		$this->items = $data;
 
@@ -512,9 +512,9 @@ class vtmclass_domain_table extends WP_List_Table {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['domain_name']) . " could not be inserted</p>";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['domain_name']) . " could not be inserted</p>";
 		} else {
-			echo "<p style='color:green'>Added location '" . vtm_formatOutput($_REQUEST['domain_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added location '" . esc_html($_REQUEST['domain_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit() {
@@ -537,11 +537,11 @@ class vtmclass_domain_table extends WP_List_Table {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated " . vtm_formatOutput($_REQUEST['domain_name']) . "</p>";
+			echo "<p style='color:green'>Updated " . esc_html($_REQUEST['domain_name']) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to " . vtm_formatOutput($_REQUEST['domain_name']) . "</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($_REQUEST['domain_name']) . "</p>";
 		else {
-			echo "<p style='color:red'>Could not update " . vtm_formatOutput($_REQUEST['domain_name']) . " ({$_REQUEST['mapdomain']})</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($_REQUEST['domain_name']) . " (" . esc_html($_REQUEST['mapdomain']) . ")</p>";
 		}
 	}
 	function assign($selectedID) {
@@ -560,11 +560,11 @@ class vtmclass_domain_table extends WP_List_Table {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated map location $selectedID</p>";
+			echo "<p style='color:green'>Updated map location " . esc_html($selectedID) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to $selectedID</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($selectedID) . "</p>";
 		else {
-			echo "<p style='color:red'>Could not update $selectedID</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -572,8 +572,8 @@ class vtmclass_domain_table extends WP_List_Table {
 		global $wpdb;
 		
 		$sql = "delete from " . VTM_TABLE_PREFIX . "MAPDOMAIN where ID = %d;";
-		$wpdb->get_results($wpdb->prepare($sql, $selectedID));
-		echo "<p style='color:green'>Deleted mapdomain {$selectedID}</p>";
+		$wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		echo "<p style='color:green'>Deleted mapdomain " . esc_html($selectedID) . "</p>";
 	}
 	
  	function showhide($selectedID, $showhide) {
@@ -596,21 +596,21 @@ class vtmclass_domain_table extends WP_List_Table {
 		);
 		
 		if ($result) 
-			echo "<p style='color:green'>" . ucfirst($showhide) . " item $selectedID successful</p>";
+			echo "<p style='color:green'>" . esc_html(ucfirst($showhide)) . " item " . esc_html($selectedID) . " successful</p>";
 		else if ($result === 0)
-			echo "<p style='color:orange'>Item $selectedID has not been changed</p>";
+			echo "<p style='color:orange'>Item " . esc_html($selectedID) . " has not been changed</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Item $selectedID could not be updated</p>";
+			echo "<p style='color:red'>Item " . esc_html($selectedID) . " could not be updated</p>";
 		}
 	}
 
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'OWNER':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
              default:
                 return print_r($item,true); 
         }
@@ -634,7 +634,7 @@ class vtmclass_domain_table extends WP_List_Table {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -733,7 +733,7 @@ class vtmclass_domain_table extends WP_List_Table {
 				foreach( $this->ownerlist as $key => $object ) {
 					echo '<option value="' . esc_attr( $object->ID ) . '" ';
 					selected( $this->ownerselect, $object->ID );
-					echo '>' . vtm_formatOutput($object->NAME) . '</option>';
+					echo '>' . esc_html($object->NAME) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -750,7 +750,7 @@ class vtmclass_domain_table extends WP_List_Table {
 		
 		// Assign to Owner
 		$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX . "MAPOWNER ORDER BY NAME";
-		$this->ownerlist = $wpdb->get_results($sql);
+		$this->ownerlist = $wpdb->get_results("$sql");
 		$this->ownerselect = isset($_REQUEST['ownerselect']) ? sanitize_key($_REQUEST['ownerselect']) : '';
 		        			
 		$this->_column_headers = array($columns, $hidden, $sortable);
@@ -767,7 +767,7 @@ class vtmclass_domain_table extends WP_List_Table {
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']) )
 			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
 		//echo "<p>SQL: $sql</p>";
-		$data = $wpdb->get_results($sql);
+		$data = $wpdb->get_results("$sql");
 
 		$this->items = $data;
 

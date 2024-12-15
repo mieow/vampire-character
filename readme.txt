@@ -1,12 +1,12 @@
-﻿=== Vampire Character Manager ===
+﻿=== Vampire Character Manager === 
 Contributors: magent
 Tags: vampire, character, generation, roleplay, rpg, lrp, larp
-Requires at least: 5.2.4
-Tested up to: 6.3.1
+Requires at least: 6.2
+Tested up to: 6.7.1
 Stable tag: 2.13
 Requires PHP: 7.4
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 For managing characters for LARPs and online vampire games.
 

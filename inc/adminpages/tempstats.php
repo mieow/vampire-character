@@ -7,7 +7,7 @@ function vtm_character_temp_stats() {
 	}
 	
 	$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT ORDER BY ID";
-	$tempstats = $wpdb->get_col($sql);
+	$tempstats = $wpdb->get_col("$sql");
 	
 	?>
 	<div class="wrap">
@@ -16,7 +16,7 @@ function vtm_character_temp_stats() {
 			<ul>
 			<?php
 				foreach ($tempstats as $stat) {
-					print "<li>" . vtm_get_tablink(esc_attr($stat), $stat) . "</li>";
+					print "<li>" . wp_kses(vtm_get_tablink(esc_attr($stat), $stat),vtm_tablink_allowedhtml()) . "</li>";
 				}
 			?>
 			</ul>
@@ -41,15 +41,15 @@ function vtm_render_temp_stat_page($stat) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 
 	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT WHERE NAME = %s";
-	$statID = $wpdb->get_var($wpdb->prepare($sql, $stat));
+	$statID = $wpdb->get_var($wpdb->prepare("$sql", $stat));
 	
 	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT_REASON WHERE NAME = %s";
-	$default_bulk_reason = $wpdb->get_var($wpdb->prepare($sql, 'Game spend'));
+	$default_bulk_reason = $wpdb->get_var($wpdb->prepare("$sql", 'Game spend'));
  
  // List of stats
 	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "STAT WHERE NAME = %s";
-	$sql = $wpdb->prepare($sql, $stat);
-	$result = $wpdb->get_results($sql);
+	$sql = $wpdb->prepare("$sql", $stat);
+	$result = $wpdb->get_results("$sql");
 	if (count($result) > 0) {
 		$filterstat = ucfirst($stat);
 		$maxcol = "MAXSTAT";
@@ -101,7 +101,7 @@ function vtm_render_temp_stat_page($stat) {
 		}
 	}
 	if ($errstat == 2) {
-		echo "<p style='color:green'>$stat updates completed successfully</p>";
+		echo "<p style='color:green'>" . esc_html($stat) . " updates completed successfully</p>";
 	}
 
 	//Get the data from the database
@@ -141,28 +141,28 @@ function vtm_render_temp_stat_page($stat) {
 				AND temp_stat.name = %s
 			GROUP BY chara.id
 			ORDER BY chara.name";
-	$sql = $wpdb->prepare($sql, $filterstat, $stat);
-	$data = $wpdb->get_results($sql, OBJECT_K);	
+	$sql = $wpdb->prepare("$sql", $filterstat, $stat);
+	$data = $wpdb->get_results("$sql", OBJECT_K);	
 	
    ?>
-   <h2><?php print $stat; ?> Changes</h2>
+   <h2><?php print esc_html($stat); ?> Changes</h2>
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="<?php print $stat ?>-filter" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="tab" value="<?php print $stat ?>" />
+	<form id="<?php print esc_html($stat) ?>-filter" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="tab" value="<?php print esc_html($stat) ?>" />
  		
 		<div class='gvfilter'>
-		<select name='<?php print $stat; ?>_reason_bulk'>
+		<select name='<?php print esc_html($stat); ?>_reason_bulk'>
 		<?php
 			foreach ($reasons as $reason) {
-				echo "<option value='{$reason->id}'";
+				echo "<option value='" . esc_html($reason->id) . "'";
 				selected($reason->id, $reasonID);
 				echo ">" . esc_html($reason->name) . "</option>";
 			}
 		?>
 		</select>
-		<input type='text' name='<?php print $stat; ?>_amount_bulk' value='<?php print $amount; ?>' size=4 />
+		<input type='text' name='<?php print esc_html($stat); ?>_amount_bulk' value='<?php print esc_html($amount); ?>' size=4 />
 		<?php submit_button( 'Apply to all', 'primary', 'apply2all', false ); ?>
 		</div>
 		<table class="wp-list-table widefat">
@@ -179,16 +179,16 @@ function vtm_render_temp_stat_page($stat) {
 				<tr>
 					<?php 
 					echo "<td><input type='hidden' name='charname[]' value='" . esc_html($item->CHARACTERNAME) . "'/>
-						<input type='hidden' name='charID[]' value='{$item->ID}'/>
+						<input type='hidden' name='charID[]' value='" . esc_html($item->ID) . "'/>
 						" . esc_html($item->CHARACTERNAME) . "
-						<span style='color:silver'>(ID:{$item->ID})</span></td>";
-					echo "<td><input type='hidden' name='current[]' value='{$item->CURRENTSTAT}'/>
-						{$item->CURRENTSTAT}</td>";
-					echo "<td><input type='hidden' name='max[]' value='{$item->$maxcol}'/>
-						{$item->$maxcol}</td>";
+						<span style='color:silver'>(ID:" . esc_html($item->ID) . ")</span></td>";
+					echo "<td><input type='hidden' name='current[]' value='" . esc_html($item->CURRENTSTAT) . "'/>
+						" . esc_html($item->CURRENTSTAT) . "</td>";
+					echo "<td><input type='hidden' name='max[]' value='" . esc_html($item->$maxcol) . "'/>
+						" . esc_html($item->$maxcol) . "</td>";
 					echo "<td><select name='temp_reason[]'>\n";
 					foreach ($reasons as $reason) {
-						echo "<option value='{$reason->id}'>" . esc_html($reason->name) . "</option>\n";
+						echo "<option value='" . esc_html($reason->id) . "'>" . esc_html($reason->name) . "</option>\n";
 					}
 					echo "</select></td>\n";
 					echo "<td><input type='text' name='amount[]' value='' size=4 /></td>";
@@ -216,11 +216,11 @@ function vtm_update_temp_stat($selectedID, $amount, $stat, $statID, $reasonID,
 	echo "<ul>";
 	if ( $current + $amount > $max ) {
 		$change = $max - $current;
-		echo "<li><span style='color:orange'>Current $stat for $char is capped at the maximum</span></li>";
+		echo "<li><span style='color:orange'>" . esc_html("Current $stat for $char is capped at the maximum") . "</span></li>";
 	}
 	elseif ($current + $amount < 0) {
 		$change = $current * -1;
-		echo "<li><span style='color:orange'>Current $stat for $char is capped at the minimum of 0</span></li>";
+		echo "<li><span style='color:orange'>" . esc_html("Current $stat for $char is capped at the minimum of 0") . "</span></li>";
 	}
 	
 	if ($change == 0) {
@@ -249,7 +249,7 @@ function vtm_update_temp_stat($selectedID, $amount, $stat, $statID, $reasonID,
 		);
 
 	if ($wpdb->insert_id == 0) {
-		echo "<li><span style='color:red'><b>Error:</b>$stat update for character $char failed</span></li>";
+		echo "<li><span style='color:red'><b>Error:</b>" . esc_html("$stat update for character $char failed") . "</span></li>";
 	} else {
 		 vtm_touch_last_updated($selectedID);
 	}

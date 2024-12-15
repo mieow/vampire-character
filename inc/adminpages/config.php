@@ -11,14 +11,14 @@ function vtm_character_config() {
 	<div class="wrap">
 		<h2>Configuration</h2>
 		<h2 class="nav-tab-wrapper">
-				<?php echo vtm_get_tablink('general',   'General', 'general'); ?>
-				<?php echo vtm_get_tablink('profile',   'Profile'); ?>
-				<?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo vtm_get_tablink('maps', 'Map Options'); ?>
-				<?php echo vtm_get_tablink('chargen',   'Character Generation'); ?>
-				<?php echo vtm_get_tablink('skinning',  'Skinning'); ?>
-				<?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo vtm_get_tablink('email', 'Email Options'); ?>
-				<?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo vtm_get_tablink('pm', 'Messaging'); ?>
-				<?php echo vtm_get_tablink('database',  'Database'); ?>
+				<?php echo wp_kses(vtm_get_tablink('general',   'General', 'general'), vtm_tablink_allowedhtml()); ?>
+				<?php echo wp_kses(vtm_get_tablink('profile',   'Profile'), vtm_tablink_allowedhtml()); ?>
+				<?php if (get_option( 'vtm_feature_maps', '0' ) == 1)  echo wp_kses(vtm_get_tablink('maps', 'Map Options'), vtm_tablink_allowedhtml()); ?>
+				<?php echo wp_kses(vtm_get_tablink('chargen',   'Character Generation'), vtm_tablink_allowedhtml()); ?>
+				<?php echo wp_kses(vtm_get_tablink('skinning',  'Skinning'), vtm_tablink_allowedhtml()); ?>
+				<?php if (get_option( 'vtm_feature_email', '0' ) == 1) echo wp_kses(vtm_get_tablink('email', 'Email Options'), vtm_tablink_allowedhtml()); ?>
+				<?php if (get_option( 'vtm_feature_pm', '0' ) == 1)    echo wp_kses(vtm_get_tablink('pm', 'Messaging'), vtm_tablink_allowedhtml()); ?>
+				<?php echo wp_kses(vtm_get_tablink('database',  'Database'), vtm_tablink_allowedhtml()); ?>
 		</h2>
 		<div class="gvadmin_content">
 		<?php
@@ -73,7 +73,7 @@ function vtm_render_config_general() {
 			if (isset($_REQUEST['save_options'])) {
 			
 				$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "CONFIG ORDER BY ID";
-				$configid = $wpdb->get_var($sql);
+				$configid = $wpdb->get_var("$sql");
 			
 				$wpdb->show_errors();
 				$dataarray = array (
@@ -110,7 +110,7 @@ function vtm_render_config_general() {
 			else {
 			
 			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
-			$options = $wpdb->get_results($sql);
+			$options = $wpdb->get_results("$sql");
 		?>
 
 		<form id='options_form' method='post'>
@@ -118,13 +118,13 @@ function vtm_render_config_general() {
 			<!---
 			<tr>
 				<td>URL to Android XML Output</td>
-				<td><input type="text" name="androidlink" value="<?php print $options[0]->ANDROID_LINK; ?>" size=60 /></td>
+				<td><input type="text" name="androidlink" value="<?php print esc_html($options[0]->ANDROID_LINK); ?>" size=60 /></td>
 				<td>Page where android app connects to for character sheet output.</td>
 			</tr>
 			--->
 			<tr>
 				<td>URL to Profile Placeholder image</td>
-				<td><input type="text" name="placeholder" value="<?php print $options[0]->PLACEHOLDER_IMAGE; ?>" size=60 /></td>
+				<td><input type="text" name="placeholder" value="<?php print esc_html($options[0]->PLACEHOLDER_IMAGE); ?>" size=60 /></td>
 				<td>This image is used in place of a character portrait on the profile page.</td>
 			</tr><tr>
 				<td>Home City</td>
@@ -132,7 +132,7 @@ function vtm_render_config_general() {
 				<select name="homedomain">
 					<?php
 					foreach (vtm_get_domains() as $domain) {
-						echo '<option value="' . $domain->ID . '" ';
+						echo '<option value="' . esc_html($domain->ID) . '" ';
 						selected( $options[0]->HOME_DOMAIN_ID, $domain->ID );
 						echo '>' . esc_html($domain->NAME) . '</option>';
 					}
@@ -146,7 +146,7 @@ function vtm_render_config_general() {
 				<select name="homesect">
 					<?php
 					foreach (vtm_get_sects() as $sect) {
-						echo '<option value="' . $sect->ID . '" ';
+						echo '<option value="' . esc_html($sect->ID) . '" ';
 						selected( $options[0]->HOME_SECT_ID, $sect->ID );
 						echo '>' . esc_html($sect->NAME) . '</option>';
 					}
@@ -173,7 +173,7 @@ function vtm_render_config_general() {
 					<option value="0">Not displayed</option>
 					<?php
 					foreach (vtm_get_backgrounds() as $bg) {
-						echo '<option value="' . $bg->ID . '" ';
+						echo '<option value="' . esc_html($bg->ID) . '" ';
 						selected( $options[0]->DISPLAY_BACKGROUND_IN_PROFILE, $bg->ID );
 						echo '>' . esc_html($bg->NAME) . '</option>';
 					}
@@ -186,7 +186,7 @@ function vtm_render_config_general() {
 				<select name="generation">
 					<?php
 					foreach (vtm_get_generations() as $gen) {
-						echo '<option value="' . $gen->ID . '" ';
+						echo '<option value="' . esc_html($gen->ID) . '" ';
 						selected( $options[0]->DEFAULT_GENERATION_ID, $gen->ID );
 						echo '>' . esc_html($gen->NAME) . '</option>';
 					}
@@ -245,7 +245,7 @@ function vtm_checkbox_cb($args) {
 	<input type="checkbox" name="<?php echo esc_attr( $option_name ); ?>" value="1" <?php checked( '1', $option ); ?> />
 	</td><td>	
 	<?php
-	print($args["description"]);
+	print(esc_html($args["description"]));
 }
 function vtm_link_cb($args) {
 	
@@ -278,13 +278,13 @@ function vtm_link_cb($args) {
 	}				
 
 	?>
-	<input type='hidden' name='<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>_newpage]' value='<?php echo esc_html($newpage); ?>'>
-	<select id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo $option_name;?>[<?php echo esc_attr( $args['label_for'] ); ?>]">
+	<input type='hidden' name='<?php echo esc_html($option_name);?>[<?php echo esc_attr( $args['label_for'] ); ?>_newpage]' value='<?php echo esc_html($newpage); ?>'>
+	<select id="<?php echo esc_attr( $args['label_for'] ); ?>" name="<?php echo esc_html($option_name);?>[<?php echo esc_attr( $args['label_for'] ); ?>]">
 	<option value='0'>[New Page: <?php echo esc_html($newpage); ?>]</option>
 	<?php
 		$match = 0;
 		foreach ( $pagetitles as $pageid => $pagetitle ) {
-			echo "<option value='$pageid' ";
+			echo "<option value='" . esc_html($pageid) . "' ";
 			selected($pageid, $option);
 			echo ">" . esc_html($pagetitle) . "</option>";
 		}								
@@ -308,19 +308,19 @@ function vtm_render_config_maps() {
 			<table>
 			<tr>
 				<td><label>Google Maps API Key:</label></td>
-				<td><input type="text" name="feedingmap_google_api" value="<?php echo get_option('feedingmap_google_api'); ?>" size=60 /></td>
+				<td><input type="text" name="feedingmap_google_api" value="<?php echo esc_html(get_option('feedingmap_google_api')); ?>" size=60 /></td>
 			</tr>
 			<tr>
 				<td><label>Centre Point, Latitude:</label></td>
-				<td><input type="text" name="feedingmap_centre_lat" value="<?php echo get_option('feedingmap_centre_lat'); ?>" style="width:120px;" /></td>
+				<td><input type="text" name="feedingmap_centre_lat" value="<?php echo esc_html(get_option('feedingmap_centre_lat')); ?>" style="width:120px;" /></td>
 			</tr>
 			<tr>
 				<td><label>Centre Point, Longitude:</label></td>
-				<td><input type="text" name="feedingmap_centre_long" value="<?php echo get_option('feedingmap_centre_long'); ?>" style="width:120px;" /></td>
+				<td><input type="text" name="feedingmap_centre_long" value="<?php echo esc_html(get_option('feedingmap_centre_long')); ?>" style="width:120px;" /></td>
 			</tr>
 			<tr>
 				<td><label>Map Zoom:</label></td>
-				<td><input type="number" name="feedingmap_zoom" value="<?php echo get_option('feedingmap_zoom'); ?>" style="width:50px;" /></td>
+				<td><input type="number" name="feedingmap_zoom" value="<?php echo esc_html(get_option('feedingmap_zoom')); ?>" style="width:50px;" /></td>
 			</tr>
 			<tr>
 				<td><label>Map Type:</label></td>
@@ -369,7 +369,7 @@ function vtm_render_config_chargen() {
 					<?php
 						$path_id = get_option( 'vtm_chargen_humanity', '1' );
 						foreach (vtm_listRoadsOrPaths() as $path) {
-							print "<option value='{$path->ID}' ";
+							print "<option value='" . esc_html($path->ID) . "' ";
 							($path->ID == $path_id) ? print "selected" : print "";
 							echo ">" . esc_html($path->name) . "</option>";
 						}
@@ -421,15 +421,15 @@ function vtm_render_config_email() {
 	<table>
 	<tr>
 		<td><label>Tag to add to the start of notification email subject: </label></td>
-		<td><input type="text" name="vtm_emailtag" value="<?php echo $emailtag; ?>" /></td>
+		<td><input type="text" name="vtm_emailtag" value="<?php echo esc_html($emailtag); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>From name of notification emails: </label></td>
-		<td><input type="text" name="vtm_replyto_name" value="<?php echo $replyname; ?>" /></td>
+		<td><input type="text" name="vtm_replyto_name" value="<?php echo esc_html($replyname); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>Reply-to address of notification emails: </label></td>
-		<td><input type="text" name="vtm_replyto_address" value="<?php echo $replyto; ?>" /></td>
+		<td><input type="text" name="vtm_replyto_address" value="<?php echo esc_html($replyto); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>Email Debug: </label></td>
@@ -451,15 +451,15 @@ function vtm_render_config_email() {
 	<table>
 	<tr>
 		<td>Background Color</td>
-		<td><input type="color" name="vtm_email_background" value="<?php echo $background; ?>" /></td>
+		<td><input type="color" name="vtm_email_background" value="<?php echo esc_html($background); ?>" /></td>
 	</tr>
 	<tr>
 		<td>Line Color</td>
-		<td><input type="color" name="vtm_email_linecolor" value="<?php echo $linecolor; ?>" /></td>
+		<td><input type="color" name="vtm_email_linecolor" value="<?php echo esc_html($linecolor); ?>" /></td>
 	</tr>
 	<tr>
 		<td>Text Color</td>
-		<td><input type="color" name="vtm_email_textcolor" value="<?php echo $textcolor; ?>" /></td>
+		<td><input type="color" name="vtm_email_textcolor" value="<?php echo esc_html($textcolor); ?>" /></td>
 	</tr>
 	<tr>
 		<td>Font</td>
@@ -492,19 +492,19 @@ function vtm_render_config_email() {
 	<table>
 	<tr>
 		<td><label>SMTP Host: </label></td>
-		<td><input type="text" name="vtm_smtp_host" value="<?php echo $smtphost; ?>" /></td>
+		<td><input type="text" name="vtm_smtp_host" value="<?php echo esc_html($smtphost); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>SMTP port: </label></td>
-		<td><input type="text" name="vtm_smtp_port" value="<?php echo $smtpport; ?>" /></td>
+		<td><input type="text" name="vtm_smtp_port" value="<?php echo esc_html($smtpport); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>Email username: </label></td>
-		<td><input type="text" name="vtm_smtp_username" value="<?php echo $smtpuser; ?>" /></td>
+		<td><input type="text" name="vtm_smtp_username" value="<?php echo esc_html($smtpuser); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>Email password: </label></td>
-		<td><input type="password" name="vtm_smtp_pw" value="<?php echo $smtppw; ?>" /></td>
+		<td><input type="password" name="vtm_smtp_pw" value="<?php echo esc_html($smtppw); ?>" /></td>
 	</tr>
 	<tr>
 		<td><label>Email method: </label></td>
@@ -531,7 +531,7 @@ function vtm_render_config_email() {
 	</form>
 	
 	<form id='options_form' method='post'>
-	<input type="text" name="vtm_test_address" value="<?php echo $replyto; ?>" />
+	<input type="text" name="vtm_test_address" value="<?php echo esc_html($replyto); ?>" />
 	<?php submit_button("Send test email", "primary", "send_email_button"); ?>
 	</form>
 			
@@ -553,7 +553,7 @@ function vtm_render_config_skinning() {
 	<table>
 		<tr>
 			<td>Extra columns for sign-in report (comma-separated):</td>
-			<td><input type="text" name="vtm_signin_columns" value="<?php echo get_option('vtm_signin_columns'); ?>" /></td>
+			<td><input type="text" name="vtm_signin_columns" value="<?php echo esc_html(get_option('vtm_signin_columns')); ?>" /></td>
 		</tr>
 	</table>
 	<?php } 
@@ -606,30 +606,30 @@ function vtm_render_config_skinning() {
 		
 		<table>
 			<tr>
-				<td>Background Colour (#RRGGBB)</td><td><input type="color" name="vtm_view_bgcolour" value="<?php echo $drawbgcolour; ?>" /></td>
-				<td>Dot/Box Line Width (mm)</td><td><input type="text" name="vtm_view_dotlinewidth" value="<?php echo $drawborder; ?>" size=4 /></td>
+				<td>Background Colour (#RRGGBB)</td><td><input type="color" name="vtm_view_bgcolour" value="<?php echo esc_html($drawbgcolour); ?>" /></td>
+				<td>Dot/Box Line Width (mm)</td><td><input type="text" name="vtm_view_dotlinewidth" value="<?php echo esc_html($drawborder); ?>" size=4 /></td>
 			</tr><tr>
-				<td>Dot1 colour (#RRGGBB)</td><td><input type="color" name="vtm_dot1colour" value="<?php echo $dot1colour; ?>" /></td>
-				<td>Dot2 Colour (#RRGGBB)</td><td><input type="color" name="vtm_dot2colour" value="<?php echo $dot2colour; ?>" /></td>
+				<td>Dot1 colour (#RRGGBB)</td><td><input type="color" name="vtm_dot1colour" value="<?php echo esc_html($dot1colour); ?>" /></td>
+				<td>Dot2 Colour (#RRGGBB)</td><td><input type="color" name="vtm_dot2colour" value="<?php echo esc_html($dot2colour); ?>" /></td>
 			</tr><tr>
-				<td>Dot3 Colour (#RRGGBB)</td><td><input type="color" name="vtm_dot3colour" value="<?php echo $dot3colour; ?>" /></td>
-				<td>Dot4 Colour (#RRGGBB)</td><td><input type="color" name="vtm_dot4colour" value="<?php echo $dot4colour; ?>" /></td>
+				<td>Dot3 Colour (#RRGGBB)</td><td><input type="color" name="vtm_dot3colour" value="<?php echo esc_html($dot3colour); ?>" /></td>
+				<td>Dot4 Colour (#RRGGBB)</td><td><input type="color" name="vtm_dot4colour" value="<?php echo esc_html($dot4colour); ?>" /></td>
 			</tr>
 		</table>
 		<table>
 		<tr>
-		<td><img alt="empty dot1" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="full dot1"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="dot2"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="dot3"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot3.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="dot4"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/dot4.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="crossclear" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/crossclear.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="box"        width=16 src='<?php echo VTM_PLUGIN_URL . '/images/webbox.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="checked"    width=16 src='<?php echo VTM_PLUGIN_URL . '/images/check.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="spacer"     width=16 src='<?php echo VTM_PLUGIN_URL . '/images/spacer.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="fill"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fill.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="arrow"      width=16 src='<?php echo VTM_PLUGIN_URL . '/images/arrowright.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="mail"       width=16 src='<?php echo VTM_PLUGIN_URL . '/images/mail.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="empty dot1" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="full dot1"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="dot2"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="dot3"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot3.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="dot4"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot4.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="crossclear" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/crossclear.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="box"        width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/webbox.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="checked"    width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/check.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="spacer"     width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/spacer.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="fill"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/fill.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="arrow"      width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/arrowright.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="mail"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/mail.' . VTM_ICON_FORMAT); ?>'></td>
 		</tr>
 		</table>
 		
@@ -638,7 +638,7 @@ function vtm_render_config_skinning() {
 		<h4>PDF Character Sheet Options</h4>
 		<table>
 			<tr>
-				<td>Character Sheet Title</td><td><input type="text" name="vtm_pdf_title" value="<?php echo get_option('vtm_pdf_title', 'Character Sheet'); ?>" size=30 /></td>
+				<td>Character Sheet Title</td><td><input type="text" name="vtm_pdf_title" value="<?php echo esc_html(get_option('vtm_pdf_title', 'Character Sheet')); ?>" size=30 /></td>
 				<td>Title Font</td><td><select name="vtm_pdf_titlefont">
 					<option value="Arial"     <?php if ('Arial'     == get_option('vtm_pdf_titlefont')) echo "selected='selected'"; ?>>Arial</option>
 					<option value="Courier"   <?php if ('Courier'   == get_option('vtm_pdf_titlefont')) echo "selected='selected'"; ?>>Courier</option>
@@ -646,18 +646,18 @@ function vtm_render_config_skinning() {
 					<option value="Times"     <?php if ('Times'     == get_option('vtm_pdf_titlefont')) echo "selected='selected'"; ?>>Times New Roman</option>
 					</select>
 				</td>
-				<td>Title Text Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_titlecolour" value="<?php echo get_option('vtm_pdf_titlecolour', '#000000'); ?>" /></td>
+				<td>Title Text Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_titlecolour" value="<?php echo esc_html(get_option('vtm_pdf_titlecolour', '#000000')); ?>" /></td>
 			</tr>
 			<tr>
-				<td>Divider Line Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_divcolour" value="<?php echo get_option('vtm_pdf_divcolour', '#000000'); ?>" /></td>
-				<td>Divider Text Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_divtextcolour" value="<?php echo get_option('vtm_pdf_divtextcolour', '#000000'); ?>" /></td>
-				<td>Divider Line Width (mm)</td><td><input type="text" name="vtm_pdf_divlinewidth" value="<?php echo get_option('vtm_pdf_divlinewidth', '1'); ?>" size=4 /></td>
+				<td>Divider Line Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_divcolour" value="<?php echo esc_html(get_option('vtm_pdf_divcolour', '#000000')); ?>" /></td>
+				<td>Divider Text Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_divtextcolour" value="<?php echo esc_html(get_option('vtm_pdf_divtextcolour', '#000000')); ?>" /></td>
+				<td>Divider Line Width (mm)</td><td><input type="text" name="vtm_pdf_divlinewidth" value="<?php echo esc_html(get_option('vtm_pdf_divlinewidth', '1')); ?>" size=4 /></td>
 			</tr>
 			<tr>
-				<td>Character Sheet Footer</td><td><input type="text" name="vtm_pdf_footer" value="<?php echo get_option('vtm_pdf_footer'); ?>" size=30 /></td>
+				<td>Character Sheet Footer</td><td><input type="text" name="vtm_pdf_footer" value="<?php echo esc_html(get_option('vtm_pdf_footer')); ?>" size=30 /></td>
 				<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
-					<td>Dot/Box Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_dotcolour" value="<?php echo get_option('vtm_pdf_dotcolour', '#000000'); ?>" /></td>
-					<td>Dot/Box Line Width (mm)</td><td><input type="text" name="vtm_pdf_dotlinewidth" value="<?php echo get_option('vtm_pdf_dotlinewidth', '1'); ?>" size=4 /></td>
+					<td>Dot/Box Colour (#RRGGBB)</td><td><input type="color" name="vtm_pdf_dotcolour" value="<?php echo esc_html(get_option('vtm_pdf_dotcolour', '#000000')); ?>" /></td>
+					<td>Dot/Box Line Width (mm)</td><td><input type="text" name="vtm_pdf_dotlinewidth" value="<?php echo esc_html(get_option('vtm_pdf_dotlinewidth', '1')); ?>" size=4 /></td>
 				<?php } else { ?>
 					<td>&nbsp;</td><td>&nbsp;</td>
 				<?php } ?>
@@ -666,13 +666,13 @@ function vtm_render_config_skinning() {
 		<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
 		<table>
 		<tr>
-		<td><img alt="empty dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/emptydot.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="full dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/fulldot.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="xp dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/pdfxpdot.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="box dot"  width=16 src='<?php echo VTM_PLUGIN_URL . '/images/box.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="box2 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross1.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="box3 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross2.' . VTM_ICON_FORMAT; ?>'></td>
-		<td><img alt="box4 dot" width=16 src='<?php echo VTM_PLUGIN_URL . '/images/boxcross3.' . VTM_ICON_FORMAT; ?>'></td>
+		<td><img alt="empty dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/emptydot.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="full dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/fulldot.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="xp dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/pdfxpdot.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="box dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/box.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="box2 dot" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/boxcross1.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="box3 dot" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/boxcross2.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="box4 dot" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/boxcross3.' . VTM_ICON_FORMAT); ?>'></td>
 		</tr>
 		</table>
 		<?php } ?>
@@ -747,7 +747,7 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 		
 		$image->drawImage($draw);
 		if (!$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype)) {	
-			echo "<p style='color:red'>ERROR: could not save " . VTM_CHARACTER_URL . "images/{$name}." . $imagetype . "</p>";
+			echo "<p style='color:red'>ERROR: could not save " . esc_html(VTM_CHARACTER_URL . "images/{$name}." . $imagetype) . "</p>";
 		} else {
 			//echo "<p style='color:red'>Saved '" . VTM_CHARACTER_URL . "images/{$name}." . $imagetype . "' with $drawcolour, $drawbgcolour</p>";
 		}
@@ -1023,22 +1023,22 @@ function vtm_render_config_pm() {
 		</tr>
 		<tr>
 			<td><label>In-Character Post Office location: </label></td>
-			<td><input type="text" name="vtm_pm_ic_postoffice_location" value="<?php echo get_option( 'vtm_pm_ic_postoffice_location' ); ?>" /></td>
+			<td><input type="text" name="vtm_pm_ic_postoffice_location" value="<?php echo esc_html(get_option( 'vtm_pm_ic_postoffice_location' )); ?>" /></td>
 			<td>For example, characters might be able to leave messages for each other at a central location such as a nightclub</td>
 		</tr>
 		<tr>
 			<td><label>Number of digits in a telephone number: </label></td>
-			<td><input type="number" name="vtm_pm_telephone_digits" min="1" max="20" value="<?php echo get_option( 'vtm_pm_telephone_digits',11 ); ?>" /></td>
+			<td><input type="number" name="vtm_pm_telephone_digits" min="1" max="20" value="<?php echo esc_html(get_option( 'vtm_pm_telephone_digits',11 )); ?>" /></td>
 			<td>For automatic telephone number generation.</td>
 		</tr>
 		<tr>
 			<td><label>Mobile number prefix: </label></td>
-			<td><input type="text" name="vtm_pm_mobile_prefix" value="<?php echo get_option( 'vtm_pm_mobile_prefix', '07' ); ?>" /></td>
+			<td><input type="text" name="vtm_pm_mobile_prefix" value="<?php echo esc_html(get_option( 'vtm_pm_mobile_prefix', '07' )); ?>" /></td>
 			<td>What digits should be put at the start of an auto-generated mobile number.</td>
 		</tr>
 		<tr>
 			<td><label>Land Line number prefix: </label></td>
-			<td><input type="text" name="vtm_pm_landline_prefix" value="<?php echo get_option( 'vtm_pm_landline_prefix', '0141' ); ?>" /></td>
+			<td><input type="text" name="vtm_pm_landline_prefix" value="<?php echo esc_html(get_option( 'vtm_pm_landline_prefix', '0141' )); ?>" /></td>
 			<td>What digits should be put at the start of an auto-generated land-line number.</td>
 		</tr>
 		<tr>
@@ -1078,15 +1078,15 @@ function vtm_render_config_profile() {
 			</tr>
 			<tr>
 				<td><label>Maximum picture width for uploaded pictures (pixels)</label></td>
-				<td><input type="text" name="vtm_max_width" value="<?php echo get_option('vtm_max_width', '0'); ?>" /> (set to 0 for no limit)</td>
+				<td><input type="text" name="vtm_max_width" value="<?php echo esc_html(get_option('vtm_max_width', '0')); ?>" /> (set to 0 for no limit)</td>
 			</tr>
 			<tr>
 				<td><label>Maximum picture height for uploaded pictures (pixels)</label></td>
-				<td><input type="text" name="vtm_max_height" value="<?php echo get_option('vtm_max_height', '0'); ?>"  /> (set to 0 for no limit)</td>
+				<td><input type="text" name="vtm_max_height" value="<?php echo esc_html(get_option('vtm_max_height', '0')); ?>"  /> (set to 0 for no limit)</td>
 			</tr>
 			<tr>
 				<td><label>Maximum picture filesize for uploaded pictures (bytes)</label></td>
-				<td><input type="text" name="vtm_max_size" value="<?php echo get_option('vtm_max_size', '0'); ?>" /> (set to 0 for no limit)</td>
+				<td><input type="text" name="vtm_max_size" value="<?php echo esc_html(get_option('vtm_max_size', '0')); ?>" /> (set to 0 for no limit)</td>
 			</tr>
 			<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
 			<tr>
@@ -1127,10 +1127,10 @@ function vtm_render_config_database() {
 				<?php 
 				$list = vtm_listDeletedCharacters();
 				foreach ($list as $chID => $row) {
-					echo "<tr><td>$chID</td><td>" . esc_html($row->NAME) . "</td>";
-					echo "<td>" . esc_html($row->PLAYER) . "</td><td>{$row->LAST_UPDATED}</td><td>";
-					echo "<input type='checkbox' name='characters[{$chID}]' " . checked( 1, 1, 0) . ">";
-					echo "<input type='hidden'   name='names[{$chID}]' value='" . esc_html($row->NAME) . "'>";
+					echo "<tr><td>" . esc_html($chID) . "</td><td>" . esc_html($row->NAME) . "</td>";
+					echo "<td>" . esc_html($row->PLAYER) . "</td><td>" . esc_html($row->LAST_UPDATED) . "</td><td>";
+					echo "<input type='checkbox' name='characters[" . esc_html($chID) . "]' " . checked( 1, 1, 0) . ">";
+					echo "<input type='hidden'   name='names[" . esc_html($chID) . "]' value='" . esc_html($row->NAME) . "'>";
 					echo "</td></tr>";
 				}
 				?>
@@ -1145,7 +1145,7 @@ function vtm_render_config_database() {
 					echo "<ul>";
 					foreach ($_REQUEST['characters'] as $chID => $selected) {
 						if ($selected) {
-							echo vtm_purge_character($chID, $_REQUEST['names'][$chID]);
+							echo esc_html(vtm_purge_character($chID, $_REQUEST['names'][$chID]));
 						}
 					}
 					?>
@@ -1226,10 +1226,10 @@ function vtm_render_config_database() {
 							fwrite($newf, fread($file, 1024 * 8 ), 1024 * 8 );
 						}
 					} else {
-						echo "<p style='color:red'>Cannot binary write $uploadto</p>";
+						echo "<p style='color:red'>Cannot binary write " . esc_html($uploadto) . "</p>";
 					}
 				} else {
-					echo "<p style='color:red'>Cannot binary read $from</p>";
+					echo "<p style='color:red'>Cannot binary read " . esc_html($from) . "</p>";
 				}
 				
 				// extract to init
@@ -1239,7 +1239,7 @@ function vtm_render_config_database() {
 					// install
 					echo '<p>Clearing all data from data tables</p>';
 					vtm_factory_defaults();
-					echo '<p>Installing ' . VTM_DATA_VERSION . ' data</p>';
+					echo '<p>Installing ' . esc_html(VTM_DATA_VERSION) . ' data</p>';
 					vtm_character_install_data($unzipto);
 				} else {
 					echo 'There was an error unzipping the file.';       
@@ -1260,7 +1260,7 @@ function vtm_render_config_database() {
 				// provide link
 				if ($link != "") {
 					$url = $upload['url'] . "/$link";
-					echo "<p>Download exported data: <a class='button-primary' href='$url'>$link</a>";
+					echo "<p>Download exported data: <a class='button-primary' href='" . esc_url($url) . "'>" . esc_html($link) . "</a>";
 					?>
 					<form id='options_form' method='post'>
 					<input type="submit" name="return_export_data" class="button-primary" value="Done" />
@@ -1272,7 +1272,7 @@ function vtm_render_config_database() {
 				?>
 				<form id='options_form' name='import_data_form' method='post' enctype="multipart/form-data">
 				<input type='file' name='vtm_import' id='vtm_import'  multiple='false' />
-				<?php echo wp_nonce_field( 'vtm_import', 'vtm_import_nonce' ); ?>
+				<?php echo esc_html(wp_nonce_field( 'vtm_import', 'vtm_import_nonce' )); ?>
 				<input type="submit" name="select_import_data" class="button-primary" value="Import" />
 				</form>
 				<?php
@@ -1288,7 +1288,7 @@ function vtm_render_config_database() {
 					$_FILES['vtm_import']['type'] !== 'application/x-zip-compressed' &&
 					$_FILES['vtm_import']['type'] !== 'application/x-zip'
 					) {
-					echo "<p style='color:red'>Uploaded file must be a zip file: {$_FILES['vtm_import']['type']}</p>";
+					echo "<p style='color:red'>Uploaded file must be a zip file: " . esc_html($_FILES['vtm_import']['type']) . "</p>";
 				}
 				else {
 					// put in upload directory
@@ -1300,7 +1300,7 @@ function vtm_render_config_database() {
 						echo "<p>File has been uploaded</p>";
 						//var_dump( $movefile);
 					} else {
-						echo $movefile['error'];
+						echo esc_html($movefile['error']);
 					}
 					
 					$creds = request_filesystem_credentials(site_url() . '/wp-admin/', '', false, false, array());
@@ -1334,12 +1334,12 @@ function vtm_render_config_database() {
 							vtm_character_install_data("$subfolder");
 								
 						} else {
-							echo "<p style='color:red'>Cannot import data as it was created with a different database version (" . basename($subfolder) . ").</p>";       
+							echo "<p style='color:red'>Cannot import data as it was created with a different database version (" . esc_html(basename($subfolder)) . ").</p>";       
 						}
 					
 					} else {
 						print_r($unzipfile);
-						echo "<p style='color:red'>There was an error unzipping the file to $unzipto.</p>";       
+						echo "<p style='color:red'>There was an error unzipping the file to " . esc_html($unzipto) . ".</p>";       
 					}
 					
 				}
@@ -1381,7 +1381,7 @@ function vtm_render_config_database() {
 		?>
 			<h3>Load pre-defined data</h3>
 			<p>You can optionally download and add pre-defined data for the Database tables.</p>
-			<p>Version: <?php echo VTM_DATA_VERSION;?></p>
+			<p>Version: <?php echo esc_html(VTM_DATA_VERSION);?></p>
 			<input type="submit" name="load_data" class="button-primary" value="Download and install data" />
 		<?php } ?>
 			<h3>Reset Database tables</h3>
@@ -1404,7 +1404,7 @@ function vtm_listDeletedCharacters() {
 		WHERE 
 			ch.PLAYER_ID = pl.ID
 			AND ch.DELETED = 'Y'";
-	$results =  $wpdb->get_results($sql, OBJECT_K);
+	$results =  $wpdb->get_results("$sql", OBJECT_K);
 	
 	return $results;
 	
@@ -1432,8 +1432,8 @@ function vtm_render_config_options() {
 	// }
 	?>
 	<h2 class="nav-tab-wrapper">
-		<?php echo vtm_get_option_tablink('pagelinks', 'Page Links', 'pagelinks'); ?>
-		<?php echo vtm_get_option_tablink('features',  'Features'); ?>
+		<?php echo wp_kses(vtm_get_option_tablink('pagelinks', 'Page Links', 'pagelinks'),vtm_tablink_allowedhtml()) ; ?>
+		<?php echo wp_kses(vtm_get_option_tablink('features',  'Features'),vtm_tablink_allowedhtml()); ?>
 	</h2>
 	<?php
 

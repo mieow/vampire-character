@@ -50,8 +50,8 @@ function vtm_render_meritflaw_report() {
 	$reporttable->prepare_items(); ?>
 	
 	<form id="meritflaw_report" method="get" action=''>
-		<input type="hidden" name="page"   value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="report" value="<?php print $_REQUEST['report'] ?>" />
+		<input type="hidden" name="page"   value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="report" value="<?php print esc_html($_REQUEST['report']) ?>" />
 		<?php $reporttable->display(); ?>
 	</form>
 	

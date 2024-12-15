@@ -12,7 +12,7 @@ function vtm_count_XP4approval() {
 				pxp.CHARACTER_ID = ch.ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 	
 	return (count($result) > 0 ? $result[0]->count : 0);
 }
@@ -29,7 +29,7 @@ function vtm_count_BG4approval() {
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND ch.ID = cb.CHARACTER_ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	//echo "<p>SQL: $sql</p>";
 	//print_r($result);
@@ -43,7 +43,7 @@ function vtm_count_BG4approval() {
 				AND ch.ID = cm.CHARACTER_ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	
 	$sql = "SELECT COUNT(cxb.ID) as count
@@ -55,7 +55,7 @@ function vtm_count_BG4approval() {
 				AND ch.ID = cxb.CHARACTER_ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	
 	return $count;
@@ -72,7 +72,7 @@ function vtm_count_CharGen4approval() {
 				AND ch.DELETED = 'N'
 				AND ch.CHARGEN_STATUS_ID = cgs.ID";
 	//echo "<p>SQL: $sql</p>";
-	return $wpdb->get_var($sql);
+	return $wpdb->get_var("$sql");
 }
 
 /* WORDPRESS TOOLBAR 

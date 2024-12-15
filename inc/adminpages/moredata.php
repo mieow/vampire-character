@@ -20,9 +20,9 @@ function vtm_render_stat_page($type){
    ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="<?php print $type ?>-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="tab" value="<?php print $type ?>" />
+	<form id="<?php print esc_html($type) ?>-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="tab" value="<?php print esc_html($type) ?>" />
  		<?php $testListTable[$type]->display() ?>
 	</form>
 
@@ -50,8 +50,8 @@ function vtm_render_skill_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="skill-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="skill-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="skill" />
  		<?php $testListTable["skill"]->display() ?>
 	</form>
@@ -77,8 +77,8 @@ function vtm_render_skill_add_form($type, $addaction) {
 
 	} elseif ('edit-' . $type == $addaction) {
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "SKILL WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_results($sql);
+		$sql = $wpdb->prepare("$sql", $id);
+		$data =$wpdb->get_results("$sql");
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -109,48 +109,48 @@ function vtm_render_skill_add_form($type, $addaction) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
 			<td>Name:</td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 			<td>Skill Type:</td>
-			<td><select name="<?php print $type; ?>_skilltype">
+			<td><select name="<?php print esc_html($type); ?>_skilltype">
 					<?php
 						foreach (vtm_get_skilltypes() as $skilltype) {
-							print "<option value='{$skilltype->ID}' ";
+							print "<option value='" . esc_html($skilltype->ID) . "' ";
 							selected($skilltype->ID, $skilltype_id);
-							echo ">" . vtm_formatOutput($skilltype->NAME) . "</option>";
+							echo ">" . esc_html($skilltype->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Specialise at level:  </td>
-			<td><input type="text" name="<?php print $type; ?>_spec_at" value="<?php print $specialise_at; ?>" size=10 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_spec_at" value="<?php print esc_html($specialise_at); ?>" size=10 /></td>
 		</tr>
 		<tr>
 			<td>Cost Model:  </td>
-			<td><select name="<?php print $type; ?>_costmodel">
+			<td><select name="<?php print esc_html($type); ?>_costmodel">
 					<?php
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $costmodel_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Visible to Players: </td><td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
 			</td>
 			<td>Multiple?: </td><td>
-				<select name="<?php print $type; ?>_multiple">
+				<select name="<?php print esc_html($type); ?>_multiple">
 					<option value="N" <?php selected($multiple, "N"); ?>>No</option>
 					<option value="Y" <?php selected($multiple, "Y"); ?>>Yes</option>
 				</select>
@@ -158,10 +158,10 @@ function vtm_render_skill_add_form($type, $addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=5><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=90 /></td> <!-- check sizes -->
+			<td colspan=5><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> <!-- check sizes -->
 		</tr>
 		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="Save" />
+		<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
 	</form>
 	
 	<?php
@@ -184,8 +184,8 @@ function vtm_render_stat_form($type, $addaction) {
 	} else {
 	
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "STAT WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_results($sql);
+		$sql = $wpdb->prepare("$sql", $id);
+		$data =$wpdb->get_results("$sql");
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -203,44 +203,44 @@ function vtm_render_stat_form($type, $addaction) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
-		<input type="hidden" name="<?php print $type; ?>_name" value="<?php print $name; ?>" />
-		<input type="hidden" name="<?php print $type; ?>_group" value="<?php print $grouping; ?>" />
-		<input type="hidden" name="<?php print $type; ?>_order" value="<?php print $ordering; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
+		<input type="hidden" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" />
+		<input type="hidden" name="<?php print esc_html($type); ?>_group" value="<?php print esc_html($grouping); ?>" />
+		<input type="hidden" name="<?php print esc_html($type); ?>_order" value="<?php print esc_html($ordering); ?>" />
 		<table>
 		<tr>
 			<td>Name:</td>
-			<td><?php print vtm_formatOutput($name); ?></td>
+			<td><?php print esc_html($name); ?></td>
 			<td>Grouping:</td>
-			<td><?php print vtm_formatOutput($grouping); ?></td>
+			<td><?php print esc_html($grouping); ?></td>
 			<td>Display Order:</td>
-			<td><?php print $ordering; ?></td>
+			<td><?php print esc_html($ordering); ?></td>
 		</tr>
 		<tr>
 			<td>Cost Model:  </td>
-			<td><select name="<?php print $type; ?>_costmodel">
+			<td><select name="<?php print esc_html($type); ?>_costmodel">
 					<?php
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $costmodel_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Specialise at level:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_spec_at" value="<?php print $specialise_at; ?>" size=10 /></td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_spec_at" value="<?php print esc_html($specialise_at); ?>" size=10 /></td>
 		</tr>
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=5><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=90 /></td> <!-- check sizes -->
+			<td colspan=5><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> <!-- check sizes -->
 		</tr>
 		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="Save <?php print ucfirst($type); ?>" />
+		<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="Save <?php print esc_html(ucfirst($type)); ?>" />
 	</form>
 	
 	<?php
@@ -336,7 +336,7 @@ class vtmclass_admin_stats_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:orange'>No updates made</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update stat ({$_REQUEST[$type . '_id']})</p>";
+			echo "<p style='color:red'>Could not update stat (" . esc_html($_REQUEST[$type . '_id']) . ")</p>";
 		}
 		
 	}
@@ -344,13 +344,13 @@ class vtmclass_admin_stats_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'GROUPING':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'ORDERING':
                 return $item->$column_name;
             case 'COST_MODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'SPECIALISATION_AT':
                 return $item->$column_name;
             default:
@@ -366,7 +366,7 @@ class vtmclass_admin_stats_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -441,7 +441,7 @@ class vtmclass_admin_stats_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -507,11 +507,11 @@ class vtmclass_admin_skills_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . stripslashes($_REQUEST['skill_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['skill_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . stripslashes($_REQUEST['skill_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($_REQUEST['skill_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
 
@@ -543,7 +543,7 @@ class vtmclass_admin_skills_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:orange'>No updates made</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update Ability ({$_REQUEST[$type . '_id']})</p>";
+			echo "<p style='color:red'>Could not update Ability (" . esc_html($_REQUEST[$type . '_id']) . ")</p>";
 		}
 		 
 	}
@@ -560,12 +560,12 @@ class vtmclass_admin_skills_table extends vtmclass_MultiPage_ListTable {
 					and characters.ID = charskills.CHARACTER_ID
 					and skills.ID = %d;";
 					
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this skill has been use for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -573,20 +573,20 @@ class vtmclass_admin_skills_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "SKILL where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
-			echo "<p style='color:green'>Deleted skill $selectedID</p>";
+			echo "<p style='color:green'>Deleted skill " . esc_html($selectedID) . "</p>";
 		}
 	}
   
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'SKILL_TYPE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'COST_MODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'SPECIALISATION_AT':
                 return $item->$column_name;
             case 'VISIBLE':
@@ -608,7 +608,7 @@ class vtmclass_admin_skills_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -693,7 +693,7 @@ class vtmclass_admin_skills_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

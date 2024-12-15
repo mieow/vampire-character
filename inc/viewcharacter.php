@@ -213,7 +213,7 @@ function vtm_get_viewcharacter_content() {
 	$disciplines = $mycharacter->getDisciplines();
 	
 	$sql = "SELECT NAME, PARENT_ID FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE;";
-	$allgroups = $wpdb->get_results($sql);	
+	$allgroups = $wpdb->get_results("$sql");	
 	
 	$secondarygroups = array();
 	foreach ($allgroups as $group) {

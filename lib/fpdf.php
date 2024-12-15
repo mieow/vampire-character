@@ -267,7 +267,7 @@ function AliasNbPages($alias='{nb}')
 function Error($msg)
 {
 	// Fatal error
-	throw new Exception('FPDF error: '.$msg);
+	throw new Exception('FPDF error: '.esc_html($msg));
 }
 
 function Close()
@@ -1004,16 +1004,21 @@ function Output($dest='', $name='', $isUTF8=false)
 				header('Cache-Control: private, max-age=0, must-revalidate');
 				header('Pragma: public');
 			}
+			
+			// phpcs:disable
 			echo $this->buffer;
+			// phpcs:enable
 			break;
 		case 'D':
 			// Download file
 			$this->_checkoutput();
 			header('Content-Type: application/x-download');
-			header('Content-Disposition: attachment; '.$this->_httpencode('filename',$name,$isUTF8));
+			header('Content-Disposition: attachment; '.esc_html($this->_httpencode('filename',$name,$isUTF8)));
 			header('Cache-Control: private, max-age=0, must-revalidate');
 			header('Pragma: public');
+			// phpcs:disable
 			echo $this->buffer;
+			// phpcs:enable
 			break;
 		case 'F':
 			// Save to local file

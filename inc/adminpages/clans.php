@@ -29,8 +29,8 @@ function vtm_render_clan_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="clans-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="clans-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="clans" />
  		<?php $testListTable["clans"]->display() ?>
 	</form>
@@ -76,7 +76,7 @@ function vtm_render_clan_add_form($addaction) {
 		
 		//echo "<p>$sql</p>"; 
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		//print_r($data); 
 		
@@ -96,7 +96,7 @@ function vtm_render_clan_add_form($addaction) {
 				where 
 					disciplines.ID = clandisc.DISCIPLINE_ID
 					AND clandisc.CLAN_ID = %d;";
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		//print_r($data);
 		
@@ -133,29 +133,29 @@ function vtm_render_clan_add_form($addaction) {
 
 	$disciplines = vtm_get_disciplines();
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
 		<input type="hidden" name="tab" value="clans" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
 			<td>Clan Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=30 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=30 /></td>
 			<td>Visible to Players: </td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
 			</td>
 			<td>Cost Model for Clan Disciplines: </td>
 			<td>
-				<select name="<?php print $type; ?>_costmodel">
+				<select name="<?php print esc_html($type); ?>_costmodel">
 					<?php
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $costmodel_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -163,21 +163,21 @@ function vtm_render_clan_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Link to clan icon:  </td>
-			<td><input type="text" name="<?php print $type; ?>_iconlink" value="<?php print $iconlink; ?>" size=30 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_iconlink" value="<?php print esc_html($iconlink); ?>" size=30 /></td>
 			<td>Wordpress Role: </td>
 			<td>
-				<select name="<?php print $type; ?>_role">
+				<select name="<?php print esc_html($type); ?>_role">
 					<?php wp_dropdown_roles($role); ?>
 				</select>
 			</td>
 			<td>Cost Model for Non-Clan Disciplines: </td>
 			<td>
-				<select name="<?php print $type; ?>_costmodel_nonclan">
+				<select name="<?php print esc_html($type); ?>_costmodel_nonclan">
 					<?php
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $nonclan_costmodel_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -185,17 +185,17 @@ function vtm_render_clan_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Link to clan webpage:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_clanpage" value="<?php print $clanpage; ?>" size=60 /></td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_clanpage" value="<?php print esc_html($clanpage); ?>" size=60 /></td>
 			<td>Clan Discipline 1: </td>
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
-				<select name="<?php print $type; ?>_clan_disc1">
+				<select name="<?php print esc_html($type); ?>_clan_disc1">
 					<option value='0'>[Select]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
-							print "<option value='{$discipline->ID}' ";
+							print "<option value='" . esc_html($discipline->ID) . "' ";
 							selected($discipline->ID, $clan_discipline1_id);
-							echo ">" . vtm_formatOutput($discipline->NAME) . "</option>";
+							echo ">" . esc_html($discipline->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -206,17 +206,17 @@ function vtm_render_clan_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Clan Flaw:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_flaw" value="<?php print vtm_formatOutput($clanflaw) ?>" size=60 /></td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_flaw" value="<?php print esc_html($clanflaw) ?>" size=60 /></td>
 			<td>Clan Discipline 2: </td>
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
-				<select name="<?php print $type; ?>_clan_disc2">
+				<select name="<?php print esc_html($type); ?>_clan_disc2">
 					<option value='0'>[Select]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
-							print "<option value='{$discipline->ID}' ";
+							print "<option value='" . esc_html($discipline->ID) . "' ";
 							selected($discipline->ID, $clan_discipline2_id);
-							echo ">" . vtm_formatOutput($discipline->NAME) . "</option>";
+							echo ">" . esc_html($discipline->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -227,17 +227,17 @@ function vtm_render_clan_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_description" value="<?php print vtm_formatOutput($description); ?>" size=60 /></td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_description" value="<?php print esc_html($description); ?>" size=60 /></td>
 			<td>Clan Discipline 3: </td>
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
-				<select name="<?php print $type; ?>_clan_disc3">
+				<select name="<?php print esc_html($type); ?>_clan_disc3">
 					<option value='0'>[Select]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
-							print "<option value='{$discipline->ID}' ";
+							print "<option value='" . esc_html($discipline->ID) . "' ";
 							selected($discipline->ID, $clan_discipline3_id);
-							echo ">" . vtm_formatOutput($discipline->NAME) . "</option>";
+							echo ">" . esc_html($discipline->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -251,13 +251,13 @@ function vtm_render_clan_add_form($addaction) {
 			<td>Clan Discipline 4: </td>
 			<td>
 				<?php if (count($disciplines) > 0) { ?>
-				<select name="<?php print $type; ?>_clan_disc4">
+				<select name="<?php print esc_html($type); ?>_clan_disc4">
 					<option value='0'>[Optional]</option>
 					<?php
 						foreach ($disciplines as $discipline) {
-							print "<option value='{$discipline->ID}' ";
+							print "<option value='" . esc_html($discipline->ID) . "' ";
 							selected($discipline->ID, $clan_discipline4_id);
-							echo ">" . vtm_formatOutput($discipline->NAME) . "</option>";
+							echo ">" . esc_html($discipline->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -267,7 +267,7 @@ function vtm_render_clan_add_form($addaction) {
 			</td>
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save <?php print ucfirst($type); ?>" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save <?php print esc_html(ucfirst($type)); ?>" />
 	</form>
 	
 	<?php
@@ -348,26 +348,26 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 		$sql = "select characters.NAME 
 			from " . VTM_TABLE_PREFIX . "CHARACTER characters
 			where characters.PUBLIC_CLAN_ID = %d or characters.PRIVATE_CLAN_ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID, $selectedID));
 		
 		if ($isused) {
-			echo "<p style='color:red'>Cannot delete as this {$this->type} is being used in the following characters:";
+			echo "<p style='color:red'>Cannot delete as this " . esc_html($this->type) . " is being used in the following characters:";
 			echo "<ul>";
 			foreach ($isused as $character)
-				echo "<li style='color:red'>" . vtm_formatOutput($character->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 			echo "</ul></p>";
 		} else {
 		
 			/* delete clan disciplines */
 			$sql = "delete from " . VTM_TABLE_PREFIX . "CLAN_DISCIPLINE 
 					where CLAN_ID = %d;";
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "CLAN where ID = %d;";
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted item $selectedID</p>";
+			echo "<p style='color:green'>Deleted item " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -411,7 +411,7 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 		$clanid = $wpdb->insert_id;
 		
 		if ($clanid == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($name) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($name) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
@@ -431,12 +431,12 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 					);
 					
 					if ($wpdb->insert_id == 0) {
-						echo "<p style='color:green'>Failed to add clan discipline " . vtm_formatOutput($disc) . " for clan $name</p>";
+						echo "<p style='color:green'>Failed to add clan discipline " . esc_html($disc) . " for clan " . esc_html($name) . "</p>";
 					}
 				}
 			}
 			
-			echo "<p style='color:green'>Added clan '" . vtm_formatOutput($name) . "' (ID: {$clanid})</p>";
+			echo "<p style='color:green'>Added clan '" . esc_html($name) . "' (ID: " . esc_html($clanid) . ")</p>";
 		}
 	}
  	function edit_clan($clanid, $name, $description, $iconlink, $clanpage,
@@ -469,7 +469,7 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 		$ok = 0;
 		if ($result) {
 			$ok = 1;
-			echo "<p style='color:green'>Updated " . vtm_formatOutput($name) . "</p>";
+			echo "<p style='color:green'>Updated " . esc_html($name) . "</p>";
 		} else if ($result === 0) {
 			$ok = 1;
 		}
@@ -478,7 +478,7 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 			/* clan disciplines - remove old then re-add */
 			$sql = "delete from " . VTM_TABLE_PREFIX . "CLAN_DISCIPLINE
 					where CLAN_ID = %d";
-			$result = $wpdb->get_results($wpdb->prepare($sql, $clanid));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $clanid));
 			
 			foreach ($discids as $disc) {
 				if ($disc > 0) {
@@ -493,33 +493,33 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 					
 					if ($wpdb->insert_id == 0) {
 						$ok = 0;
-						echo "<p style='color:green'>Failed to update clan discipline " . vtm_formatOutput($disc) . " for clan " . vtm_formatOutput($name) . "</p>";
+						echo "<p style='color:green'>Failed to update clan discipline " . esc_html($disc) . " for clan " . esc_html($name) . "</p>";
 					}
 				}
 			}
 				
 		}
 		else {
-			echo "<p style='color:red'>Could not update $name ($clanid)</p>";
+			echo "<p style='color:red'>" . esc_html("Could not update $name ($clanid)") . "</p>";
 		}
 	}
    
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'CLAN_PAGE_LINK':
                 return $item->$column_name;
              case 'ICON_LINK':
                 return $item->$column_name;
            case 'CLAN_FLAW':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            case 'COST_MODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            case 'NONCLAN_MODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
            case 'WORDPRESS_ROLE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -536,7 +536,7 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -578,7 +578,7 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
     
     function process_bulk_action() {
         
-		/* echo "<p>Bulk action " . $this->current_action() . ", currently on tab {$_REQUEST['tab']} and will do action if {$this->type}.</p>"; */
+		/* echo "<p>Bulk action " . $this->current_action() . ", currently on tab " . esc_html($_REQUEST['tab']). " and will do action if " . esc_html($this->type) . ".</p>"; */
 		
         if( 'delete'===$this->current_action() && $_REQUEST['tab'] == $this->type && isset($_REQUEST['clan'])) {
 			if ('string' == gettype($_REQUEST['clan'])) {
@@ -624,7 +624,7 @@ class vtmclass_admin_clans_table extends vtmclass_MultiPage_ListTable {
 		$sql .= ";";
 		/* echo "<p>SQL: " . $sql . "</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -667,8 +667,8 @@ function vtm_render_discipline_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="disc-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="disc-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="disc" />
  		<?php $testListTable["disc"]->display() ?>
 	</form>
@@ -706,7 +706,7 @@ function vtm_render_discipline_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		/* print_r($data); */
 		
@@ -733,42 +733,42 @@ function vtm_render_discipline_add_form($addaction) {
 	$current_url = remove_query_arg( 'action', $current_url );
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=30 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=30 /></td>
 			<td>Sourcebook: </td>
 			<td>
-				<select name="<?php print $type; ?>_sourcebook">
+				<select name="<?php print esc_html($type); ?>_sourcebook">
 					<?php
 						foreach (vtm_get_booknames() as $book) {
-							print "<option value='{$book->ID}' ";
+							print "<option value='" . esc_html($book->ID) . "' ";
 							($book->ID == $sourcebook_id) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($book->NAME) . "</option>";
+							echo ">" . esc_html($book->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Page Number: </td>
-			<td><input type="number" name="<?php print $type; ?>_pagenum" value="<?php print $pagenum; ?>" size=4 /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_pagenum" value="<?php print esc_html($pagenum); ?>" size=4 /></td>
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_description" value="<?php print vtm_formatOutput($description); ?>" size=60 /></td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_description" value="<?php print esc_html($description); ?>" size=60 /></td>
 			<td>Visible to Players: </td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
 			</td>
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
 	</form>
 	
 	<?php
@@ -833,13 +833,13 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
 				where 
 					characters.ID = chardisc.CHARACTER_ID
 					AND chardisc.DISCIPLINE_ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this discipline is being used in the following characters:";
 			echo "<ul>";
 			foreach ($isused as $character)
-				echo "<li style='color:red'>" . vtm_formatOutput($character->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 			echo "</ul></p>";
 		} else {
 		
@@ -850,22 +850,22 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
 				where 
 					clans.ID = clandisc.CLAN_ID
 					and clandisc.DISCIPLINE_ID = %d;";
-			$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 
 			if ($isused) {
 				echo "<p style='color:red'>Cannot delete as this is a clan discipline for the following clans:";
 				echo "<ul>";
 				foreach ($isused as $clan)
-					echo "<li style='color:red'>" . vtm_formatOutput($clan->NAME) . "</li>";
+					echo "<li style='color:red'>" . esc_html($clan->NAME) . "</li>";
 				echo "</ul></p>";
 			
 			} else {
 				$sql = "delete from " . VTM_TABLE_PREFIX . "DISCIPLINE where ID = %d;";
 				
-				$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+				$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 			
 				/* print_r($result); */
-				echo "<p style='color:green'>Deleted item $selectedID</p>";
+				echo "<p style='color:green'>Deleted item " . esc_html($selectedID) . "</p>";
 			}
 		}
 	}
@@ -897,11 +897,11 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['disc_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['disc_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added discipline '" . vtm_formatOutput($_REQUEST['disc_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added discipline '" . esc_html($_REQUEST['disc_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_discipline() {
@@ -927,23 +927,23 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated " . vtm_formatOutput($_REQUEST['disc_name']) . "</p>";
+			echo "<p style='color:green'>Updated " . esc_html($_REQUEST['disc_name']) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to " . vtm_formatOutput($_REQUEST['disc_name']) . "</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($_REQUEST['disc_name']) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update " . vtm_formatOutput($_REQUEST['disc_name']) . " ({$_REQUEST['disc_id']})</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($_REQUEST['disc_name']) . " (" . esc_html($_REQUEST['disc_id']). ")</p>";
 		}
 	}
    
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'PAGE_NUMBER':
                 return $item->$column_name;
              case 'SOURCE_BOOK':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
@@ -958,7 +958,7 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -996,7 +996,7 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
     
     function process_bulk_action() {
         
-		/* echo "<p>Bulk action " . $this->current_action() . ", currently on tab {$_REQUEST['tab']} and will do action if {$this->type}.</p>"; */
+		/* echo "<p>Bulk action " . $this->current_action() . ", currently on tab " . esc_html($_REQUEST['tab']). " and will do action if " . esc_html($this->type) . ".</p>"; */
 		
         if( 'delete'===$this->current_action() && $_REQUEST['tab'] == $this->type && isset($_REQUEST['discipline'])) {
 			if ('string' == gettype($_REQUEST['discipline'])) {
@@ -1040,7 +1040,7 @@ class vtmclass_admin_disciplines_table extends vtmclass_MultiPage_ListTable {
 		$sql .= ";";
 		//echo "<p>SQL: " . $sql . "</p>";
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

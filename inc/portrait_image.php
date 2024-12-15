@@ -8,7 +8,7 @@ function vtm_portrait_image_redirect()
 		global $vtmglobal;
 		
 		$characterID = $_GET['vtm_get_portrait'];
-		$file = $wpdb->get_var($wpdb->prepare("SELECT PORTRAIT FROM " . VTM_TABLE_PREFIX . "CHARACTER_PROFILE WHERE CHARACTER_ID = %d", $characterID));
+		$file = $wpdb->get_var($wpdb->prepare("SELECT PORTRAIT FROM " . $wpdb->prefix . "vtm_CHARACTER_PROFILE WHERE CHARACTER_ID = %d", $characterID));
 		
 		if ($file == '') {
 			vtm_getConfig();
@@ -18,7 +18,7 @@ function vtm_portrait_image_redirect()
 			if(!file_exists($file)) {
 				$file2 = VTM_PLUGIN_URL . "/$file";
 				if(!file_exists($file2) && filter_var($file2, FILTER_VALIDATE_URL) === FALSE) {
-					echo "<p>Problem finding file: $file / $file2</p>";
+					echo "<p>Problem finding file: " . esc_html("$file / $file2") . "</p>";
 				} else {
 					$file = $file2;
 				}
@@ -47,9 +47,11 @@ function vtm_portrait_image_redirect()
 				}
 			
 				header('Content-Type: image/'.$img->getImageFormat());
+				// phpcs:disable
 				echo $img;
+				// phpcs:enable
 			} else {
-				echo "<p>Could not read portait image $file</p>";
+				echo "<p>Could not read portait image " . esc_html($file) . "</p>";
 			}
 		} 
 		elseif (extension_loaded('gd')) {

@@ -78,7 +78,7 @@ function vtm_render_template_data(){
 							if (!isset($multiples[$i])) {
 								if ($tables[$i] != 'BACKGROUND') {
 									$sql = "SELECT MULTIPLE FROM " . VTM_TABLE_PREFIX . $tables[$i] . " WHERE ID = %s";
-									$multiples[$i] = $wpdb->get_var($wpdb->prepare($sql, $items[$i]));
+									$multiples[$i] = $wpdb->get_var($wpdb->prepare("$sql", $items[$i]));
 								} else {
 									$multiples[$i] = 'N';
 								}
@@ -167,28 +167,28 @@ function vtm_render_template_data(){
 						ch.CHARGEN_STATUS_ID = cgs.ID
 						and ch.ID = cg.CHARACTER_ID
 						AND cg.TEMPLATE_ID = %d;";
-					$sql = $wpdb->prepare($sql, $id);
-					$result = $wpdb->get_results($sql);
+					$sql = $wpdb->prepare("$sql", $id);
+					$result = $wpdb->get_results("$sql");
 					//echo "SQL: $sql ($result)";
 					
 					if (count($result) == 0) {
 						/* delete options */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_OPTIONS where TEMPLATE_ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 						/* delete defaults */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_DEFAULTS where TEMPLATE_ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 						/* delete maximums */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_MAXIMUM where TEMPLATE_ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 						/* delete template */
 						$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE where ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare($sql, $id));
-						echo "<p style='color:green'>Deleted template {$_REQUEST['template_name']}</p>";
+						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
+						echo "<p style='color:green'>Deleted template " . esc_html($_REQUEST['template_name']). "</p>";
 					} else {
 						echo "<p style='color:red'><b>Error: </b>Cannot delete as this template has been used in these characters:<ul>";
 						foreach ($result as $character)
-							echo "<li style='color:red'>" . stripslashes($character->NAME) . "</li>";
+							echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 						echo "</ul></p>";
 						
 					}
@@ -228,8 +228,8 @@ function vtm_render_template_data(){
 				);
 				
 				$sql = "SELECT NAME, VALUE, ID FROM " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_OPTIONS WHERE TEMPLATE_ID = %s";
-				$sql = $wpdb->prepare($sql, $id);
-				$results = $wpdb->get_results($sql, OBJECT_K);
+				$sql = $wpdb->prepare("$sql", $id);
+				$results = $wpdb->get_results("$sql", OBJECT_K);
 				
 				// save template options
 				foreach ($settings as $option => $val) {
@@ -245,7 +245,7 @@ function vtm_render_template_data(){
 						);
 						if (!$result && $result !== 0) {
 							$wpdb->print_error();
-							echo "<p style='color:red'>Could not update $option</p>";
+							echo "<p style='color:red'>Could not update " . esc_html($option) . "</p>";
 						}
 					} else {
 						$wpdb->insert(VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_OPTIONS",
@@ -253,7 +253,7 @@ function vtm_render_template_data(){
 							array('%s', '%s', '%d')
 						);
 						if ($wpdb->insert_id == 0) {
-							echo "<p style='color:red'><b>Error:</b> $option could not be inserted</p>";
+							echo "<p style='color:red'><b>Error:</b> " . esc_html($option) . " could not be inserted</p>";
 						}
 					}
 				}
@@ -262,7 +262,7 @@ function vtm_render_template_data(){
 				
 				//delete defaults 
 				$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_DEFAULTS where TEMPLATE_ID = %d;";
-				$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+				$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 
 				// then re-add
 				$tables    = $_REQUEST['table'];
@@ -280,7 +280,7 @@ function vtm_render_template_data(){
 						if (!isset($multiples[$i])) {
 							if ($tables[$i] != 'BACKGROUND') {
 								$sql = "SELECT MULTIPLE FROM " . VTM_TABLE_PREFIX . $tables[$i] . " WHERE ID = %s";
-								$multiples[$i] = $wpdb->get_var($wpdb->prepare($sql, $items[$i]));
+								$multiples[$i] = $wpdb->get_var($wpdb->prepare("$sql", $items[$i]));
 							} else {
 								$multiples[$i] = 'N';
 							}
@@ -309,7 +309,7 @@ function vtm_render_template_data(){
 				
 				//delete maximums 
 				$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_MAXIMUM where TEMPLATE_ID = %d;";
-				$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+				$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 
 				// then re-add
 				$tables    = $_REQUEST['max_table'];
@@ -347,7 +347,7 @@ function vtm_render_template_data(){
 				
 				//delete primary path defaults 
 				$sql = "delete from " . VTM_TABLE_PREFIX . "CHARGEN_PRIMARY_PATH where TEMPLATE_ID = %d;";
-				$result = $wpdb->get_results($wpdb->prepare($sql, $id));
+				$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
 
 				// then re-add
 				$clans       = $_REQUEST['ppclanid'];
@@ -375,15 +375,15 @@ function vtm_render_template_data(){
 	if ($id > 0) {
 		
 		$sql = "SELECT NAME, DESCRIPTION, VISIBLE FROM " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$result = $wpdb->get_row($sql);
+		$sql = $wpdb->prepare("$sql", $id);
+		$result = $wpdb->get_row("$sql");
 		$name        = $result->NAME;
 		$description = $result->DESCRIPTION;
 		$visible     = $result->VISIBLE;
 		
 		$sql = "SELECT NAME, VALUE FROM " . VTM_TABLE_PREFIX . "CHARGEN_TEMPLATE_OPTIONS WHERE TEMPLATE_ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$results = $wpdb->get_results($sql, OBJECT_K);
+		$sql = $wpdb->prepare("$sql", $id);
+		$results = $wpdb->get_results("$sql", OBJECT_K);
 				
 		$settings['attributes-method']    = isset($results['attributes-method']->VALUE) ? $results['attributes-method']->VALUE : $settings['attributes-method'];
 		$settings['attributes-primary']   = isset($results['attributes-primary']->VALUE) ? $results['attributes-primary']->VALUE : $settings['attributes-primary'];
@@ -428,18 +428,18 @@ function vtm_render_template_data(){
 ?>
 	<h3>Add/Edit Character Generation Template</h3>
 
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
 
 	<h4>Character Generation Template Information</h4>
 	
-	<input type="hidden" name="tab" value="<?php print $type; ?>" />
-	<input type="hidden" name="template" value="<?php print $id; ?>" />
+	<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+	<input type="hidden" name="template" value="<?php print esc_html($id); ?>" />
 	<input type="hidden" name="action" value="save" />
 	<div class="datatables_info">
 	<p>Template Name:
-	<input type="text"   name="template_name" value="<?php print vtm_formatOutput($name); ?>" size=30 /></p>
+	<input type="text"   name="template_name" value="<?php print esc_html($name); ?>" size=30 /></p>
 	<p>Description:
-	<input type="text"   name="template_desc" value="<?php print vtm_formatOutput($description); ?>" size=70 /></p>
+	<input type="text"   name="template_desc" value="<?php print esc_html($description); ?>" size=70 /></p>
 	<p>Visible:
 		<select name="template_visible">
 			<option value="N" <?php selected($visible, "N"); ?>>No</option>
@@ -455,14 +455,14 @@ function vtm_render_template_data(){
 		<td rowspan=1>Assigning Attributes</td>
 		<td><input type="radio" name="attributes-method" value="PST" <?php checked( 'PST', $settings['attributes-method']); ?>>Primary/Secondary/Tertiary
 			<table>
-			<tr><th>Primary Dots</th>  <td><input type="text" name="attributes-primary"   value="<?php print $settings['attributes-primary']; ?>"></td></tr>
-			<tr><th>Secondary Dots</th><td><input type="text" name="attributes-secondary" value="<?php print $settings['attributes-secondary']; ?>"></td></tr>
-			<tr><th>Tertiary Dots</th> <td><input type="text" name="attributes-tertiary"  value="<?php print $settings['attributes-tertiary']; ?>"></td></tr>
+			<tr><th>Primary Dots</th>  <td><input type="text" name="attributes-primary"   value="<?php print esc_html($settings['attributes-primary']); ?>"></td></tr>
+			<tr><th>Secondary Dots</th><td><input type="text" name="attributes-secondary" value="<?php print esc_html($settings['attributes-secondary']); ?>"></td></tr>
+			<tr><th>Tertiary Dots</th> <td><input type="text" name="attributes-tertiary"  value="<?php print esc_html($settings['attributes-tertiary']); ?>"></td></tr>
 			</table>
 		</td>
 		<td><input type="radio" name="attributes-method" value="point" <?php checked( 'point', $settings['attributes-method']); ?>>Point Spend
 			<table>
-			<tr><th>Dots</th><td><input type="text" name="attributes-points"  value="<?php print $settings['attributes-points']; ?>"></td></tr>
+			<tr><th>Dots</th><td><input type="text" name="attributes-points"  value="<?php print esc_html($settings['attributes-points']); ?>"></td></tr>
 			</table>
 		</td>
 	</tr>
@@ -472,11 +472,11 @@ function vtm_render_template_data(){
 			<table>
 			<tr>
 				<th>Maximum in any one Ability at Abilities Step</th>
-				<td><input type="text" name="abilities-max"   value="<?php print $settings['abilities-max']; ?>"></td>
+				<td><input type="text" name="abilities-max"   value="<?php print esc_html($settings['abilities-max']); ?>"></td>
 			</tr>
-			<tr><th>Primary Dots</th>  <td><input type="text" name="abilities-primary"   value="<?php print $settings['abilities-primary']; ?>"></td></tr>
-			<tr><th>Secondary Dots</th><td><input type="text" name="abilities-secondary" value="<?php print $settings['abilities-secondary']; ?>"></td></tr>
-			<tr><th>Tertiary Dots</th> <td><input type="text" name="abilities-tertiary"  value="<?php print $settings['abilities-tertiary']; ?>"></td></tr>
+			<tr><th>Primary Dots</th>  <td><input type="text" name="abilities-primary"   value="<?php print esc_html($settings['abilities-primary']); ?>"></td></tr>
+			<tr><th>Secondary Dots</th><td><input type="text" name="abilities-secondary" value="<?php print esc_html($settings['abilities-secondary']); ?>"></td></tr>
+			<tr><th>Tertiary Dots</th> <td><input type="text" name="abilities-tertiary"  value="<?php print esc_html($settings['abilities-tertiary']); ?>"></td></tr>
 			</table>
 		</td>
 	</tr>
@@ -484,7 +484,7 @@ function vtm_render_template_data(){
 		<td rowspan=1>Assigning Disciplines</td>
 		<td colspan=2>
 			<table>
-			<tr><th>Number of Discipline Dots</th> <td><input type="text" name="disciplines-points"  value="<?php print $settings['disciplines-points']; ?>"></td></tr>
+			<tr><th>Number of Discipline Dots</th> <td><input type="text" name="disciplines-points"  value="<?php print esc_html($settings['disciplines-points']); ?>"></td></tr>
 			</table>
 		</td>
 	</tr>
@@ -507,7 +507,7 @@ function vtm_render_template_data(){
 		<td rowspan=1>Assigning Backgrounds</td>
 		<td colspan=2>
 			<table>
-			<tr><th>Number of Background Dots</th> <td><input type="text" name="backgrounds-points"  value="<?php print $settings['backgrounds-points']; ?>"></td></tr>
+			<tr><th>Number of Background Dots</th> <td><input type="text" name="backgrounds-points"  value="<?php print esc_html($settings['backgrounds-points']); ?>"></td></tr>
 			</table>
 		</td>
 	</tr>
@@ -515,7 +515,7 @@ function vtm_render_template_data(){
 		<td rowspan=1>Assigning Virtues</td>
 		<td colspan=2>
 			<table>
-			<tr><th>Number of Virtue Dots to spend</th> <td><input type="text" name="virtues-points"  value="<?php print $settings['virtues-points']; ?>"></td></tr>
+			<tr><th>Number of Virtue Dots to spend</th> <td><input type="text" name="virtues-points"  value="<?php print esc_html($settings['virtues-points']); ?>"></td></tr>
 			<tr>
 				<th>Free Virtue Dots</th>
 				<td>
@@ -534,7 +534,7 @@ function vtm_render_template_data(){
 		<td rowspan=1>Paths of Enlightenment</td>
 		<td colspan=2>
 			<table>
-			<tr><th>Rating is Conscience + Self-Control multiplied by</th><td><input type="text" name="road-multiplier"  value="<?php print $settings['road-multiplier']; ?>" size=5 ></td></tr>
+			<tr><th>Rating is Conscience + Self-Control multiplied by</th><td><input type="text" name="road-multiplier"  value="<?php print esc_html($settings['road-multiplier']); ?>" size=5 ></td></tr>
 			<tr>
 				<th>Limiting Paths</th>
 				<td>
@@ -551,7 +551,7 @@ function vtm_render_template_data(){
 					<select name="limit-road-id">
 					<?php 
 						foreach ($roads as $road) {
-							print "<option value='{$road->ID}' " . selected($settings['limit-road-id'],$road->ID, false) . ">" . vtm_formatOutput($road->name) . "</option>\n";
+							print "<option value='" . esc_html($road->ID) . "' " . selected($settings['limit-road-id'],$road->ID, false) . ">" . esc_html($road->name) . "</option>\n";
 						}
 					?>
 					</select>
@@ -564,8 +564,8 @@ function vtm_render_template_data(){
 		<td rowspan=1>Merits and Flaws</td>
 		<td colspan=2>
 			<table>
-			<tr><th>Maximum points spent in Merits (0 for no limit)</th> <td><input type="text" name="merits-max"  value="<?php print $settings['merits-max']; ?>" size=5 ></td></tr>
-			<tr><th>Maximum points spent in Flaws (0 for no limit)</th> <td><input type="text" name="flaws-max"  value="<?php print $settings['flaws-max']; ?>" size=5 ></td></tr>
+			<tr><th>Maximum points spent in Merits (0 for no limit)</th> <td><input type="text" name="merits-max"  value="<?php print esc_html($settings['merits-max']); ?>" size=5 ></td></tr>
+			<tr><th>Maximum points spent in Flaws (0 for no limit)</th> <td><input type="text" name="flaws-max"  value="<?php print esc_html($settings['flaws-max']); ?>" size=5 ></td></tr>
 			</table>
 		</td>
 	</tr>
@@ -573,7 +573,7 @@ function vtm_render_template_data(){
 		<td rowspan=1>Freebie Points</td>
 		<td colspan=2>
 			<table>
-			<tr><th>Number of Freebie Points</th> <td><input type="text" name="freebies-points"  value="<?php print $settings['freebies-points']; ?>" size=5 ></td></tr>
+			<tr><th>Number of Freebie Points</th> <td><input type="text" name="freebies-points"  value="<?php print esc_html($settings['freebies-points']); ?>" size=5 ></td></tr>
 			</table>
 		</td>
 	</tr>
@@ -585,7 +585,7 @@ function vtm_render_template_data(){
 			<tr>
 				<td>
 					<input type="radio" name="rituals-method" value="point" <?php checked( 'point', $settings['rituals-method']); ?>>Get a set number of points to spend 
-					<input type="text" name="rituals-points" value="<?php print $settings['rituals-points']; ?>">
+					<input type="text" name="rituals-points" value="<?php print esc_html($settings['rituals-points']); ?>">
 				</td>
 			</tr>
 			<tr><td><input type="radio" name="rituals-method" value="discipline" <?php checked( 'discipline', $settings['rituals-method']); ?>>Points equal Thaumaturgy level (Thaum 5 gives 5 levels of disciplines)</td></tr>
@@ -613,7 +613,7 @@ function vtm_render_template_data(){
 					<select name="limit-sect-id">
 					<?php 
 						foreach ($sects as $sect) {
-							print "<option value='{$sect->ID}' " . selected($settings['limit-sect-id'],$sect->ID, false) . ">" . vtm_formatOutput($sect->NAME) . "</option>\n";
+							print "<option value='" . esc_html($sect->ID) . "' " . selected($settings['limit-sect-id'],$sect->ID, false) . ">" . esc_html($sect->NAME) . "</option>\n";
 						}
 					?>
 					</select>
@@ -633,7 +633,7 @@ function vtm_render_template_data(){
 					<?php
 						
 						foreach (vtm_get_generations() as $gen) {
-							print "<option value='{$gen->ID}' " . selected($settings['limit-generation-low'],$gen->ID, false) . ">{$gen->NAME}th</option>";
+							print "<option value='" . esc_html($gen->ID) . "' " . selected($settings['limit-generation-low'],$gen->ID, false) . ">" . esc_html($gen->NAME) . "th</option>";
 						}
 					?>
 					</select>
@@ -657,8 +657,8 @@ function vtm_render_template_data(){
 			cpp.TEMPLATE_ID = '%s'
 			AND disc.ID = path.DISCIPLINE_ID
 			AND path.ID = cpp.PATH_ID";
-	$sql = $wpdb->prepare($sql, $id);
-	$results = $wpdb->get_results($sql);
+	$sql = $wpdb->prepare("$sql", $id);
+	$results = $wpdb->get_results("$sql");
 	
 	$disciplines = vtm_get_magic_disciplines();
 	$paths = vtm_listPaths("Y");
@@ -689,13 +689,13 @@ function vtm_render_template_data(){
 			$selected = isset($primarypaths[$clan->ID][$discipline->ID]) ? $primarypaths[$clan->ID][$discipline->ID] : 0;
 			foreach ($disciplines as $discipline) {
 				print "<tr><td>
-					<input type='hidden' name='ppclanid[$offset]' value='$clan->ID'>
-					<input type='hidden' name='ppdiscid[$offset]' value='$discipline->ID'>
-					{$clan->NAME}</td><td>$discipline->NAME</td><td>";
-				print "<select name='pppathid[$offset]' >";
+					<input type='hidden' name='ppclanid[" . esc_attr($offset) . "]' value='" . esc_html($clan->ID) . "'>
+					<input type='hidden' name='ppdiscid[" . esc_attr($offset) . "]' value='" . esc_html($discipline->ID) . "'>
+					" . esc_html($clan->NAME) . "</td><td>" . esc_html($discipline->NAME) . "</td><td>";
+				print "<select name='pppathid[" . esc_attr($offset) . "]' >";
 				foreach ($paths as $path) {
 					if ($path->disname == $discipline->NAME) {
-						print "<option value='" . $path->id . "' " . selected($selected,$path->id, false) . ">" . vtm_formatOutput($path->name) . "</option>";
+						print "<option value='" . esc_html($path->id) . "' " . selected($selected,$path->id, false) . ">" . esc_html($path->name) . "</option>";
 					}
 				}
 				print "</select>";
@@ -723,13 +723,13 @@ function vtm_render_template_data(){
 		foreach ($disciplines as $discipline) {
 			$selected = isset($primarypaths[$discipline->ID]) ? $primarypaths[$discipline->ID] : 0;
 			print "<tr><td>
-				<input type='hidden' name='ppclanid[$offset]' value='0'>
-				<input type='hidden' name='ppdiscid[$offset]' value='$discipline->ID'>
-				$discipline->NAME</td><td>";
-			print "<select name='pppathid[$offset]'>";
+				<input type='hidden' name='ppclanid[" . esc_attr($offset) . "]' value='0'>
+				<input type='hidden' name='ppdiscid[" . esc_attr($offset) . "]' value='" . esc_html($discipline->ID) . "'>
+				" . esc_html($discipline->NAME) . "</td><td>";
+			print "<select name='pppathid[" . esc_attr($offset) . "]'>";
 			foreach ($paths as $path) {
 				if ($path->disname == $discipline->NAME) {
-					print "<option value='" . $path->id . "' " . selected($selected,$path->id, false) . ">" . vtm_formatOutput($path->name) . "</option>";
+					print "<option value='" . esc_html($path->id) . "' " . selected($selected,$path->id, false) . ">" . esc_html($path->name) . "</option>";
 				}
 			}
 			print "</select>";
@@ -773,8 +773,8 @@ function vtm_render_template_data(){
 						ctd.TEMPLATE_ID = %s 
 						AND ctd.ITEMTABLE_ID = bg.ID
 						AND ctd.ITEMTABLE = 'BACKGROUND'";
-			$sql = $wpdb->prepare($sql, $id);
-			$bought = $wpdb->get_results($sql);
+			$sql = $wpdb->prepare("$sql", $id);
+			$bought = $wpdb->get_results("$sql");
 		} else {
 			$bought = array();
 		}
@@ -784,19 +784,19 @@ function vtm_render_template_data(){
 
 			print "<tr class='template_default_row'>\n";
 			print "<td>
-				<input type='hidden' name='table[$offset]' value='BACKGROUND'>
-				<input type='hidden' name='item[$offset]' value='{$item->ID}'>
-				<input type='hidden' name='multiple[$offset]' value='{$item->MULTIPLE}'>
-				" . vtm_formatOutput($item->NAME) . "</td>\n";
+				<input type='hidden' name='table[" . esc_attr($offset) . "]' value='BACKGROUND'>
+				<input type='hidden' name='item[" . esc_attr($offset) . "]' value='" . esc_html($item->ID) . "'>
+				<input type='hidden' name='multiple[" . esc_attr($offset) . "]' value='" . esc_html($item->MULTIPLE) . "'>
+				" . esc_html($item->NAME) . "</td>\n";
 			print "<td>
-				<input type='hidden' name='item_sector[$offset]' value='{$item->SECTOR_ID}'>
-				" . vtm_formatOutput($item->SECTOR) . "</td>\n";
-			print "<td><input type='hidden' name='item_spec[$offset]' value='" . vtm_formatOutput($item->SPECIALISATION) . "'>
-				" . vtm_formatOutput($item->SPECIALISATION) . "</td>\n";
+				<input type='hidden' name='item_sector[" . esc_attr($offset) . "]' value='" . esc_html($item->SECTOR_ID) . "'>
+				" . esc_html($item->SECTOR) . "</td>\n";
+			print "<td><input type='hidden' name='item_spec[" . esc_attr($offset) . "]' value='" . esc_html($item->SPECIALISATION) . "'>
+				" . esc_html($item->SPECIALISATION) . "</td>\n";
 			print "<td>
-				<input type='hidden' name='item_level[$offset]' value='{$item->LEVEL}'>
-				{$item->LEVEL}</td>\n";
-			print "<td><input type='checkbox' name='item_delete[$offset]'></td>\n";
+				<input type='hidden' name='item_level[" . esc_attr($offset) . "]' value='" . esc_html($item->LEVEL) . "'>
+				" . esc_html($item->LEVEL) . "</td>\n";
+			print "<td><input type='checkbox' name='item_delete[" . esc_attr($offset) . "]'></td>\n";
 			print "</tr>\n";
 			
 			$offset++;
@@ -805,26 +805,26 @@ function vtm_render_template_data(){
 		for ($i = $offset ; $i < ($offset + 4) ; $i++) {
 			print "<tr class='template_default_row'>\n";
 			print "<td>
-				<input type='hidden' name='table[$i]' value='BACKGROUND'>
-				<select name='item[$i]'>\n";
+				<input type='hidden' name='table[" . esc_html($i) . "]' value='BACKGROUND'>
+				<select name='item[" . esc_html($i) . "]'>\n";
 			print "<option value='0'>[Select]</option>\n";
 			foreach ($backgrounds as $item) {
-				print "<option value='{$item->ID}'>" . vtm_formatOutput($item->NAME) . "</option>\n";
+				print "<option value='" . esc_html($item->ID) . "'>" . esc_html($item->NAME) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><select name='item_sector[$i]'>\n";
+			print "<td><select name='item_sector[" . esc_html($i) . "]'>\n";
 			print "<option value='0'>[None]</option>\n";
 			foreach ($sectors as $item) {
-				print "<option value='{$item->ID}'>" . vtm_formatOutput($item->NAME) . "</option>\n";
+				print "<option value='" . esc_html($item->ID) . "'>" . esc_html($item->NAME) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><input type='text' name='item_spec[$i]' value=''></td>\n";
-			print "<td><select name='item_level[$i]'>\n";
+			print "<td><input type='text' name='item_spec[" . esc_html($i) . "]' value=''></td>\n";
+			print "<td><select name='item_level[" . esc_html($i) . "]'>\n";
 			for ($j = 0 ; $j <= 5 ; $j++) {
-				print "<option value='$j'>$j</option>\n";
+				print "<option value='" . esc_html($j) . "'>" . esc_html($j) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><input type='hidden' name='item_delete[$i]' value='off'></td>\n";
+			print "<td><input type='hidden' name='item_delete[" . esc_html($i) . "]' value='off'></td>\n";
 			print "</tr>\n";
 		}
 		$offset = $i;
@@ -848,8 +848,8 @@ function vtm_render_template_data(){
 						ctd.TEMPLATE_ID = %s 
 						AND ctd.ITEMTABLE_ID = skill.ID
 						AND ctd.ITEMTABLE = 'SKILL'";
-			$sql = $wpdb->prepare($sql, $id);
-			$bought = $wpdb->get_results($sql);
+			$sql = $wpdb->prepare("$sql", $id);
+			$bought = $wpdb->get_results("$sql");
 		} else {
 			$bought = array();
 		}
@@ -858,16 +858,16 @@ function vtm_render_template_data(){
 
 			print "<tr class='template_default_row'>\n";
 			print "<td>
-				<input type='hidden' name='table[$offset]' value='SKILL'>
-				<input type='hidden' name='item[$offset]' value='{$item->ID}'>
-				<input type='hidden' name='multiple[$offset]' value='{$item->MULTIPLE}'>
-				" . vtm_formatOutput($item->NAME) . "</td>\n";
-			print "<td><input type='hidden' name='item_spec[$offset]' value='" . vtm_formatOutput($item->SPECIALISATION) . "'>
-				" . vtm_formatOutput($item->SPECIALISATION) . "</td>\n";
+				<input type='hidden' name='table[" . esc_attr($offset) . "]' value='SKILL'>
+				<input type='hidden' name='item[" . esc_attr($offset) . "]' value='" . esc_html($item->ID) . "'>
+				<input type='hidden' name='multiple[" . esc_attr($offset) . "]' value='" . esc_html($item->MULTIPLE) . "'>
+				" . esc_html($item->NAME) . "</td>\n";
+			print "<td><input type='hidden' name='item_spec[" . esc_attr($offset) . "]' value='" . esc_html($item->SPECIALISATION) . "'>
+				" . esc_html($item->SPECIALISATION) . "</td>\n";
 			print "<td>
-				<input type='hidden' name='item_level[$offset]' value='{$item->LEVEL}'>
-				{$item->LEVEL}</td>\n";
-			print "<td><input type='checkbox' name='item_delete[$offset]'></td>\n";
+				<input type='hidden' name='item_level[" . esc_attr($offset) . "]' value='" . esc_html($item->LEVEL) . "'>
+				" . esc_html($item->LEVEL) . "</td>\n";
+			print "<td><input type='checkbox' name='item_delete[" . esc_attr($offset) . "]'></td>\n";
 			print "</tr>\n";
 			
 			$offset++;
@@ -876,21 +876,21 @@ function vtm_render_template_data(){
 		for ($i = $offset ; $i < ($offset + 4) ; $i++) {
 			print "<tr class='template_default_row'>\n";
 			print "<td>
-				<input type='hidden' name='table[$i]' value='SKILL'>
-				<select name='item[$i]'>\n";
+				<input type='hidden' name='table[" . esc_html($i) . "]' value='SKILL'>
+				<select name='item[" . esc_html($i) . "]'>\n";
 			print "<option value='0'>[Select]</option>\n";
 			foreach ($skills as $item) {
-				print "<option value='{$item->id}'>" . vtm_formatOutput($item->name) . "</option>\n";
+				print "<option value='" . esc_html($item->id) . "'>" . esc_html($item->name) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><input type='text' name='item_spec[$i]' value=''></td>\n";
-			print "<td><select name='item_level[$i]'>\n";
+			print "<td><input type='text' name='item_spec[" . esc_html($i) . "]' value=''></td>\n";
+			print "<td><select name='item_level[" . esc_html($i) . "]'>\n";
 			for ($j = 0 ; $j <= 5 ; $j++) {
-				print "<option value='$j'>$j</option>\n";
+				print "<option value='" . esc_html($j) . "'>" . esc_html($j) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><input type='hidden' name='item_delete[$i]' value='off'>
-				<input type='hidden' name='item_sector[$i]' value='0'></td>\n";
+			print "<td><input type='hidden' name='item_delete[" . esc_html($i) . "]' value='off'>
+				<input type='hidden' name='item_sector[" . esc_html($i) . "]' value='0'></td>\n";
 			print "</tr>\n";
 		}
 		$offset = $i;
@@ -919,8 +919,8 @@ function vtm_render_template_data(){
 						ctm.TEMPLATE_ID = %s 
 						AND ctm.ITEMTABLE_ID = bg.ID
 						AND ctm.ITEMTABLE = 'BACKGROUND'";
-			$sql = $wpdb->prepare($sql, $id);
-			$results = $wpdb->get_results($sql);
+			$sql = $wpdb->prepare("$sql", $id);
+			$results = $wpdb->get_results("$sql");
 		} else {
 			$results = array();
 		}
@@ -931,15 +931,15 @@ function vtm_render_template_data(){
 
 				print "<tr class='template_default_row'>\n";
 				print "<td>
-					<input type='hidden' name='max_table[$offset]' value='BACKGROUND'>
-					<input type='hidden' name='max_item[$offset]' value='{$item->ID}'>
-					" . vtm_formatOutput($item->NAME) . "</td>\n";
-				print "<td><select name='max_level[$offset]'>\n";
+					<input type='hidden' name='max_table[" . esc_attr($offset) . "]' value='BACKGROUND'>
+					<input type='hidden' name='max_item[" . esc_attr($offset) . "]' value='" . esc_html($item->ID) . "'>
+					" . esc_html($item->NAME) . "</td>\n";
+				print "<td><select name='max_level[" . esc_attr($offset) . "]'>\n";
 				for ($j = 1 ; $j <= 5 ; $j++) {
-					print "<option value='$j' " . selected($j,$item->LEVEL, false) . ">$j</option>\n";
+					print "<option value='" . esc_html($j) . "' " . selected($j,$item->LEVEL, false) . ">" . esc_html($j) . "</option>\n";
 				}
 				print "</select></td>\n";
-				print "<td><input type='checkbox' name='max_delete[$offset]' value='on'></td>\n";
+				print "<td><input type='checkbox' name='max_delete[" . esc_attr($offset) . "]' value='on'></td>\n";
 				print "</tr>\n";
 				
 				$offset++;
@@ -950,19 +950,19 @@ function vtm_render_template_data(){
 		for ($i = $offset ; $i < ($offset + 4) ; $i++) {
 			print "<tr class='template_default_row'>\n";
 			print "<td>
-				<input type='hidden' name='max_table[$i]' value='BACKGROUND'>
-				<select name='max_item[$i]'>\n";
+				<input type='hidden' name='max_table[" . esc_html($i) . "]' value='BACKGROUND'>
+				<select name='max_item[" . esc_html($i) . "]'>\n";
 			print "<option value='0'>[Select]</option>\n";
 			foreach ($backgrounds as $item) {
-				print "<option value='{$item->ID}'>" . vtm_formatOutput($item->NAME) . "</option>\n";
+				print "<option value='" . esc_html($item->ID) . "'>" . esc_html($item->NAME) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><select name='max_level[$i]'>\n";
+			print "<td><select name='max_level[" . esc_html($i) . "]'>\n";
 			for ($j = 0 ; $j <= 5 ; $j++) {
-				print "<option value='$j'>$j</option>\n";
+				print "<option value='" . esc_html($j) . "'>" . esc_html($j) . "</option>\n";
 			}
 			print "</select></td>\n";
-			print "<td><input type='hidden' name='max_delete[$i]' value='off'></td>\n";
+			print "<td><input type='hidden' name='max_delete[" . esc_html($i) . "]' value='off'></td>\n";
 			print "</tr>\n";
 		}
 		$offset = $i;
@@ -972,9 +972,9 @@ function vtm_render_template_data(){
 	</div>	
 	
 	<br />	
-	<input type="submit" name="do_save_<?php print $type; ?>" class="button-primary" value="Save" />
-	<input type="submit" name="do_new_<?php print $type; ?>" class="button-primary" value="New" />
-	<input type="submit" name="do_delete_<?php print $type; ?>" class="button-primary" value="Delete" />
+	<input type="submit" name="do_save_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
+	<input type="submit" name="do_new_<?php print esc_html($type); ?>" class="button-primary" value="New" />
+	<input type="submit" name="do_delete_<?php print esc_html($type); ?>" class="button-primary" value="Delete" />
 	</form>
 
 
@@ -994,9 +994,9 @@ function vtm_render_select_template() {
 	echo "<option value='0'>[Select/New]</option>\n";
 	
 	foreach (vtm_get_templates() as $template) {
-		echo "<option value='{$template->ID}' ";
+		echo "<option value='" . esc_html($template->ID) . "' ";
 		selected($selected,$template->ID);
-		echo ">" . vtm_formatOutput($template->NAME) . "</option>\n";
+		echo ">" . esc_html($template->NAME) . "</option>\n";
 	}
 	
 	echo "</select>\n";

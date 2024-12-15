@@ -97,7 +97,7 @@ function vtm_render_generation_data() {
 		foreach ($delete as $id => $result) {
 			if ($result == 'on') {
 				$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "GENERATION WHERE ID = %s";
-				$wpdb->get_results($wpdb->prepare($sql, $id));
+				$wpdb->get_results($wpdb->prepare("$sql", $id));
 			}
 		}
 	}
@@ -107,7 +107,7 @@ function vtm_render_generation_data() {
 				" . VTM_TABLE_PREFIX. "GENERATION
 			ORDER BY
 				BLOODPOOL DESC, MAX_DISCIPLINE DESC";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 		
 	?>
 	

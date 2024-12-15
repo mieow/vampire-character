@@ -27,7 +27,7 @@ function vtm_update_db_check() {
 		vtm_character_install_data(VTM_CHARACTER_URL . "init");
         $errors += vtm_character_update('after');
 		
-		$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER");
+		$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . $wpdb->prefix . "vtm_CHARACTER");
 		if ($count == 0) {
 			$text = "<p>Go to the Vampire Character Manager Configuration page to 
 					load advanced initial data into the plugin database tables
@@ -1221,7 +1221,7 @@ function vtm_character_install_data($initdatapath) {
 		
 		// Only read in data if the target table is clear
 		$sql = "select ID from " . VTM_TABLE_PREFIX . $tablename;
-		$rows = vtm_count($wpdb->get_results($sql));
+		$rows = vtm_count($wpdb->get_results("$sql"));
 		if (!$rows) {
 			if (file_exists($datafile)) {
 				$filehandle = fopen($datafile,"r");
@@ -1266,7 +1266,7 @@ function vtm_character_install_data($initdatapath) {
 				foreach ($headings as $heading) {
 					$check = array_intersect(array($heading), $tgtheadings);
 					if (empty($check)) {
-						echo "<p style='color:red'>Table $tablename heading $heading in CSV is not in database: ";
+						echo "<p style='color:red'>" . esc_html("Table $tablename heading $heading in CSV is not in database: ");
 						//print_r($tgtheadings);
 						echo "</p>";
 						$allmatch = 0;
@@ -1290,7 +1290,7 @@ function vtm_character_install_data($initdatapath) {
 						if ($docheck) {	
 							$check = array_intersect(array($tgt), $headings);
 							if (empty($check)) {
-								echo "<p style='color:red'>Table $tablename heading $tgt ($type) in database is not in CSV</p>";
+								echo "<p style='color:red'>" . esc_html("Table $tablename heading $tgt ($type) in database is not in CSV") . "</p>";
 								$allmatch = 0;
 							}
 						}
@@ -1305,19 +1305,19 @@ function vtm_character_install_data($initdatapath) {
 						$addrow = $wpdb->insert( VTM_TABLE_PREFIX . $tablename, $entry);
 						if (!$addrow) {
 							$info = isset($entry["NAME"]) ? $entry["NAME"] : "ID $id";
-							echo "<p style='color:red'>Failed to add {$info} to $tablename Table</p>";
+							echo "<p style='color:red'>" . esc_html("Failed to add {$info} to $tablename Table"). "</p>";
 						}
 						$rowsadded += $addrow;
 					}
 					
 					if ($rowsadded == 0 && $rows > 0) {
-						echo "<p style='color:red'>No rows added for $tablename but $rows rows in source - check for database errors</p>";
+						echo "<p style='color:red'>" . esc_html("No rows added for $tablename but $rows rows in source - check for database errors</p>");
 					}
 				} else {
-					echo "<p style='color:red'>No data added for $tablename - column mismatch</p>";
+					echo "<p style='color:red'>No data added for " . esc_html($tablename) . " - column mismatch</p>";
 				}
 			} else {
-					echo "<p style='color:red'>Target table $tablename is not empty</p>";
+					echo "<p style='color:red'>Target table " . esc_html($tablename) . " is not empty</p>";
 			}
 		}
 	}
@@ -1372,21 +1372,21 @@ function vtm_character_install_data($initdatapath) {
 						// ),
 	);
 	foreach ($data as $key => $entry) {
-		$sql = "select VALUE from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
-		$exists = vtm_count($wpdb->get_results($wpdb->prepare($sql,$key)));
+		$sql = "select VALUE from " . $wpdb->prefix . "vtm_ST_LINK where VALUE = %s;";
+		$exists = vtm_count($wpdb->get_results($wpdb->prepare("$sql",$key)));
 		if (!$exists) 
-			$rowsadded = $wpdb->insert( VTM_TABLE_PREFIX . "ST_LINK", $entry);
+			$rowsadded = $wpdb->insert( $wpdb->prefix . "vtm_ST_LINK", $entry);
 	}
-	$sql = "SELECT ID FROM  " . VTM_TABLE_PREFIX . "ST_LINK WHERE VALUE != %s";
+	$sql = "SELECT ID FROM  " . $wpdb->prefix . "vtm_ST_LINK WHERE VALUE != %s";
 	for ($i = 1;$i<count(array_keys($data));$i++)
 		$sql .= ' AND VALUE != %s';
-	$sql = $wpdb->prepare($sql,array_keys($data));
+	$sql = $wpdb->prepare("$sql",array_keys($data));
 	//echo "<p>SQL: $sql</p>";
-	$results = $wpdb->get_results($sql);
+	$results = $wpdb->get_results("$sql");
 	//print_r($results);
-	$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "ST_LINK WHERE ID = %d";
+	$sql = "DELETE FROM " . $wpdb->prefix . "vtm_ST_LINK WHERE ID = %d";
 	foreach ($results as $row) {
-		$result = $wpdb->get_results($wpdb->prepare($sql, $row->ID));
+		$result = $wpdb->get_results($wpdb->prepare("$sql", $row->ID));
 	}
 	*/
 	
@@ -1503,7 +1503,7 @@ function vtm_table_exists($table, $prefix = VTM_TABLE_PREFIX) {
 	global $wpdb;
 
 	$sql = "SHOW TABLES LIKE '" . $prefix . $table . "'";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 	$tableExists = vtm_count($result) > 0;
 	
 	//echo "<p>Table $table exists: $tableExists ($sql)</p>";
@@ -1559,7 +1559,7 @@ function vtm_rename_table($from, $to, $prefixfrom = VTM_TABLE_PREFIX, $prefixto 
 
 	$sql = "RENAME TABLE " . $prefixfrom . $from . " TO " . $prefixto . $to;
 	//echo "<p>rename sql: $sql</p>";
-	$result = $wpdb->get_results($sql);
+	$result = $wpdb->get_results("$sql");
 
 }
 function vtm_delete_table($table, $prefix = VTM_TABLE_PREFIX) {
@@ -1580,15 +1580,15 @@ function vtm_character_update_1_9($beforeafter) {
 		// Rename GVLARP_ tables to VTM_ tables
 		$oldprefix = $wpdb->prefix . "GVLARP_";
 		$sql = "SHOW TABLES LIKE %s";
-		$sql = $wpdb->prepare($sql, $oldprefix . "%");
-		$result = $wpdb->get_col($sql);
+		$sql = $wpdb->prepare("$sql", $oldprefix . "%");
+		$result = $wpdb->get_col("$sql");
 		if (vtm_count($result) > 0) {
 			foreach ($result as $table) {
 				$newtable = str_replace($oldprefix, VTM_TABLE_PREFIX, $table);
 				
 				$sql = "SHOW TABLES LIKE %s";
-				$sql = $wpdb->prepare($sql, $newtable);
-				$result = $wpdb->get_results($sql);
+				$sql = $wpdb->prepare("$sql", $newtable);
+				$result = $wpdb->get_results("$sql");
 				//echo "<p>SQL: $sql</p>";
 				
 				if (vtm_count($result) == 0) {
@@ -1608,7 +1608,7 @@ function vtm_character_update_1_9($beforeafter) {
 			'CHARGEN_NOTE_TO_ST' => '',
 			'CHARGEN_NOTE_FROM_ST' => ''
 		);
-		vtm_remove_columns(VTM_TABLE_PREFIX . "CHARACTER", $remove);
+		vtm_remove_columns($wpdb->prefix . "vtm_CHARACTER", $remove);
 
 	} else {
 	
@@ -1616,15 +1616,15 @@ function vtm_character_update_1_9($beforeafter) {
 		$wpdb->show_errors();
 
 		// Add Character Generation Status to all characters
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "CHARGEN_STATUS WHERE NAME = 'Approved'";
-		$approvedid = $wpdb->get_var($sql);
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ISNULL(CHARGEN_STATUS_ID) OR CHARGEN_STATUS_ID = 0";
+		$sql = "SELECT ID FROM " . $wpdb->prefix . "vtm_CHARGEN_STATUS WHERE NAME = 'Approved'";
+		$approvedid = $wpdb->get_var("$sql");
+		$sql = "SELECT ID FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ISNULL(CHARGEN_STATUS_ID) OR CHARGEN_STATUS_ID = 0";
 		//echo "<p>SQL: $sql</p>";
-		$result = $wpdb->get_col($sql);
+		$result = $wpdb->get_col("$sql");
 		//print_r($result);
 		if (vtm_count($result) > 0) {
 			foreach ($result as $characterID) {
-				$wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+				$wpdb->update($wpdb->prefix . "vtm_CHARACTER",
 					array('CHARGEN_STATUS_ID' => $approvedid),
 					array('ID' => $characterID)
 				);
@@ -1633,13 +1633,13 @@ function vtm_character_update_1_9($beforeafter) {
 		}
 		
 		// Add subscriber as default wordpress role to clan table
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "CLAN WHERE WORDPRESS_ROLE = ''";
-		$result = $wpdb->get_col($sql);
+		$sql = "SELECT ID FROM " . $wpdb->prefix . "vtm_CLAN WHERE WORDPRESS_ROLE = ''";
+		$result = $wpdb->get_col("$sql");
 		//echo "<li>SQL: $sql</li>";
 		//print_r($result);
 		if (vtm_count($result) > 0) {
 			foreach ($result as $clanID) {
-				$wpdb->update(VTM_TABLE_PREFIX . "CLAN",
+				$wpdb->update($wpdb->prefix . "vtm_CLAN",
 					array('WORDPRESS_ROLE' => 'subscriber'),
 					array('ID' => $clanID)
 				);
@@ -1649,8 +1649,8 @@ function vtm_character_update_1_9($beforeafter) {
 		// Copy in initial values for the new CHARACTER EMAIL column
 		$sql = "SELECT ch.ID, ch.WORDPRESS_ID, ch.NAME 
 			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER ch,
-				" . VTM_TABLE_PREFIX . "CHARACTER_STATUS cs
+				" . $wpdb->prefix . "vtm_CHARACTER ch,
+				" . $wpdb->prefix . "vtm_CHARACTER_STATUS cs
 			WHERE
 				ch.CHARACTER_STATUS_ID = cs.ID
 				AND ch.EMAIL = ''
@@ -1658,13 +1658,13 @@ function vtm_character_update_1_9($beforeafter) {
 				AND ch.VISIBLE = 'Y'
 				AND ch.WORDPRESS_ID != ''";
 		//echo "<p>SQL: $sql</p>";
-		$result = $wpdb->get_results($sql);
+		$result = $wpdb->get_results("$sql");
 		if (vtm_count($result) > 0) {
 			foreach ($result as $row) {
 				$userdata = get_user_by( 'login', $row->WORDPRESS_ID );
 				if ($userdata) {
 					//echo "<li>Email address of {$row->NAME} ({$row->WORDPRESS_ID}) is {$userdata->user_email}</li>";
-					$wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+					$wpdb->update($wpdb->prefix . "vtm_CHARACTER",
 						array('EMAIL' => $userdata->user_email),
 						array('ID' => $row->ID)
 					);
@@ -1675,7 +1675,7 @@ function vtm_character_update_1_9($beforeafter) {
 		}
 	
 		// Add new foreign key(s)
-		vtm_add_constraint(VTM_TABLE_PREFIX . "CHARACTER", "char_constraint_10", "CHARGEN_STATUS_ID", "CHARGEN_STATUS(ID)");
+		vtm_add_constraint($wpdb->prefix . "vtm_CHARACTER", "char_constraint_10", "CHARGEN_STATUS_ID", "CHARGEN_STATUS(ID)");
 	
 	}
 
@@ -1693,9 +1693,9 @@ function vtm_character_update_1_10($beforeafter) {
 		$wpdb->show_errors();
 
 		// Add Cost Model for Paths of Enlightenment
-		$modelid = $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "COST_MODEL WHERE NAME = 'RoadOrPath'");
+		$modelid = $wpdb->get_var("SELECT ID FROM " . $wpdb->prefix . "vtm_COST_MODEL WHERE NAME = 'RoadOrPath'");
 		if (!$modelid) {
-			$wpdb->insert(VTM_TABLE_PREFIX . "COST_MODEL",
+			$wpdb->insert($wpdb->prefix . "vtm_COST_MODEL",
 				array(
 					'NAME' => 'RoadOrPath',
 					'DESCRIPTION' => 'Paths of Enlightenment'
@@ -1715,7 +1715,7 @@ function vtm_character_update_1_10($beforeafter) {
 					'XP_COST'         => ($i == 10 ? 0 : $i * 2)
 				);
 				
-				$wpdb->insert(VTM_TABLE_PREFIX . "COST_MODEL_STEP",
+				$wpdb->insert($wpdb->prefix . "vtm_COST_MODEL_STEP",
 					$dataarray,
 					array (
 						'%d',
@@ -1730,13 +1730,13 @@ function vtm_character_update_1_10($beforeafter) {
 		}
 		
 		// Add Cost Model to Paths of Enlightenment
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "ROAD_OR_PATH WHERE ISNULL(COST_MODEL_ID) OR (NOT(ISNULL(COST_MODEL_ID)) AND COST_MODEL_ID = 0)";
+		$sql = "SELECT ID FROM " . $wpdb->prefix . "vtm_ROAD_OR_PATH WHERE ISNULL(COST_MODEL_ID) OR (NOT(ISNULL(COST_MODEL_ID)) AND COST_MODEL_ID = 0)";
 		//echo "<p>SQL: $sql</p>";
-		$result = $wpdb->get_col($sql);
+		$result = $wpdb->get_col("$sql");
 		//print_r($result);
 		if (vtm_count($result) > 0) {
 			foreach ($result as $roadid) {
-				$wpdb->update(VTM_TABLE_PREFIX . "ROAD_OR_PATH",
+				$wpdb->update($wpdb->prefix . "vtm_ROAD_OR_PATH",
 					array('COST_MODEL_ID' => $modelid),
 					array('ID' => $roadid)
 				);
@@ -1759,14 +1759,14 @@ function vtm_character_update_1_11($beforeafter) {
 		// from the GROUPING. Use 'Other Traits' if no match
 		
 		// if grouping column exists
-		if (vtm_column_exists(VTM_TABLE_PREFIX . "SKILL","GROUPING")) {
-			$sql = "SELECT NAME, ID, PARENT_ID FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE";
-			$types = $wpdb->get_results($sql, OBJECT_K);
+		if (vtm_column_exists($wpdb->prefix . "vtm_SKILL","GROUPING")) {
+			$sql = "SELECT NAME, ID, PARENT_ID FROM " . $wpdb->prefix . "vtm_SKILL_TYPE";
+			$types = $wpdb->get_results("$sql", OBJECT_K);
 			$types = vtm_sanitize_array($types);
 			//print_r($types);
 			
-			$sql = "SELECT ID, GROUPING, NAME FROM " . VTM_TABLE_PREFIX . "SKILL";
-			$result = $wpdb->get_results($sql);
+			$sql = "SELECT ID, GROUPING, NAME FROM " . $wpdb->prefix . "vtm_SKILL";
+			$result = $wpdb->get_results("$sql");
 			//print_r($result);
 			//echo "<li>Updating...</li>";
 			if (vtm_count($result) > 0) {
@@ -1783,7 +1783,7 @@ function vtm_character_update_1_11($beforeafter) {
 						$typeid = $types["othertraits"]->ID;
 					}
 					//echo "<li>Update {$row->NAME}, ID: {$row->ID} with skill type {$grp}, type ID: $typeid</li>";
-					$wpdb->update(VTM_TABLE_PREFIX . "SKILL",
+					$wpdb->update($wpdb->prefix . "vtm_SKILL",
 						array('SKILL_TYPE_ID' => $typeid),
 						array('ID' => $row->ID)
 					);
@@ -1795,14 +1795,14 @@ function vtm_character_update_1_11($beforeafter) {
 			$remove = array (
 				'GROUPING' => '',
 			);
-			vtm_remove_columns(VTM_TABLE_PREFIX . "SKILL", $remove);
+			vtm_remove_columns($wpdb->prefix . "vtm_SKILL", $remove);
 		}
 		
 		// Fill in ST_LINK Page IDs
-		$result = vtm_column_exists(VTM_TABLE_PREFIX . "ST_LINK","LINK");
+		$result = vtm_column_exists($wpdb->prefix . "vtm_ST_LINK","LINK");
 		if ($result > 0) {
-			$sql = "SELECT VALUE, ID, LINK FROM " . VTM_TABLE_PREFIX . "ST_LINK";
-			$links = $wpdb->get_results($sql, OBJECT_K);
+			$sql = "SELECT VALUE, ID, LINK FROM " . $wpdb->prefix . "vtm_ST_LINK";
+			$links = $wpdb->get_results("$sql", OBJECT_K);
 			$args = array(
 				'sort_order' => 'ASC',
 				'sort_column' => 'post_title',
@@ -1828,7 +1828,7 @@ function vtm_character_update_1_11($beforeafter) {
 
 			foreach ($links as $key => $info) {
 					if (isset($pageinfo[$info->LINK])) {
-						$wpdb->update(VTM_TABLE_PREFIX . "ST_LINK",
+						$wpdb->update($wpdb->prefix . "vtm_ST_LINK",
 							array('WP_PAGE_ID' => $pageinfo[$info->LINK]),
 							array('ID' => $info->ID)
 						);
@@ -1837,26 +1837,26 @@ function vtm_character_update_1_11($beforeafter) {
 			$remove = array (
 				'LINK' => ''
 			);
-			vtm_remove_columns(VTM_TABLE_PREFIX . "ST_LINK", $remove);
+			vtm_remove_columns($wpdb->prefix . "vtm_ST_LINK", $remove);
 
 			
 		}
 		
 		// Fill in default 'N' for new background column "HAS_SPECIALISATION"
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "BACKGROUND WHERE HAS_SPECIALISATION = ''";
-		$result = $wpdb->get_results($sql);
+		$sql = "SELECT ID FROM " . $wpdb->prefix . "vtm_BACKGROUND WHERE HAS_SPECIALISATION = ''";
+		$result = $wpdb->get_results("$sql");
 		foreach ($result as $bg) {
-					$wpdb->update(VTM_TABLE_PREFIX . "BACKGROUND",
+					$wpdb->update($wpdb->prefix . "vtm_BACKGROUND",
 						array('HAS_SPECIALISATION' => 'N'),
 						array('ID' => $bg->ID)
 					);
 		}
 
 		// Fill in default 'Y' for new character column "GET_NEWSLETTER"
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE GET_NEWSLETTER = ''";
-		$result = $wpdb->get_results($sql);
+		$sql = "SELECT ID FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE GET_NEWSLETTER = ''";
+		$result = $wpdb->get_results("$sql");
 		foreach ($result as $bg) {
-					$wpdb->update(VTM_TABLE_PREFIX . "CHARACTER",
+					$wpdb->update($wpdb->prefix . "vtm_CHARACTER",
 						array('GET_NEWSLETTER' => 'Y'),
 						array('ID' => $bg->ID)
 					);
@@ -1876,7 +1876,7 @@ function vtm_character_update_2_0($beforeafter) {
 		$remove = array (
 			'PREFIX' => ''
 		);
-		vtm_remove_columns(VTM_TABLE_PREFIX . "PM_TYPE", $remove);
+		vtm_remove_columns($wpdb->prefix . "vtm_PM_TYPE", $remove);
 		
 	}
 }
@@ -1902,8 +1902,8 @@ function vtm_character_update_2_13($beforeafter) {
 		// Copy ST Link info into options
 		if (vtm_table_exists("ST_LINK")) {
 			foreach ($data as $key) {
-				$sql = "select WP_PAGE_ID from " . VTM_TABLE_PREFIX . "ST_LINK where VALUE = %s;";
-				$pageid = $wpdb->get_var($wpdb->prepare($sql,$key));
+				$sql = "select WP_PAGE_ID from " . $wpdb->prefix . "vtm_ST_LINK where VALUE = %s;";
+				$pageid = $wpdb->get_var($wpdb->prepare("$sql",$key));
 				if ($pageid) {
 					$value = array (
 						"vtm_link_{$key}" => $pageid
@@ -1914,7 +1914,7 @@ function vtm_character_update_2_13($beforeafter) {
 		}
 		
 		// Player players deleted = N
-		$wpdb->update(VTM_TABLE_PREFIX . "PLAYER",
+		$wpdb->update($wpdb->prefix . "vtm_PLAYER",
 			array("DELETED" => 'N'),
 			array("DELETED" => '')
 		);
@@ -1941,13 +1941,13 @@ function vtm_install_notice() {
 		// Display admin notices
 		$notices = get_option('vtm_admin_notices');
 		if (isset($notices) && $notices != "") {
-			echo "<div class='updated'>$notices | <a href='?vtm_ignore_notice'>Dismiss</a></p></div>";
+			echo "<div class='updated'>" . esc_html($notices) . " | <a href='?vtm_ignore_notice'>Dismiss</a></p></div>";
 		}
 		
 		// Display plugin activation errors 
 		$activation_output = get_option('vtm_plugin_error');
 		if (isset($activation_output) && $activation_output != "") {
-			echo "<div class='error'><p>$activation_output | <a href='?vtm_ignore_activation_output'>Dismiss</a></p></div>";
+			echo "<div class='error'><p>" . esc_html($activation_output) . " | <a href='?vtm_ignore_activation_output'>Dismiss</a></p></div>";
 		}
 		
 	}
@@ -2151,10 +2151,10 @@ function vtm_export_data($filepath, $dirname) {
 			$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
 			
 			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "$table ORDER BY ID";
-			$contents = $wpdb->get_results($sql);
+			$contents = $wpdb->get_results("$sql");
 			
 			$sql = "SHOW COLUMNS FROM " . VTM_TABLE_PREFIX . $table;
-			$info = $wpdb->get_results($sql);
+			$info = $wpdb->get_results("$sql");
 			foreach ($info as $index => $data) {
 				$headings[] = $data->Field;
 			}
@@ -2208,10 +2208,10 @@ function vtm_export_data($filepath, $dirname) {
 					$contents = file_get_contents($filename);
 					$ok = $zip->addFromString("$dirname/$filename", $contents);
 					if (!$ok) {
-						echo "Failed to add $filename to zip</li>";
+						echo "Failed to add " . esc_html($filename) . " to zip</li>";
 					} 
 				} else {
-					echo "<p>Failed to find file: $path/$filename</p>";
+					echo "<p>Failed to find file: " . esc_html("$path/$filename") . "</p>";
 				}
 			}
 		}

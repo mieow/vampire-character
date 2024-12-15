@@ -123,18 +123,18 @@ function vtm_get_editbackgrounds_tab($characterID) {
 				'COMMENT'        => isset($comments[$id]) ? $comments[$id] : ""
 			);
 			$wpdb->show_errors();
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_BACKGROUND",
 				$data,
 				array (
 					'ID' => $bgids[$id]
 				)
 			);
 			
-			if ($result) 			echo "<p style='color:green'>Updated {$namesbg[$id]} background</p>";
-			else if ($result === 0) echo "<p style='color:orange'>No updates made to {$namesbg[$id]} background</p>";
+			if ($result) 			echo "<p style='color:green'>Updated " . esc_html($namesbg[$id]) . " background</p>";
+			else if ($result === 0) echo "<p style='color:orange'>No updates made to " . esc_html($namesbg[$id]) . " background</p>";
 			else {
 				$wpdb->print_error();
-				echo "<p style='color:red'>Could not update {$namesbg[$id]} background</p>";
+				echo "<p style='color:red'>Could not update " . esc_html($namesbg[$id]) . " background</p>";
 			}
 			
 		}
@@ -248,18 +248,18 @@ function vtm_get_editmerits_tab($characterID) {
 				'DENIED_DETAIL'  => ''
 			);
 			$wpdb->show_errors();
-			$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_MERIT",
+			$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_MERIT",
 				$data,
 				array (
 					'ID' => $meritids[$id]
 				)
 			);
 			
-			if ($result) 			echo "<p style='color:green'>Updated {$namesmerit[$id]}</p>";
-			else if ($result === 0) echo "<p style='color:orange'>No updates made to {$namesmerit[$id]} background</p>";
+			if ($result) 			echo "<p style='color:green'>Updated " . esc_html($namesmerit[$id]). "</p>";
+			else if ($result === 0) echo "<p style='color:orange'>No updates made to " . esc_html($namesmerit[$id]). " background</p>";
 			else {
 				$wpdb->print_error();
-				echo "<p style='color:red'>Could not update {$namesmerit[$id]}</p>";
+				echo "<p style='color:red'>Could not update " . esc_html($namesmerit[$id]). "</p>";
 			}
 		}
 		
@@ -346,7 +346,7 @@ function vtm_get_editmisc_tab($characterID) {
 					'PENDING_DETAIL'  => $pendingmisc[$id],
 					'DENIED_DETAIL'   => ''
 				);
-				$wpdb->insert(VTM_TABLE_PREFIX . "CHARACTER_EXTENDED_BACKGROUND", $data,
+				$wpdb->insert($wpdb->prefix . "vtm_CHARACTER_EXTENDED_BACKGROUND", $data,
 					array (
 						'%d',
 						'%d',
@@ -356,11 +356,11 @@ function vtm_get_editmisc_tab($characterID) {
 					)
 				);
 				if ($wpdb->insert_id == 0) {
-					echo "<p style='color:red'><b>Error:</b> {$namesmisc[$id]} could not be saved (";
+					echo "<p style='color:red'><b>Error:</b> " . esc_html($namesmisc[$id]) . " could not be saved (";
 					$wpdb->print_error();
 					echo ")</p>";
 				} else {
-					echo "<p style='color:green'>Saved answer '{$namesmisc[$id]}' for approval</p>";
+					echo "<p style='color:green'>Saved answer '" . esc_html($namesmisc[$id]) . "' for approval</p>";
 				}
 
 			} else {
@@ -375,18 +375,18 @@ function vtm_get_editmisc_tab($characterID) {
 				//print_r($data);
 				//print "</pre>";
 				
-				$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_EXTENDED_BACKGROUND",
+				$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_EXTENDED_BACKGROUND",
 					$data,
 					array (
 						'ID' => $miscids[$id]
 					)
 				);
 				
-				if ($result) 			echo "<p style='color:green'>Updated {$namesmisc[$id]}</p>";
-				else if ($result === 0) echo "<p style='color:orange'>No updates made to {$namesmisc[$id]} answer</p>";
+				if ($result) 			echo "<p style='color:green'>Updated " . esc_html($namesmisc[$id]) . "</p>";
+				else if ($result === 0) echo "<p style='color:orange'>No updates made to " . esc_html($namesmisc[$id]) . " answer</p>";
 				else {
 					$wpdb->print_error();
-					echo "<p style='color:red'>Could not update {$namesmisc[$id]}</p>";
+					echo "<p style='color:red'>Could not update " . esc_html($namesmisc[$id]) . "</p>";
 				}
 			}
 		}
@@ -459,7 +459,7 @@ function vtm_get_editcontact_tab($characterID) {
 	$content = "";
 	
 	if (isset($_REQUEST["addcontact"])) {
-		$phone_pm_type_id = $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE NAME = 'Telephone'");
+		$phone_pm_type_id = $wpdb->get_var("SELECT ID FROM " . $wpdb->prefix . "vtm_PM_TYPE WHERE NAME = 'Telephone'");
 		if ($_REQUEST["addcontact"] == 'mobile') {
 			$number = vtm_generate_phone($characterID, get_option('vtm_pm_mobile_prefix',''));			
 			
@@ -489,7 +489,7 @@ function vtm_get_editcontact_tab($characterID) {
 							'DELETED'      => 'N',
 						);
 		}
-		$wpdb->insert(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
+		$wpdb->insert($wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS",
 					$dataarray,
 					array (
 						'%s',
@@ -510,7 +510,7 @@ function vtm_get_editcontact_tab($characterID) {
 		
 	}
 	elseif (isset($_REQUEST["delcontact"])) {
-		$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
+		$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS",
 					array ('DELETED' => 'Y'),
 					array ('ID' => $_REQUEST["delcontact"])
 				);
@@ -583,9 +583,9 @@ function vtm_get_extbackgrounds_questions($characterID) {
 				charbgs.SECTOR_ID, charbgs.APPROVED_DETAIL, charbgs.PENDING_DETAIL,
 				charbgs.DENIED_DETAIL, charbgs.ID as charbgsID, backgrounds.HAS_SECTOR,
 				charbgs.COMMENT, backgrounds.HAS_SPECIALISATION
-			from	" . VTM_TABLE_PREFIX . "BACKGROUND backgrounds,
-					" . VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND charbgs,
-					" . VTM_TABLE_PREFIX . "CHARACTER characters
+			from	" . $wpdb->prefix . "vtm_BACKGROUND backgrounds,
+					" . $wpdb->prefix . "vtm_CHARACTER_BACKGROUND charbgs,
+					" . $wpdb->prefix . "vtm_CHARACTER characters
 			where	backgrounds.ID = charbgs.BACKGROUND_ID
 				and	characters.ID = %d
 				and characters.ID = charbgs.CHARACTER_ID
@@ -594,7 +594,7 @@ function vtm_get_extbackgrounds_questions($characterID) {
 					OR backgrounds.HAS_SPECIALISATION = 'Y');";
 	/* $content = "<p>SQL: $sql</p>";  */
 	
-	$backgrounds = $wpdb->get_results($wpdb->prepare($sql, $characterID));
+	$backgrounds = $wpdb->get_results($wpdb->prepare("$sql", $characterID));
 
 	return $backgrounds;
 }
@@ -605,16 +605,16 @@ function vtm_get_extmerits_questions($characterID) {
 	$sql = "select merits.NAME, charmerits.APPROVED_DETAIL, charmerits.PENDING_DETAIL,
 				charmerits.DENIED_DETAIL, charmerits.ID as meritID, merits.BACKGROUND_QUESTION,
 				charmerits.COMMENT
-			from	" . VTM_TABLE_PREFIX . "MERIT merits,
-					" . VTM_TABLE_PREFIX . "CHARACTER_MERIT charmerits,
-					" . VTM_TABLE_PREFIX . "CHARACTER characters
+			from	" . $wpdb->prefix . "vtm_MERIT merits,
+					" . $wpdb->prefix . "vtm_CHARACTER_MERIT charmerits,
+					" . $wpdb->prefix . "vtm_CHARACTER characters
 			where	merits.ID = charmerits.MERIT_ID
 				and	characters.ID = %d
 				and characters.ID = charmerits.CHARACTER_ID
 				and	merits.BACKGROUND_QUESTION != '';";
 	/* $content = "<p>SQL: $sql</p>"; */
 	
-	$merits = $wpdb->get_results($wpdb->prepare($sql, $characterID));
+	$merits = $wpdb->get_results($wpdb->prepare("$sql", $characterID));
 	
 	return $merits;
 }
@@ -625,13 +625,13 @@ function vtm_get_extmisc_questions($characterID) {
 	$sql = "SELECT questions.TITLE, questions.ORDERING, questions.GROUPING, questions.BACKGROUND_QUESTION, 
 				tempcharmisc.APPROVED_DETAIL, tempcharmisc.PENDING_DETAIL, tempcharmisc.DENIED_DETAIL, 
 				tempcharmisc.ID AS miscID, questions.ID as questID
-			FROM " . VTM_TABLE_PREFIX . "CHARACTER characters, 
-				 " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND questions
+			FROM " . $wpdb->prefix . "vtm_CHARACTER characters, 
+				 " . $wpdb->prefix . "vtm_EXTENDED_BACKGROUND questions
 				LEFT JOIN (
 					SELECT charmisc.APPROVED_DETAIL, charmisc.PENDING_DETAIL, charmisc.DENIED_DETAIL, 
 						charmisc.ID AS ID, charmisc.QUESTION_ID, characters.ID as charID
-					FROM " . VTM_TABLE_PREFIX . "CHARACTER_EXTENDED_BACKGROUND charmisc, 
-						 " . VTM_TABLE_PREFIX . "CHARACTER characters
+					FROM " . $wpdb->prefix . "vtm_CHARACTER_EXTENDED_BACKGROUND charmisc, 
+						 " . $wpdb->prefix . "vtm_CHARACTER characters
 					WHERE characters.ID = charmisc.CHARACTER_ID
 				) tempcharmisc 
 				ON questions.ID = tempcharmisc.QUESTION_ID AND tempcharmisc.charID = %d
@@ -639,9 +639,9 @@ function vtm_get_extmisc_questions($characterID) {
 				AND questions.VISIBLE = 'Y'
 			ORDER BY questions.ORDERING ASC";
 			
-	$sql = $wpdb->prepare($sql, $characterID, $characterID);
+	$sql = $wpdb->prepare("$sql", $characterID, $characterID);
 	//echo "<p>SQL: $sql</p>";
-	$questions = $wpdb->get_results($sql);
+	$questions = $wpdb->get_results("$sql");
 	return $questions;
 }
 function vtm_get_extcontact_numbers($characterID) {
@@ -656,17 +656,17 @@ function vtm_get_extcontact_numbers($characterID) {
 				cpmad.ISDEFAULT,
 				pmtype.NAME as PM_TYPE
 			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS cpmad,
-				" . VTM_TABLE_PREFIX . "PM_TYPE pmtype
+				" . $wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS cpmad,
+				" . $wpdb->prefix . "vtm_PM_TYPE pmtype
 			WHERE
 				cpmad.DELETED = 'N'
 				AND cpmad.CHARACTER_ID = '%s'
 				AND pmtype.ID = cpmad.PM_TYPE_ID
 				AND pmtype.NAME = 'Telephone'";
 			
-	$sql = $wpdb->prepare($sql, $characterID);
+	$sql = $wpdb->prepare("$sql", $characterID);
 	//echo "<p>SQL: $sql</p>";
-	$data = $wpdb->get_results($sql);
+	$data = $wpdb->get_results("$sql");
 	
 	$mobile   = array();
 	$landline = array();
@@ -724,15 +724,15 @@ function vtm_generate_phone($characterID, $prefix) {
 	// If not, increment <number> and try again
 	// Exit if you can't find a unique number within x tries
 	$sql = "SELECT COUNT(ID) 
-		FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
+		FROM " . $wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS
 		WHERE PM_CODE = %s";
-	$prepsql = $wpdb->prepare($sql, "$prefix$number");
+	$prepsql = $wpdb->prepare("$sql", "$prefix$number");
 	$ismatch = $wpdb->get_var($prepsql);
 	if ($ismatch) {
 		$loopcount = 0;
 		do {
 			$number++;
-			$prepsql = $wpdb->prepare($sql, "$prefix$number");
+			$prepsql = $wpdb->prepare("$sql", "$prefix$number");
 			$ismatch = $wpdb->get_var($prepsql);
 			$loopcount++;
 			

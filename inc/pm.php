@@ -129,10 +129,10 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				default: $status = "Drafted";
 			}
 			//echo "$status (" . get_post_meta( $post_id, '_vtmpm_to_status', true ) . " / " . get_post_meta( $post_id, '_vtmpm_from_status', true ) . ")";
-			echo "$status";
+			echo esc_html($status);
 			break;
 	    case "vtmfrom":
-			echo vtm_formatOutput($info['FromFull'], 1);
+			echo wp_kses($info['FromFull'], vtm_output_allowedhtml());
 			break;
 	    case "vtmto":
 			echo esc_html($info['ToFull']);
@@ -197,12 +197,12 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 			
 			$pid = " <span style='color:silver'>(ID: $post_ID)</span>";
-			$title ="<span class='sub-title vtmpm_title $readclass'><a href='$link'>$subject</a></span>$pid";
+			$title ="<span class='sub-title vtmpm_title $readclass'><a href='" . esc_url($link) . "'>$subject</a></span>$pid";
 			
 			// add in row actions
 			//$title .= vtm_pm_render_row_actions($post);
 			
-			echo $title;
+			echo esc_html($title);
 		}
 	}
 	add_filter('manage_vtmpm_posts_columns', 'vtm_pm_replace_title_column');
@@ -369,7 +369,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$extra = array();
 		if (isset($_GET['replyto'])) {
 			$replytopost = $_GET['replyto'];
-			echo "Replying to post $replytopost";
+			echo "Replying to post " . esc_html($replytopost);
 			update_post_meta( $post->ID, '_vtmpm_replyto_postid', sanitize_text_field($replytopost) );
 			$replytolink = get_permalink($replytopost);
 			$replytotitle = get_the_title($replytopost);
@@ -396,7 +396,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		else {
 			$notify = vtm_pm_validate_metabox($post);
 			if (!empty($notify)) {
-				echo "<ul style='color:red;border:1px solid red'>$notify</ul>";
+				echo "<ul style='color:red;border:1px solid red'>" . esc_html($notify) . "</ul>";
 			}
 		}
 		
@@ -423,7 +423,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				$value = esc_attr(implode(":", array($address->CHARACTER_ID, 
 					$code, $address->PM_TYPE_ID)));
 				
-				echo "<option value='$value' " . selected($value, $to, false) . ">" . 
+				echo "<option value='" . esc_html($value) . "' " . selected($value, $to, false) . ">" . 
 				esc_html($title) . "</option>";
 				
 				$addrcount++;
@@ -431,20 +431,20 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		}
 		if (count($extra) > 0) {
 			foreach ($extra as $title => $value) {
-				echo "<option value='$value' " . selected($value, $to, false) . ">" . 
+				echo "<option value='" . esc_html($value) . "' " . selected($value, $to, false) . ">" . 
 				esc_html($title) . "</option>";
 			}
 		}
 		echo "</select>";
 		$link = admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses');
 		if (($addrcount + count($extra)) == 0) {
-			echo "There is no one in your <a href='$link'>Addressbook</a>. Please add someone to select them as a recipient.";
+			echo "There is no one in your <a href='" . esc_url($link) . "'>Addressbook</a>. Please add someone to select them as a recipient.";
 		} else {
-			echo "Select a message recipient from your <a href='$link'>Addressbook</a>";
+			echo "Select a message recipient from your <a href='" . esc_url($link) . "'>Addressbook</a>";
 		}
 		echo "<br />";
 		echo "<label><strong>From:</strong> </label><select name='vtm_pm_from'>";
-		echo "<option value='$fromchid:postoffice:0'>Yourself with no return address</option>";
+		echo "<option value='" . esc_html($fromchid) . ":postoffice:0'>Yourself with no return address</option>";
 		echo "<option value='anonymous:postoffice:0'>Anonymous with no return address</option>";
 		
 		foreach ($myaddresses as $address) {
@@ -459,18 +459,18 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			$value = esc_attr(implode(":", array($address->CHARACTER_ID, 
 				$code, $address->PM_TYPE_ID)));
 
-			echo "<option value='$value' " . selected($value, $from, false) .
+			echo "<option value='" . esc_html($value) . "' " . selected($value, $from, false) .
 				">" . esc_html($title) . "</option>";
 		}
 		echo "</select>";
 		echo "Select how you are contacting the recipient. ";
 		if (count($myaddresses) == 0) {
 			$link = admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails');
-			echo "You will need to add your <a href='$link'>Contact Details</a> if you want additional options.";
+			echo "You will need to add your <a href='" . esc_url($link) . "'>Contact Details</a> if you want additional options.";
 		}
 		echo "</p>";
 		if (isset($replytolink)) {
-			echo "<p><label><strong>Replying to:</strong> </label><a href='$replytolink'>$replytotitle</a></p>";
+			echo "<p><label><strong>Replying to:</strong> </label><a href='" . esc_url($replytolink) . "'>" . esc_html($replytotitle) . "</a></p>";
 		}
 		
 		//print_r($addressbook);
@@ -490,28 +490,28 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 <div class="submitbox" id="submitpost">
 
 <div class="misc-pub-section misc-pub-post-status">
-<?php _e( 'Message Status:', 'vampire-character' ) ?> <span id="post-status-display"><?php
+<?php echo 'Message Status:'; ?> <span id="post-status-display"><?php
 
 		switch ( $post->post_status ) {
 			case 'private':
-				_e('Privately Published', 'vampire-character');
+				esc_html_e('Privately Published', 'vampire-character');
 				break;
 			case 'publish':
-				_e('Published', 'vampire-character');
+				esc_html_e('Published', 'vampire-character');
 				break;
 			case 'future':
-				_e('Scheduled', 'vampire-character');
+				esc_html_e('Scheduled', 'vampire-character');
 				break;
 			case 'pending':
-				_e('Pending Review', 'vampire-character');
+				esc_html_e('Pending Review', 'vampire-character');
 				break;
 			case 'draft':
 			case 'auto-draft':
-				_e('Draft', 'vampire-character');
+				esc_html_e('Draft', 'vampire-character');
 				break;
 		}
 ?>
-</span> (<?php echo get_post_meta( $post->ID, 'vtmpm_status', true );?>)
+</span> (<?php echo esc_html(get_post_meta( $post->ID, 'vtmpm_status', true ));?>)
 </div><!-- .misc-pub-section -->
 
 <div id="minor-publishing">
@@ -546,7 +546,7 @@ if ( 'publish' == $post->post_status ) {
 	$preview_button = __( 'Preview', 'vampire-character' );
 }
 ?>
-<a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview-<?php echo (int) $post->ID; ?>" id="post-preview"><?php echo $preview_button; ?></a>
+<a class="preview button" href="<?php echo esc_url($preview_link); ?>" target="wp-preview-<?php echo (int) esc_html($post->ID); ?>" id="post-preview"><?php echo esc_html($preview_button); ?></a>
 <input type="hidden" name="wp-preview" id="wp-preview" value="" />
 </div>
 <?php endif; // public post type ?>
@@ -598,7 +598,7 @@ if ( current_user_can( "delete_post", $post->ID ) ) {
 	else
 		$delete_text = __('Move to Trash', 'vampire-character');
 	?>
-<a class="submitdelete deletion" href="<?php echo get_delete_post_link($post->ID); ?>"><?php echo $delete_text; ?></a><?php
+<a class="submitdelete deletion" href="<?php echo esc_url(get_delete_post_link($post->ID)); ?>"><?php echo esc_html($delete_text); ?></a><?php
 } ?>
 </div>
 
@@ -671,9 +671,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 			$current_url = remove_query_arg( 'action', $current_url );
 			?>
-			<form id="address-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-				<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-				<input type="hidden" name="post_type" value="<?php print $_REQUEST['post_type'] ?>" />
+			<form id="address-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+				<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+				<input type="hidden" name="post_type" value="<?php print esc_html($_REQUEST['post_type']) ?>" />
 				<?php $testListTable->display() ?>
 			</form>	
 			<?php
@@ -716,9 +716,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 			$current_url = remove_query_arg( 'action', $current_url );
 			?>
-			<form id="address-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-				<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
-				<input type="hidden" name="post_type" value="<?php print $_REQUEST['post_type'] ?>" />
+			<form id="address-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+				<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
+				<input type="hidden" name="post_type" value="<?php print esc_html($_REQUEST['post_type']) ?>" />
 				<?php $testListTable->display() ?>
 			</form>	
 			<?php
@@ -750,8 +750,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 
 		} elseif ('edit-' . $type == $addaction) {
 			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS WHERE ID = %s";
-			$sql = $wpdb->prepare($sql, $id);
-			$data =$wpdb->get_row($sql);
+			$sql = $wpdb->prepare("$sql", $id);
+			$data =$wpdb->get_row("$sql");
 			
 			$name       = $data->NAME;
 			$desc       = $data->DESCRIPTION;
@@ -783,20 +783,20 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 		$current_url = remove_query_arg( 'action', $current_url );
 		?>
-		<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-			<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
-			<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
+		<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+			<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+			<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
+			<input type="hidden" name="characterID" value="<?php print esc_html($characterID); ?>" />
 			<table>
 			<?php
 			if (vtm_isST()) {
 			?><tr>
 				<td>Character Name:</td>
 				<td colspan=3>
-					<select name="<?php print $type; ?>_charid">
+					<select name="<?php print esc_html($type); ?>_charid">
 						<?php
 							foreach (vtm_get_characters() as $ch) {
-								print "<option value='{$ch->ID}' ";
+								print "<option value='" . esc_html($ch->ID) . "' ";
 								($ch->ID == $characterID) ? print "selected" : print "";
 								echo ">" . esc_html($ch->NAME) . "</option>";
 							}
@@ -806,18 +806,18 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			</tr><?php
 			} else {
 				?>
-				<input type="hidden" name="<?php print $type; ?>_charid" value="<?php print $characterID; ?>" />
+				<input type="hidden" name="<?php print esc_html($type); ?>_charid" value="<?php print esc_html($characterID); ?>" />
 				<?php
 			}
 			?><tr>
 				<td>Public Name:</td>
-				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 				<td>Type:</td>
 				<td>
-					<select name="<?php print $type; ?>_pmtype">
+					<select name="<?php print esc_html($type); ?>_pmtype">
 						<?php
 							foreach (vtm_get_pm_types() as $pmtype) {
-								print "<option value='{$pmtype->ID}' ";
+								print "<option value='" . esc_html($pmtype->ID) . "' ";
 								($pmtype->ID == $pm_type_id) ? print "selected" : print "";
 								echo ">" . esc_html($pmtype->NAME) . "</option>";
 							}
@@ -827,10 +827,10 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			</tr>
 			<tr>
 				<td>Code/Number:</td>
-				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print esc_html($code); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print esc_html($type); ?>_code" value="<?php print esc_html($code); ?>" size=20 /></td>
 				<td>Show on public addressbook:</td>
 				<td>
-					<select name="<?php print $type; ?>_visible">
+					<select name="<?php print esc_html($type); ?>_visible">
 						<option value="N" <?php selected($visible, "N"); ?>>No</option>
 						<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 					</select>
@@ -838,17 +838,17 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			</tr>
 			<tr>
 				<td>Description:</td>
-				<td><textarea name="<?php print $type; ?>_desc"><?php print esc_html($desc); ?></textarea></td> 
+				<td><textarea name="<?php print esc_html($type); ?>_desc"><?php print esc_html($desc); ?></textarea></td> 
 				<td>Default for sending messages:</td>
 				<td>
-					<select name="<?php print $type; ?>_default">
+					<select name="<?php print esc_html($type); ?>_default">
 						<option value="N" <?php selected($default, "N"); ?>>No</option>
 						<option value="Y" <?php selected($default, "Y"); ?>>Yes</option>
 					</select>
 				</td>
 			</tr>
 			</table>
-			<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
+			<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="<?php echo esc_html(ucfirst($nextaction)); ?>" />
 		</form>
 		<?php
 		
@@ -873,8 +873,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 
 		} elseif ('edit-' . $type == $addaction) {
 			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK WHERE ID = %s";
-			$sql = $wpdb->prepare($sql, $id);
-			$data =$wpdb->get_row($sql);
+			$sql = $wpdb->prepare("$sql", $id);
+			$data =$wpdb->get_row("$sql");
 			
 			$name       = $data->NAME;
 			$desc       = $data->DESCRIPTION;
@@ -913,24 +913,24 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$current_url = remove_query_arg( 'type', $current_url );
 		$current_url = remove_query_arg( 'from', $current_url );
 		?>
-		<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-			<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
-			<input type="hidden" name="characterID" value="<?php print $characterID; ?>" />
-			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $tableID; ?>" />
+		<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+			<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+			<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
+			<input type="hidden" name="characterID" value="<?php print esc_html($characterID); ?>" />
+			<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($tableID); ?>" />
 			<table>
 			<tr>
 				<td>Name:</td>
-				<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 				<td>Code/Number:</td>
-				<td><input type="text" name="<?php print $type; ?>_code" value="<?php print esc_html($code); ?>" size=20 /></td>
+				<td><input type="text" name="<?php print esc_html($type); ?>_code" value="<?php print esc_html($code); ?>" size=20 /></td>
 			</tr>
 			<tr>
 				<td>Description:</td>
-				<td colspan=3><textarea name="<?php print $type; ?>_desc"><?php print esc_html($desc); ?></textarea></td> 
+				<td colspan=3><textarea name="<?php print esc_html($type); ?>_desc"><?php print esc_html($desc); ?></textarea></td> 
 			</tr>
 			</table>
-			<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="<?php echo ucfirst($nextaction); ?>" />
+			<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="<?php echo esc_html(ucfirst($nextaction)); ?>" />
 		</form>
 		<?php
 		
@@ -968,16 +968,16 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					$sql = "SELECT COUNT(ID) 
 						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 						WHERE PM_CODE = %s AND ID != %s";
-					$sql = $wpdb->prepare($sql, $code, $_REQUEST[$type . '_id']);
+					$sql = $wpdb->prepare("$sql", $code, $_REQUEST[$type . '_id']);
 				} else {
 					$sql = "SELECT COUNT(ID) 
 						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 						WHERE PM_CODE = %s";
-					$sql = $wpdb->prepare($sql, $code);
+					$sql = $wpdb->prepare("$sql", $code);
 				}
 				
-				//echo "action: {$_REQUEST['action']}, SQL: $sql";
-				if ($wpdb->get_var($sql) > 0) {
+				//echo "action: " . esc_html($_REQUEST['action']). ", SQL: $sql";
+				if ($wpdb->get_var("$sql") > 0) {
 					$doaction = "fix-$type";
 					echo "<p style='color:red'>ERROR: Phone number/postcode/zipcode already in use. Please select another.</p>";
 				}
@@ -1017,8 +1017,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 				$sql = "SELECT COUNT(ID) 
 					FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 					WHERE PM_CODE = %s AND DELETED = 'N'";
-				$sql = $wpdb->prepare($sql, $code);
-				if ($wpdb->get_var($sql) == 0) {
+				$sql = $wpdb->prepare("$sql", $code);
+				if ($wpdb->get_var("$sql") == 0) {
 					$doaction = "fix-$type";
 					echo "<p style='color:red'>ERROR: That code does not exist or has been removed</p>";
 				}
@@ -1027,8 +1027,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					$sql = "SELECT COUNT(ID) 
 						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 						WHERE PM_CODE = %s AND VISIBLE = 'Y' AND DELETED = 'N'";
-					$sql = $wpdb->prepare($sql, $code);
-					if ($wpdb->get_var($sql) > 0) {
+					$sql = $wpdb->prepare("$sql", $code);
+					if ($wpdb->get_var("$sql") > 0) {
 						$doaction = "fix-$type";
 						echo "<p style='color:red'>ERROR: That code is a public address and already listed</p>";
 					}
@@ -1037,8 +1037,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					$sql = "SELECT COUNT(ID) 
 						FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 						WHERE PM_CODE = %s AND CHARACTER_ID = %s AND DELETED = 'N'";
-					$sql = $wpdb->prepare($sql, $code, $vtmglobal['characterID']);
-					if ($wpdb->get_var($sql) > 0) {
+					$sql = $wpdb->prepare("$sql", $code, $vtmglobal['characterID']);
+					if ($wpdb->get_var("$sql") > 0) {
 						$doaction = "fix-$type";
 						echo "<p style='color:red'>ERROR: That is one of your own codes</p>";
 					}
@@ -1231,7 +1231,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		if (is_wp_error($post_id)) {
 			$errors = $post_id->get_error_messages();
 			foreach ($errors as $error) {
-				echo $error;
+				echo esc_html($error);
 			}
 		}
 	}
@@ -1582,8 +1582,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$sql = "SELECT NAME
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 				WHERE PM_CODE = %s AND DELETED = 'N'";
-		$sql = $wpdb->prepare($sql, $code);
-		$result = $wpdb->get_var($sql);
+		$sql = $wpdb->prepare("$sql", $code);
+		$result = $wpdb->get_var("$sql");
 		
 		return $result;
 	}
@@ -1598,16 +1598,16 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$sql = "SELECT COUNT(ID)
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK
 				WHERE CHARACTER_ID = %s AND PM_CODE = %s ";
-		$sql = $wpdb->prepare($sql, $characterID, $code);
-		$saved = $wpdb->get_var($sql);
+		$sql = $wpdb->prepare("$sql", $characterID, $code);
+		$saved = $wpdb->get_var("$sql");
 		
 		// Public addresses
 		$sql = "SELECT COUNT(ID)
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 				WHERE PM_CODE = %s 
 					AND VISIBLE = 'Y' AND DELETED = 'N'";
-		$sql = $wpdb->prepare($sql, $code);
-		$public = $wpdb->get_var($sql);
+		$sql = $wpdb->prepare("$sql", $code);
+		$public = $wpdb->get_var("$sql");
 		
 		$result = $saved + $public;
 		//echo "Result1: $saved + $public = $result ($sql)";
@@ -1622,8 +1622,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$sql = "SELECT COUNT(ID)
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS
 				WHERE PM_CODE = %s AND DELETED = 'Y'";
-		$sql = $wpdb->prepare($sql, $code);
-		$result = $wpdb->get_var($sql);
+		$sql = $wpdb->prepare("$sql", $code);
+		$result = $wpdb->get_var("$sql");
 		
 		//echo "Result2: $result, SQL: $sql";
 		return ($result > 0);
@@ -1633,9 +1633,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$sql = "SELECT NAME
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER
 				WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $characterID);
+		$sql = $wpdb->prepare("$sql", $characterID);
 		
-		$name = $wpdb->get_var($sql);
+		$name = $wpdb->get_var("$sql");
 		
 		if (!isset($name)) 
 			$name = "Anonymous";
@@ -1650,9 +1650,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$sql = "SELECT NAME
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER
 				WHERE WORDPRESS_ID = %s";
-		$sql = $wpdb->prepare($sql, $wordpressid);
+		$sql = $wpdb->prepare("$sql", $wordpressid);
 		
-		$name = $wpdb->get_var($sql);
+		$name = $wpdb->get_var("$sql");
 		
 		if (!isset($name)) 
 			$name = $wordpressid;
@@ -1667,9 +1667,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$sql = "SELECT ID
 				FROM " . VTM_TABLE_PREFIX . "CHARACTER
 				WHERE WORDPRESS_ID = %s";
-		$sql = $wpdb->prepare($sql, $wordpressid);
+		$sql = $wpdb->prepare("$sql", $wordpressid);
 		
-		$characterID = $wpdb->get_var($sql);
+		$characterID = $wpdb->get_var("$sql");
 		
 		return $characterID;
 	}
@@ -1678,12 +1678,12 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		//print_r($info);
 		?>
 					<header class="entry-header">
-					<<?php echo $subjecthtag; ?> class="entry-title"><?php echo get_the_title($postID); ?></<?php echo $subjecthtag; ?>>
+					<<?php echo esc_html($subjecthtag); ?> class="entry-title"><?php echo esc_html(get_the_title($postID)); ?></<?php echo esc_html($subjecthtag); ?>>
 					<div class="vtm_pmhead">
 						<span class="vtm_pmhead_to">To: <?php echo esc_html($info['ToFull']); ?></span>
 						<span class="vtm_pmhead_from">From: <?php echo esc_html($info['FromFull']); ?></span>
-						<span class="vtm_pmhead_sent">Sent: <?php echo get_the_time( get_option( 'date_format' ) ); ?></span>
-						<span class="vtm_pmhead_subject">Subject: <?php echo get_the_title($postID); ?></span>
+						<span class="vtm_pmhead_sent">Sent: <?php echo esc_html(get_the_time( get_option( 'date_format' )) ); ?></span>
+						<span class="vtm_pmhead_subject">Subject: <?php echo esc_html(get_the_title($postID)); ?></span>
 					</div>
 					</header>
 		<?php
@@ -1710,13 +1710,13 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		}
 		// Add trash link if it was sent to you
 		if ($vtmglobal['characterID'] == $meta['ToChID']) {
-			$links[] = "<a href='$dellink'>Trash</a>";
+			$links[] = "<a href='" . esc_url($dellink) . "'>Trash</a>";
 		}
 		
 		?>
 					<footer class="entry-meta">
 						<div class="vtm_pmfoot">
-							<?php echo implode(' | ', $links); ?>
+							<?php echo wp_kses(implode(' | ', $links), vtm_menulist_allowedhtml()); ?>
 						</div>
 						<div class="vtm_pmhistory">
 						<?php 
@@ -1732,7 +1732,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 									$pmclass = "vtm_pm_fromme";
 								else
 									$pmclass = "";
-								print "<div class='$pmclass'>"; 
+								print "<div class='" . esc_html($pmclass) . "'>"; 
 								vtm_pm_render_pmhead($pid, 'h2');
 								vtm_pm_render_pmcontent($pid);
 								$pid =  get_post_meta( $pid, '_vtmpm_replyto_postid', true );
@@ -1772,9 +1772,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$totypeid   = get_post_meta( $postID, '_vtmpm_to_type', true );
 			$fromtypeid = get_post_meta( $postID, '_vtmpm_from_type', true );
 			if ($totypeid)
-				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = '%s'", $totypeid)));
+				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totypeid)));
 			elseif ($fromtypeid)
-				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = '%s'", $fromtypeid)));
+				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $fromtypeid)));
 			else
 				$pmclass = "";
 			$tochid = get_post_meta( $postID, '_vtmpm_to_characterID', true );
@@ -1786,7 +1786,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			
 			
 			?>
-				<div class="vtm_pmmsg <?php echo $pmclass;?>">
+				<div class="vtm_pmmsg <?php echo esc_html($pmclass);?>">
 			<?php
 			vtm_pm_render_pmhead($postID, 'h1');
 			vtm_pm_render_pmcontent($postID);
@@ -1806,7 +1806,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 							the_content();
 						} else {
 							$post = get_post($postID);
-							echo $post->post_content;
+							echo wp_kses($post->post_content, 'post');
 						}
 						?>
 					</div><!-- .entry-content -->
@@ -1846,7 +1846,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			!vtm_pm_iscoderemoved($fromcode)) {
 			$addlink = admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_addresses&amp;code='.$fromcode.
 				"&amp;from=$fromchid&amp;type=$fromtype");
-			$fromaddrlink = "<a href='$addlink' title='Add to address book'>$fromaddr</a>";
+			$fromaddrlink = "<a href='" . esc_url($addlink) . "' title='Add to address book'>$fromaddr</a>";
 		} 
 		elseif ($fromcode == 'postoffice' && get_option( 'vtm_pm_ic_postoffice_enabled', '0' ) == 0) {
 			$fromaddrlink = "No return address";
@@ -1938,7 +1938,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					// $link = wp_nonce_url($link, 'vtmpm_readunread');
 
 					// //$link = admin_url("post.php?post={$post->ID}&amp;action=$action&amp;post_type=vtmpm");
-					// $actions['read'] = "<a href='$link'>$actiontxt</a>" ;
+					// $actions['read'] = "<a href='" . esc_url($link) . "'>$actiontxt</a>" ;
 				} 
 				elseif (get_post_meta( $post->ID, '_vtmpm_to_status', true ) == 'trash') {
 					$actions['view'] = str_replace(__( 'View', 'vampire-character' ),__( 'View/Untrash', 'vampire-character' ),$actions['view']) ;
@@ -2116,7 +2116,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added '" . esc_html($_REQUEST['address_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added '" . esc_html($_REQUEST['address_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit() {
@@ -2179,7 +2179,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		
 		//$sql = "delete from " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS where ID = %d;";
-		//$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		//$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		//echo "<p style='color:green'>Deleted address $selectedID</p>";
 		
 		$result = $wpdb->update(VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS",
@@ -2359,7 +2359,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . esc_html($_REQUEST['address_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($_REQUEST['address_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit() {
@@ -2381,12 +2381,12 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($result) 
-			echo "<p style='color:green'>Updated address {$_REQUEST['address_name']}</p>";
+			echo "<p style='color:green'>Updated address " . esc_html($_REQUEST['address_name']). "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to {$_REQUEST['address_name']}</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($_REQUEST['address_name']). "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update address {$_REQUEST['address_name']}</p>";
+			echo "<p style='color:red'>Could not update address " . esc_html($_REQUEST['address_name']). "</p>";
 		}
 		 
 	}
@@ -2395,9 +2395,9 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 		
 		$sql = "delete from " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK where ID = %d;";
 			
-		$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
-		echo "<p style='color:green'>Deleted address $selectedID</p>";
+		echo "<p style='color:green'>Deleted address " . esc_html($selectedID) . "</p>";
 	}
 
 
@@ -2529,7 +2529,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 		);
 		
 		$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "PM_TYPE";
-		$this->filter_address_type = vtm_make_filter($wpdb->get_results($sql));
+		$this->filter_address_type = vtm_make_filter($wpdb->get_results("$sql"));
 		$this->filter_address_type['0'] = 'Post Office';
 		
 		/* set active filters */

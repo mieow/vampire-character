@@ -65,10 +65,10 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 					echo "No recipients queued";
 				} 
 				elseif ($all == $sent) {
-					echo "Send successful. " . $sent . " emails sent";
+					echo "Send successful. " . esc_html($sent) . " emails sent";
 				}
 				else {
-					echo $sent . " of " . $all . " sent (" . $fails . " failed)";
+					echo esc_html($sent . " of " . $all . " sent (" . $fails . " failed)");
 				}
 			} else {
 				echo "Publish required";
@@ -138,9 +138,9 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 		$args = array($postid);
 		$sql = "SELECT c.NAME as name, s.NAME as status, c.EMAIL as email
 				FROM 
-					" . VTM_TABLE_PREFIX . "CHARACTER c,
-					" . VTM_TABLE_PREFIX . "MAIL_QUEUE q,
-					" . VTM_TABLE_PREFIX . "MAIL_STATUS s
+					" . $wpdb->prefix . "vtm_CHARACTER c,
+					" . $wpdb->prefix . "vtm_MAIL_QUEUE q,
+					" . $wpdb->prefix . "vtm_MAIL_STATUS s
 				WHERE 
 					c.ID = q.CHARACTER_ID
 					AND q.MAIL_STATUS_ID = s.ID
@@ -149,9 +149,9 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 			$sql .= " AND s.NAME = %s";
 			array_push($args, $status);
 		}
-		$sql = $wpdb->prepare($sql, $args);
+		$sql = $wpdb->prepare("$sql", $args);
 		//echo "<p>SQL: $sql</p>";
-		return $wpdb->get_results($sql);
+		return $wpdb->get_results("$sql");
 	}
 	
 	
@@ -223,12 +223,12 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 		global $wpdb;
 		
 		$queueid = $wpdb->get_var(
-			$wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX . "MAIL_STATUS WHERE NAME = %s", 'Queue')
+			$wpdb->prepare("SELECT ID FROM " . $wpdb->prefix . "vtm_MAIL_STATUS WHERE NAME = %s", 'Queue')
 		);
 		
 		$sql = "SELECT c.ID, $queueid as MAIL_STATUS_ID
 			FROM
-				" . VTM_TABLE_PREFIX . "CHARACTER c,
+				" . $wpdb->prefix . "vtm_CHARACTER c,
 				" . VTM_TABLE_PREFIX. "PLAYER p,
 				" . VTM_TABLE_PREFIX. "PLAYER_STATUS ps,
 				" . VTM_TABLE_PREFIX. "CHARACTER_TYPE ct,
@@ -249,7 +249,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 				AND cgs.NAME = 'Approved'
 			";
 		//echo "<p>SQL: $sql</p>";
-		return $wpdb->get_results($sql);
+		return $wpdb->get_results("$sql");
 	}
 	
 	function vtm_queue_recipients($postid) {
@@ -263,7 +263,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 			
 			// add new recipients
 			foreach ($list as $item) {
-				$wpdb->insert(VTM_TABLE_PREFIX . "MAIL_QUEUE",
+				$wpdb->insert($wpdb->prefix . "vtm_MAIL_QUEUE",
 					array (
 						'CHARACTER_ID' => $item->ID,
 						'MAIL_STATUS_ID' => $item->MAIL_STATUS_ID,
@@ -278,7 +278,7 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 	
 	function vtm_clear_queue($postid) {
 		global $wpdb;
-		$wpdb->delete( VTM_TABLE_PREFIX . "MAIL_QUEUE", 
+		$wpdb->delete( $wpdb->prefix . "vtm_MAIL_QUEUE", 
 			array ('WP_POST_ID' => $postid), 
 			array ('%d')
 		);			
@@ -330,16 +330,16 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 		
 		$sql = "SELECT mq.CHARACTER_ID
 				FROM 
-					" . VTM_TABLE_PREFIX . "MAIL_QUEUE mq,
-					" . VTM_TABLE_PREFIX . "MAIL_STATUS ms
+					" . $wpdb->prefix . "vtm_MAIL_QUEUE mq,
+					" . $wpdb->prefix . "vtm_MAIL_STATUS ms
 				WHERE 
 					mq.WP_POST_ID = %s
 					AND mq.MAIL_STATUS_ID = ms.ID 
 					AND ms.NAME = 'Queue'
 				ORDER BY mq.ID
 				LIMIT 1";
-		$sql = $wpdb->prepare($sql, $postid);
-		return $wpdb->get_var($sql);
+		$sql = $wpdb->prepare("$sql", $postid);
+		return $wpdb->get_var("$sql");
 	}
 	
 	
@@ -396,12 +396,12 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 	function vtm_update_send_status($characterID, $postid, $result) {
 		global $wpdb;
 		
-		$pass = $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "MAIL_STATUS WHERE NAME = 'Sent'");
-		$fail = $wpdb->get_var("SELECT ID FROM " . VTM_TABLE_PREFIX . "MAIL_STATUS WHERE NAME = 'Error'");
+		$pass = $wpdb->get_var("SELECT ID FROM " . $wpdb->prefix . "vtm_MAIL_STATUS WHERE NAME = 'Sent'");
+		$fail = $wpdb->get_var("SELECT ID FROM " . $wpdb->prefix . "vtm_MAIL_STATUS WHERE NAME = 'Error'");
 		
 		$id = $result ? $pass : $fail;
 				
-		$wpdb->update(VTM_TABLE_PREFIX . "MAIL_QUEUE",
+		$wpdb->update($wpdb->prefix . "vtm_MAIL_QUEUE",
 			array('MAIL_STATUS_ID' => $id),
 			array (
 				'CHARACTER_ID' => $characterID,

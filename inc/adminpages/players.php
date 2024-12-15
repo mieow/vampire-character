@@ -42,8 +42,8 @@ function vtm_render_player_data(){
 	<br /><hr />
   
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="player-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="player-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="player" />
 		<?php $testListTable->display() ?>
 	</form>
@@ -76,7 +76,7 @@ function vtm_render_player_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		$name     = $data[0]->NAME;
 		$activeid = $data[0]->PLAYER_STATUS_ID;
@@ -100,20 +100,20 @@ function vtm_render_player_add_form($addaction) {
 	$savetext = $nextaction == "save" ? "Save Player" : "New Player";
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table style='width:500px'>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print $name; ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 			<td>Type:  </td>
 			<td>
 				<select name='player_type'>
 					<?php 
 						foreach( vtm_get_player_type() as $pltype ) {
-							echo '<option value="' . $pltype->ID . '" ';
+							echo '<option value="' . esc_html($pltype->ID) . '" ';
 							selected( $typeid, $pltype->ID );
 							echo '>' . esc_html( $pltype->NAME ) . '</option>';
 						}
@@ -125,7 +125,7 @@ function vtm_render_player_add_form($addaction) {
 				<select name='player_active'>
 					<?php 
 						foreach( vtm_get_player_status() as $plstat ) {
-							echo '<option value="' . $plstat->ID . '" ';
+							echo '<option value="' . esc_html($plstat->ID) . '" ';
 							selected( $activeid, $plstat->ID );
 							echo '>' . esc_html( $plstat->NAME ) . '</option>';
 						}
@@ -134,7 +134,7 @@ function vtm_render_player_add_form($addaction) {
 			</td>
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="<?php print $savetext; ?>" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="<?php print esc_html($savetext); ?>" />
 	</form>
 	
 	<?php
@@ -163,7 +163,7 @@ function vtm_player_input_validation() {
 	
 	if ($doaction == "add-$type") {
 		$sql = 'SELECT NAME FROM ' . VTM_TABLE_PREFIX . 'PLAYER WHERE NAME = %s AND DELETED = "N"';
-		$result = $wpdb->get_col($wpdb->prepare($sql,$_REQUEST[$type . '_name'] ));
+		$result = $wpdb->get_col($wpdb->prepare("$sql",$_REQUEST[$type . '_name'] ));
 		//print_r($result);
 		$countmatch = count($result);
 		if ($countmatch > 0) {
@@ -220,11 +220,11 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> $name could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b>" . esc_html($name) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added player '$name' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added player '" . esc_html($name) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit($id, $name, $type, $status) {
@@ -253,7 +253,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:orange'>No updates made to " . esc_html($name) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update " . esc_html($name) . " ($id)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($name) . " (" . esc_html($id) . ")</p>";
 		}
 	}
  	function deleteplayer($id) {
@@ -266,7 +266,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 		$current_url = remove_query_arg( 'action', $current_url );
 				
-		echo "<p>Confirm that you want to delete player '$name' and all their characters.</p>";
+		echo "<p>Confirm that you want to delete player '" . esc_html($name) . "' and all their characters.</p>";
 		$list = vtm_listCharactersForPlayer($id);
 		if (vtm_count($list) > 0) {
 			echo "<ul>";
@@ -276,9 +276,9 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 			echo "</ul>";
 		}
 		?>
-		<form id="delete-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-			<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-			<input type="hidden" name="tab" value="<?php print $type; ?>" />
+		<form id="delete-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+			<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+			<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
 			<input type="hidden" name="action" value="confirm-delete" />
 			
 			<input type='submit' name='confirm-delete' class='button-primary' value='Confirm' />
@@ -303,12 +303,12 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 		);
 		
 		if ($result) 
-			echo "<p style='color:green'>Item $selectedID update successful</p>";
+			echo "<p style='color:green'>Item " . esc_html($selectedID) . " update successful</p>";
 		else if ($result === 0)
-			echo "<p style='color:orange'>Item $selectedID has not been changed</p>";
+			echo "<p style='color:orange'>Item " . esc_html($selectedID) . " has not been changed</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Item $selectedID could not be updated</p>";
+			echo "<p style='color:red'>Item " . esc_html($selectedID) . " could not be updated</p>";
 		}
 	}
 
@@ -504,7 +504,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -531,7 +531,7 @@ function vtm_player_delete($id) {
 		echo "<ul>";
 		foreach ($list as $char) {
 			echo "<li>";
-			echo vtm_deleteCharacter($char->ID);
+			echo esc_html(vtm_deleteCharacter($char->ID));
 			echo "</li>";
 		}
 		echo "</ul>";
@@ -547,7 +547,7 @@ function vtm_player_delete($id) {
 		echo "<p style='color:orange'>Character " . esc_html($name) . " already deleted - no changes made</p>";
 	else {
 		$wpdb->print_error();
-		echo "<p style='color:red'>Could not delete " . esc_html($name) . " ($id)</p>";
+		echo "<p style='color:red'>Could not delete " . esc_html($name) . " (" . esc_html($id) . ")</p>";
 	}
 }
 ?>

@@ -84,8 +84,8 @@ function vtm_render_approvals_data(){
    ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="approve-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="approve-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="gvapprove" />
  		<?php $testListTable['gvapprove']->display() ?>
 	</form>
@@ -116,8 +116,8 @@ function vtm_render_question_data(){
   ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="question-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="question-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="question" />
 		<?php $testListTable['question']->display() ?>
 	</form>
@@ -144,8 +144,8 @@ function vtm_render_sector_data(){
   ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="sector-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="sector-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="sector" />
 		<?php $testListTable['sector']->display() ?>
 	</form>
@@ -179,8 +179,8 @@ function vtm_render_background_data(){
   ?>	
 
 	<!-- Forms are NOT created automatically, so you need to wrap the table in one to use features like bulk actions -->
-	<form id="bgdata-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="bgdata-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="bgdata" />
 		<?php $testListTable['bgdata']->display() ?>
 	</form>
@@ -220,7 +220,7 @@ function vtm_render_bgdata_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		$name = $data[0]->NAME;
 		$group = $data[0]->GROUPING;
@@ -251,28 +251,28 @@ function vtm_render_bgdata_add_form($addaction) {
 	$current_url = remove_query_arg( 'action', $current_url );
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table style='width:500px'>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 		
 			<td>Grouping:  </td>
-			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print esc_html($group); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_group" value="<?php print esc_html($group); ?>" size=20 /></td>
 		
 			<td>Cost Model:  </td>
 			<td>
-				<select name="<?php print $type; ?>_costmodel">
+				<select name="<?php print esc_html($type); ?>_costmodel">
 					<?php
 						print "<option value='0' ";
 						selected(0, $costmodel_id);
 						echo ">[Select]</option>";
 						
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $costmodel_id);
 							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
@@ -281,7 +281,7 @@ function vtm_render_bgdata_add_form($addaction) {
 			</td>
 			<td>Visible to Players: </td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
@@ -291,14 +291,14 @@ function vtm_render_bgdata_add_form($addaction) {
 		<tr>
 			<td>Has a Sector: </td>
 			<td>
-				<select name="<?php print $type; ?>_hassector">
+				<select name="<?php print esc_html($type); ?>_hassector">
 					<option value="N" <?php selected($has_sector, "N"); ?>>No</option>
 					<option value="Y" <?php selected($has_sector, "Y"); ?>>Yes</option>
 				</select>
 			</td>
 			<td>Has a Specialisation: </td>
 			<td>
-				<select name="<?php print $type; ?>_hasspec">
+				<select name="<?php print esc_html($type); ?>_hasspec">
 					<option value="N" <?php selected($has_spec, "N"); ?>>No</option>
 					<option value="Y" <?php selected($has_spec, "Y"); ?>>Yes</option>
 				</select>
@@ -307,18 +307,18 @@ function vtm_render_bgdata_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=7><input type="text" name="<?php print $type; ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> <!-- check sizes -->
+			<td colspan=7><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> <!-- check sizes -->
 		</tr>
 		<tr>
 			<td colspan=8>Extended Background question (leave blank to exclude background from Extended Backgrounds):  </td>
 		</tr>
 		<tr>
 			<td colspan=8>
-				<textarea name="<?php print $type; ?>_question" rows="2" cols="100"><?php print esc_html($bgquestion); ?></textarea>
+				<textarea name="<?php print esc_html($type); ?>_question" rows="2" cols="100"><?php print esc_html($bgquestion); ?></textarea>
 			</td>
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save Background" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save Background" />
 	</form>
 	
 	<?php
@@ -349,7 +349,7 @@ function vtm_render_sector_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		$name = $data[0]->NAME;
 		$desc = $data[0]->DESCRIPTION;
@@ -371,17 +371,17 @@ function vtm_render_sector_add_form($addaction) {
 	$current_url = remove_query_arg( 'action', $current_url );
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table style='width:500px'>
 		<tr>
 			<td>Name:  </td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=20 /></td>
 		
 			<td>Visible to Players: </td><td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select></td>
@@ -390,11 +390,11 @@ function vtm_render_sector_add_form($addaction) {
 		<tr>
 		
 			<td>Description:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_desc" value="<?php print esc_html($desc); ?>" size=100 /></td> <!-- check sizes -->
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=100 /></td> <!-- check sizes -->
 
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save Sector" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save Sector" />
 	</form>
 	
 	<?php
@@ -429,12 +429,12 @@ function vtm_render_question_add_form($addaction) {
 		
 		/* echo "<p>$sql</p>"; */
 		
-		$data =$wpdb->get_results($wpdb->prepare($sql, $id));
+		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
 		
 		$title   = $data[0]->TITLE;
 		$order   = $data[0]->ORDERING;
 		$group   = $data[0]->GROUPING;
-		$question = stripslashes($data[0]->BACKGROUND_QUESTION);
+		$question = $data[0]->BACKGROUND_QUESTION;
 		$visible = $data[0]->VISIBLE;
 		$chargen = $data[0]->REQD_AT_CHARGEN;
 		
@@ -443,7 +443,7 @@ function vtm_render_question_add_form($addaction) {
 	} else {
 	
 		$sql = "select * from " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND;";
-		$order = count($wpdb->get_results($sql)) + 1;
+		$order = count($wpdb->get_results("$sql")) + 1;
 	
 		/* defaults */
 		$title   = "";
@@ -458,17 +458,17 @@ function vtm_render_question_add_form($addaction) {
 	$current_url = remove_query_arg( 'action', $current_url );
 
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table style='width:500px'>
 		<tr>
 			<td>Title:  </td>
-			<td colspan=3><input type="text" name="<?php print $type; ?>_title" value="<?php print esc_html($title); ?>" size=60 /></td>
+			<td colspan=3><input type="text" name="<?php print esc_html($type); ?>_title" value="<?php print esc_html($title); ?>" size=60 /></td>
 		
 			<td>Visible:</td>
-			<td><select name="<?php print $type; ?>_visible">
+			<td><select name="<?php print esc_html($type); ?>_visible">
 				<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				<option value="N" <?php selected($visible, "N"); ?>>No</option>
 				</select>
@@ -476,11 +476,11 @@ function vtm_render_question_add_form($addaction) {
 		</tr>
 		<tr>
 			<td>Question Order: </td>
-			<td><input type="text" name="<?php print $type; ?>_order" value="<?php print $order; ?>" size=4 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_order" value="<?php print esc_html($order); ?>" size=4 /></td>
 			<td>Group: </td>
-			<td><input type="text" name="<?php print $type; ?>_group" value="<?php print esc_html($group); ?>" size=30 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_group" value="<?php print esc_html($group); ?>" size=30 /></td>
 			<td>At Char Gen:</td>
-			<td><select name="<?php print $type; ?>_reqdatchargen">
+			<td><select name="<?php print esc_html($type); ?>_reqdatchargen">
 				<option value="N" <?php selected($chargen, "N"); ?>>No</option>
 				<option value="Y" <?php selected($chargen, "Y"); ?>>Yes</option>
 				</select>
@@ -489,12 +489,12 @@ function vtm_render_question_add_form($addaction) {
 		<tr>
 			<td>Question:  </td>
 			<td colspan=5>
-				<textarea name="<?php print $type; ?>_question" rows="2" cols="100" ><?php print esc_html($question); ?></textarea>
+				<textarea name="<?php print esc_html($type); ?>_question" rows="2" cols="100" ><?php print esc_html($question); ?></textarea>
 			</td> 
 
 		</tr>
 		</table>
-		<input type="submit" name="do_add_<?php print $type; ?>" class="button-primary" value="Save Question" />
+		<input type="submit" name="do_add_<?php print esc_html($type); ?>" class="button-primary" value="Save Question" />
 	</form>
 	
 	<?php
@@ -517,18 +517,18 @@ function vtm_render_approve_form($showform, $id, $data) {
 	
 	if ($showform) {
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="table_id" value="<?php print $tableid; ?>" />
-		<input type="hidden" name="table"    value="<?php print $table; ?>"/>
-		<input type="hidden" name="tab"      value="<?php print $type; ?>" />
-		<input type="hidden" name="extbackground" value="<?php print $id; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="table_id" value="<?php print esc_html($tableid); ?>" />
+		<input type="hidden" name="table"    value="<?php print esc_html($table); ?>"/>
+		<input type="hidden" name="tab"      value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="extbackground" value="<?php print esc_html($id); ?>" />
 		<table style='width:500px'>
 		<tr>
 			<td>Description: </td><td><?php print esc_html($pending); ?></td>
 		</tr>
 		<tr>
 			<td>Denied Reason:  </td>
-			<td><textarea name="<?php print $type; ?>_denied"><?php print esc_html($denied); ?></textarea></td>
+			<td><textarea name="<?php print esc_html($type); ?>_denied"><?php print esc_html($denied); ?></textarea></td>
 		</tr>
 		</table>
 		<input type="submit" name="do_deny" class="button-primary" value="Deny" />
@@ -808,7 +808,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 				order by
 					charbgs.ID;";
 				
-		$tempdata =$wpdb->get_results($sql);
+		$tempdata =$wpdb->get_results("$sql");
 		//echo "<p>SQL: $sql</p>";
 		//print_r($tempdata);
 		
@@ -852,7 +852,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 				order by charmerit.ID;";
 				
 		
-		$tempdata =$wpdb->get_results($sql);
+		$tempdata =$wpdb->get_results("$sql");
 		//echo "<p>SQL: $sql</p>";
 		//print_r($tempdata);
 		foreach ($tempdata as $tablerow) {
@@ -890,7 +890,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 					and cgstatus.NAME = 'Approved'
 				order by answers.ID;";
 					
-		$tempdata =$wpdb->get_results($sql);
+		$tempdata =$wpdb->get_results("$sql");
 		//echo "<p>SQL: $sql</p>";
 		//print_r($tempdata);
 		foreach ($tempdata as $tablerow) {
@@ -987,7 +987,7 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 				where charbgs.QUESTION_ID = questions.ID 
 					and characters.ID = charbgs.CHARACTER_ID
 					and questions.ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this question has been filled in for the following characters:";
 			echo "<ul>";
@@ -1000,9 +1000,9 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
-			echo "<p style='color:green'>Deleted question $selectedID</p>";
+			echo "<p style='color:green'>Deleted question " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -1034,13 +1034,13 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$title = esc_html($title);
+		//$title = esc_html($title);
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> $title could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b>" . esc_html($title) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added question '$title' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added question '" . esc_html($title) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_question($id, $title, $ordering, $grouping, $question, $visible, $reqdatchargen) {
@@ -1066,14 +1066,14 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$title = esc_html($title);
+		//$title = esc_html($title);
 		if ($result) 
-			echo "<p style='color:green'>Updated $title</p>";
+			echo "<p style='color:green'>Updated " . esc_html($title) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to $title</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($title) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update $title ($id)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($title) . " (" . esc_html($id) . ")</p>";
 		}
 	}
    
@@ -1183,7 +1183,7 @@ class vtmclass_admin_questions_table extends vtmclass_MultiPage_ListTable {
 					
 		//echo "<p>SQL: $sql</p>";
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -1228,7 +1228,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 				where charbgs.SECTOR_ID = sectors.ID 
 					and characters.ID = charbgs.CHARACTER_ID
 					and sectors.ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this sector is in use for the following characters:";
 			echo "<ul>";
@@ -1241,10 +1241,10 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "SECTOR where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted sector $selectedID</p>";
+			echo "<p style='color:green'>Deleted sector " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -1270,13 +1270,13 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = esc_html($name);
+		//$name = esc_html($name);
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> $name could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($name) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added sector '$name' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added sector '" . esc_html($name) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_sector($id, $name, $description, $visible) {
@@ -1299,14 +1299,14 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = esc_html($name);
+		//$name = esc_html($name);
 		if ($result) 
-			echo "<p style='color:green'>Updated $name</p>";
+			echo "<p style='color:green'>Updated " . esc_html($name) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to $name</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($name) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update $name ($id)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($name) . " (" . esc_html($id) . ")</p>";
 		}
 	}
    
@@ -1407,7 +1407,7 @@ class vtmclass_admin_sectors_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
@@ -1452,7 +1452,7 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 				where charbgs.BACKGROUND_ID = backgrounds.ID 
 					and characters.ID = charbgs.CHARACTER_ID
 					and backgrounds.ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this background is in use for the following characters:";
 			echo "<ul>";
@@ -1465,10 +1465,10 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "BACKGROUND where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
 			/* print_r($result); */
-			echo "<p style='color:green'>Deleted background $selectedID</p>";
+			echo "<p style='color:green'>Deleted background " . esc_html($selectedID) . "</p>";
 		}
 	}
 	
@@ -1505,13 +1505,13 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = esc_html($name);
+		//$name = esc_html($name);
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> $name could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($name) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added background '$name' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added background '" . esc_html($name) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
  	function edit_background($id, $name, $description, $group, $costmodel_id, $visible, $has_sector, $question,
@@ -1540,14 +1540,14 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 					)
 				);
 		
-		$name = esc_html($name);
+		//$name = esc_html($name);
 		if ($result) 
-			echo "<p style='color:green'>Updated $name</p>";
+			echo "<p style='color:green'>Updated " . esc_html($name) . "</p>";
 		else if ($result === 0) 
-			echo "<p style='color:orange'>No updates made to $name</p>";
+			echo "<p style='color:orange'>No updates made to " . esc_html($name) . "</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update $name ($id)</p>";
+			echo "<p style='color:red'>Could not update " . esc_html($name) . " (" . esc_html($id) . ")</p>";
 		}
 	}
    
@@ -1690,7 +1690,7 @@ class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

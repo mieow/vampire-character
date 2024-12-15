@@ -22,8 +22,8 @@ function vtm_render_paths_page(){
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>	
 
-	<form id="path-filter" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page" value="<?php print $_REQUEST['page'] ?>" />
+	<form id="path-filter" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page" value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="tab" value="path" />
  		<?php $testListTable["path"]->display() ?>
 	</form>
@@ -49,8 +49,8 @@ function vtm_render_path_add_form($type, $addaction) {
 
 	} elseif ('edit-' . $type == $addaction) {
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "PATH WHERE ID = %s";
-		$sql = $wpdb->prepare($sql, $id);
-		$data =$wpdb->get_row($sql);
+		$sql = $wpdb->prepare("$sql", $id);
+		$data =$wpdb->get_row("$sql");
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -81,24 +81,24 @@ function vtm_render_path_add_form($type, $addaction) {
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	$current_url = remove_query_arg( 'action', $current_url );
 	?>
-	<form id="new-<?php print $type; ?>" method="post" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="<?php print $type; ?>_id" value="<?php print $id; ?>"/>
-		<input type="hidden" name="tab" value="<?php print $type; ?>" />
-		<input type="hidden" name="action" value="<?php print $nextaction; ?>" />
+	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="<?php print esc_html($type); ?>_id" value="<?php print esc_html($id); ?>"/>
+		<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
+		<input type="hidden" name="action" value="<?php print esc_html($nextaction); ?>" />
 		<table>
 		<tr>
 			<td>Name:</td>
-			<td><input type="text" name="<?php print $type; ?>_name" value="<?php print vtm_formatOutput($name); ?>" size=30 /></td>
+			<td><input type="text" name="<?php print esc_html($type); ?>_name" value="<?php print esc_html($name); ?>" size=30 /></td>
 			<td>Discipline:</td>
 			<td>
 				<?php $disciplines = vtm_get_disciplines();
 				if (count($disciplines) > 0) { ?>
-				<select name="<?php print $type; ?>_discipline">
+				<select name="<?php print esc_html($type); ?>_discipline">
 					<?php
 						foreach ($disciplines as $discipline) {
-							print "<option value='{$discipline->ID}' ";
+							print "<option value='" . esc_html($discipline->ID) . "' ";
 							selected($discipline->ID, $discipline_id);
-							echo ">" . vtm_formatOutput($discipline->NAME) . "</option>";
+							echo ">" . esc_html($discipline->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -107,12 +107,12 @@ function vtm_render_path_add_form($type, $addaction) {
 				} ?>
 			</td>
 			<td>Cost Model:  </td>
-			<td><select name="<?php print $type; ?>_costmodel">
+			<td><select name="<?php print esc_html($type); ?>_costmodel">
 					<?php
 						foreach (vtm_get_costmodels() as $costmodel) {
-							print "<option value='{$costmodel->ID}' ";
+							print "<option value='" . esc_html($costmodel->ID) . "' ";
 							selected($costmodel->ID, $cost_model_id);
-							echo ">" . vtm_formatOutput($costmodel->NAME) . "</option>";
+							echo ">" . esc_html($costmodel->NAME) . "</option>";
 						}
 					?>
 				</select>
@@ -121,21 +121,21 @@ function vtm_render_path_add_form($type, $addaction) {
 		<tr>
 			<td>Sourcebook:  </td>
 			<td>
-			<select name="<?php print $type; ?>_sourcebook">
+			<select name="<?php print esc_html($type); ?>_sourcebook">
 					<?php
 						foreach (vtm_get_booknames() as $book) {
-							print "<option value='{$book->ID}' ";
+							print "<option value='" . esc_html($book->ID) . "' ";
 							($book->ID == $sourcebook_id) ? print "selected" : print "";
-							echo ">" . vtm_formatOutput($book->NAME) . "</option>";
+							echo ">" . esc_html($book->NAME) . "</option>";
 						}
 					?>
 				</select>
 			</td>
 			<td>Page number:  </td>
-			<td><input type="number" name="<?php print $type; ?>_pagenum" value="<?php print $pagenum; ?>" /></td>
+			<td><input type="number" name="<?php print esc_html($type); ?>_pagenum" value="<?php print esc_html($pagenum); ?>" /></td>
 			<td>Visible to Players:</td>
 			<td>
-				<select name="<?php print $type; ?>_visible">
+				<select name="<?php print esc_html($type); ?>_visible">
 					<option value="N" <?php selected($visible, "N"); ?>>No</option>
 					<option value="Y" <?php selected($visible, "Y"); ?>>Yes</option>
 				</select>
@@ -143,10 +143,10 @@ function vtm_render_path_add_form($type, $addaction) {
 		</tr>
 		<tr>
 			<td>Description:  </td>
-			<td colspan=5><input type="text" name="<?php print $type; ?>_desc" value="<?php print vtm_formatOutput($desc); ?>" size=90 /></td> 
+			<td colspan=5><input type="text" name="<?php print esc_html($type); ?>_desc" value="<?php print esc_html($desc); ?>" size=90 /></td> 
 		</tr>
 		</table>
-		<input type="submit" name="save_<?php print $type; ?>" class="button-primary" value="Save" />
+		<input type="submit" name="save_<?php print esc_html($type); ?>" class="button-primary" value="Save" />
 	</form>
 	
 	<?php
@@ -239,11 +239,11 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
 				);
 		
 		if ($wpdb->insert_id == 0) {
-			echo "<p style='color:red'><b>Error:</b> " . vtm_formatOutput($_REQUEST['path_name']) . " could not be inserted (";
+			echo "<p style='color:red'><b>Error:</b> " . esc_html($_REQUEST['path_name']) . " could not be inserted (";
 			$wpdb->print_error();
 			echo ")</p>";
 		} else {
-			echo "<p style='color:green'>Added " . vtm_formatOutput($_REQUEST['path_name']) . "' (ID: {$wpdb->insert_id})</p>";
+			echo "<p style='color:green'>Added " . esc_html($_REQUEST['path_name']) . "' (ID: " . esc_html($wpdb->insert_id) . ")</p>";
 		}
 	}
 
@@ -275,7 +275,7 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
 			echo "<p style='color:orange'>No updates made</p>";
 		else {
 			$wpdb->print_error();
-			echo "<p style='color:red'>Could not update Path ({$_REQUEST['path']})</p>";
+			echo "<p style='color:red'>Could not update Path (" . esc_html($_REQUEST['path']) . ")</p>";
 		}
 		 
 	}
@@ -294,12 +294,12 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
 					and paths.ID = charpaths.PATH_ID
 					and paths.ID = %d;";
 					
-		$isused = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this road/path has been use for the following characters:";
 			echo "<ul>";
 			foreach ($isused as $item)
-				echo "<li style='color:red'>" . vtm_formatOutput($item->NAME) . "</li>";
+				echo "<li style='color:red'>" . esc_html($item->NAME) . "</li>";
 			echo "</ul></p>";
 			return;
 			
@@ -307,27 +307,27 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from " . VTM_TABLE_PREFIX . "PATH where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare($sql, $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
 		
-			echo "<p style='color:green'>Deleted path $selectedID</p>";
+			echo "<p style='color:green'>Deleted path " . esc_html($selectedID) . "</p>";
 		}
 	}
   
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'COST_MODEL':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             case 'DISCIPLINE':
-                return vtm_formatOutput($item->$column_name);
+                return esc_html($item->$column_name);
             default:
                 return print_r($item,true); 
         }
     }
 	
 	function column_sourcebook($item) {
-		return vtm_formatOutput($item->BOOKNAME) . ", " . $item->PAGE_NUMBER;
+		return esc_html($item->BOOKNAME) . ", " . $item->PAGE_NUMBER;
 	}
 
    function column_name($item){
@@ -339,7 +339,7 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
         
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            vtm_formatOutput($item->NAME),
+            esc_html($item->NAME),
             $item->ID,
             $this->row_actions($actions)
         );
@@ -398,11 +398,11 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
 			/* Select Discipline */
 			echo "<label>Discipline: </label>";
 			if ( !empty( $this->filter_discipline ) ) {
-				echo "<select name='{$this->type}_filter'>";
+				echo "<select name='" . esc_html($this->type) . "_filter'>";
 				foreach( $this->filter_discipline as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_filter_discipline, $key );
-					echo '>' . vtm_formatOutput( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>';
 				}
 				echo '</select>';
 			}
@@ -464,11 +464,11 @@ class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
 			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
 		
 		if ( "all" !== $this->active_filter_discipline)
-			$sql = $wpdb->prepare($sql,$this->active_filter_discipline);
+			$sql = $wpdb->prepare("$sql",$this->active_filter_discipline);
 		
 		//echo "<p>SQL: $sql</p>";
 		
-		$data =$wpdb->get_results($sql);
+		$data =$wpdb->get_results("$sql");
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

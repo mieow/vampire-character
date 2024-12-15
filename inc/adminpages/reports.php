@@ -3,7 +3,7 @@
 function vtm_character_reports () {
 
 	if ( !current_user_can( 'manage_options' ) )  {
-		wp_die( __( 'You do not have sufficient permissions to access this page.', 'vampire-character' ) );
+		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.', 'vampire-character' ) ));
 	}
 
 	?>
@@ -72,9 +72,9 @@ function vtm_render_report($reporttable) {
 	$reporttable->prepare_items(); 
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 	?>
-	<form id="<?php print $_REQUEST['report'] ?>" method="get" action='<?php print htmlentities($current_url); ?>'>
-		<input type="hidden" name="page"   value="<?php print $_REQUEST['page'] ?>" />
-		<input type="hidden" name="report" value="<?php print $_REQUEST['report'] ?>" />
+	<form id="<?php print esc_html($_REQUEST['report']) ?>" method="get" action='<?php print esc_url($current_url); ?>'>
+		<input type="hidden" name="page"   value="<?php print esc_html($_REQUEST['page']) ?>" />
+		<input type="hidden" name="report" value="<?php print esc_html($_REQUEST['report']) ?>" />
 		<?php $reporttable->display(); ?>
 	</form>
 	
