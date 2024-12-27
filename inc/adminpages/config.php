@@ -1216,6 +1216,7 @@ function vtm_render_config_database() {
 				
 				// fopen to get file from external URL
 				// and save it off in chunks (256b?)
+				// phpcs:disable
 				echo '<p>Downloading data zip file</p>';
 				$file = fopen ($from, "rb");
 				if ($file) {
@@ -1231,6 +1232,7 @@ function vtm_render_config_database() {
 				} else {
 					echo "<p style='color:red'>Cannot binary read " . esc_html($from) . "</p>";
 				}
+				// phpcs:enable
 				
 				// extract to init
 				echo '<p>Unzipping the data</p>';
@@ -1376,7 +1378,7 @@ function vtm_render_config_database() {
 			<p>Click this button to completely remove all deleted characters from the database.</p>
 			<input type="submit" name="purge_deleted" class="button-primary" value="Purge" />
 		<?php
-			$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . VTM_TABLE_PREFIX . "CHARACTER");
+			$count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM %i", VTM_TABLE_PREFIX . "CHARACTER"));
 			if ($count == 0 && $access_type == 'direct') {
 		?>
 			<h3>Load pre-defined data</h3>

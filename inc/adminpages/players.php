@@ -262,7 +262,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 		$wpdb->show_errors();
 		
 		$type = "player";
-		$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PLAYER WHERE ID = %s",$id));
+		$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s",VTM_TABLE_PREFIX . "PLAYER", $id));
 		$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 		$current_url = remove_query_arg( 'action', $current_url );
 				
@@ -374,8 +374,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 	
     function get_bulk_actions() {
 		global $wpdb;
-		$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s",'Active'));
-		$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s",'Inactive'));
+		$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
+		$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Inactive'));
 	
         $actions = array(
             $activeid    => 'Activate',
@@ -385,8 +385,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
     }
     function process_bulk_action() {
  		global $wpdb;
-		$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s",'Active'));
-		$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s",'Inactive'));
+		$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
+		$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Inactive'));
        
 		//echo "<p>Bulk action " . $this->current_action() . "</p>"; 
 				
@@ -456,8 +456,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 		$this->filter_type = vtm_make_filter(vtm_get_player_type());
 		$this->filter_status = vtm_make_filter(vtm_get_player_status());
 		
-		$this->default_playerstatus = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS     WHERE NAME = %s",'Active'));
-		$this->default_playertype   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_TYPE     WHERE NAME = %s",'Player'));
+		$this->default_playerstatus = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s", VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
+		$this->default_playertype   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_TYPE", 'Player'));
 
 		if ( isset( $_REQUEST['playertype_filter'] ) && array_key_exists( $_REQUEST['playertype_filter'], $this->filter_type ) ) {
 			$this->active_playertype = sanitize_key( $_REQUEST['playertype_filter'] );
@@ -523,7 +523,7 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 function vtm_player_delete($id) {
 	global $wpdb;
 	
-	$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PLAYER WHERE ID = %s",$id));
+	$name = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PLAYER", $id));
 	$list = vtm_listCharactersForPlayer($id);
 	if (vtm_count($list) == 0) {
 		echo "<ul><li>No characters to delete</li></ul>";

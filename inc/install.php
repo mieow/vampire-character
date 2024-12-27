@@ -1256,7 +1256,7 @@ function vtm_character_install_data($initdatapath) {
 				// If the headings from the csv and db table match then no issues
 				// If the csv headings are all in the dbtable and the missing ones
 				//		don't have constraints then we should be okay
-				$tgtinfo = $wpdb->get_results("SHOW COLUMNS FROM " . VTM_TABLE_PREFIX . "$tablename;", ARRAY_A);
+				$tgtinfo = $wpdb->get_results("SHOW COLUMNS FROM %i;", VTM_TABLE_PREFIX . "$tablename", ARRAY_A);
 				//print_r($tgtinfo);
 				$tgtheadings = array_column($tgtinfo, 'Field');
 				$tgttype = array_column($tgtinfo, 'Type');
@@ -1446,13 +1446,13 @@ function vtm_remove_columns($table, $columninfo) {
 	$remove_constraints = array_intersect(array_values($columninfo), $existing_keys);
 	$sql = "ALTER TABLE $table DROP FOREIGN KEY ".implode(', DROP INDEX ',$remove_constraints).';';
 	
-	if( !empty($remove_constraints) ) $wpdb->query($sql);			
+	if( !empty($remove_constraints) ) $wpdb->query("$sql");			
 
 	/* which columns to remove */
 	$remove_columns = array_intersect(array_keys($columninfo), $existing_columns);
 	$sql = "ALTER TABLE $table DROP COLUMN ".implode(', DROP COLUMN ',$remove_columns).';';
 	
-	if( !empty($remove_columns) ) $wpdb->query($sql); 
+	if( !empty($remove_columns) ) $wpdb->query("$sql"); 
 
 }
 
@@ -1467,7 +1467,7 @@ function vtm_remove_constraint($table, $constraint) {
 	$sql = "ALTER TABLE $table DROP FOREIGN KEY ".implode(', DROP INDEX ',$remove_constraints).';';
 	
 	/* do remove */
-	if( !empty($remove_constraints) ) $wpdb->query($sql);			
+	if( !empty($remove_constraints) ) $wpdb->query("$sql");			
 
 
 }
@@ -1490,7 +1490,7 @@ function vtm_add_constraint($table, $constraint, $foreignkey, $reference, $actio
 	
 	/* do add */
 	if( empty($check_constraints) ) {
-		$result = $wpdb->query($sql);
+		$result = $wpdb->query("$sql");
 		if ($action == "debug" && $result) {
 			return array("Added constraint $constraint to $table ($result): $sql");
 		}
@@ -1502,8 +1502,7 @@ function vtm_add_constraint($table, $constraint, $foreignkey, $reference, $actio
 function vtm_table_exists($table, $prefix = VTM_TABLE_PREFIX) {
 	global $wpdb;
 
-	$sql = "SHOW TABLES LIKE '" . $prefix . $table . "'";
-	$result = $wpdb->get_results("$sql");
+	$result = $wpdb->get_results($wpdb->prepare("SHOW TABLES LIKE %s", $prefix . $table));
 	$tableExists = vtm_count($result) > 0;
 	
 	//echo "<p>Table $table exists: $tableExists ($sql)</p>";
@@ -1514,8 +1513,7 @@ function vtm_table_exists($table, $prefix = VTM_TABLE_PREFIX) {
 function vtm_column_exists($table, $column) {
 	global $wpdb;
 
-	$sql = "DESC $table";
-	$existing_columns = $wpdb->get_col($sql, 0);
+	$existing_columns = $wpdb->get_col($wpdb->prepare("DESC %i", $table), 0);
 	$match_columns = array_intersect(array($column), $existing_columns);
 	
 	//print_r($existing_columns);
@@ -1540,16 +1538,16 @@ function vtm_rename_column($columninfo) {
 	$remove_constraints = array_intersect(array($columninfo['from']), $existing_keys);
 	$sql = "ALTER TABLE $table DROP FOREIGN KEY {$columninfo['constraint']};";
 	//echo "<p>rem constraint: $sql</p>";
-	if( !empty($remove_constraints) ) $wpdb->query($sql);	
+	if( !empty($remove_constraints) ) $wpdb->query("$sql");	
 	
 	$rename_columns = array_intersect(array($columninfo['from']), $existing_columns);
 	$sql = "ALTER TABLE $table CHANGE {$columninfo['from']} {$columninfo['to']} {$columninfo['definition']};";
 	//echo "<p>rename col: $sql</p>";
-	if (!empty($rename_columns)) $wpdb->query($sql);
+	if (!empty($rename_columns)) $wpdb->query("$sql");
 
 	$sql = "ALTER TABLE $table ADD CONSTRAINT {$columninfo['constraint']} FOREIGN KEY ({$columninfo['to']}) REFERENCES {$columninfo['reference']};";
 	//echo "<p>add constraint: $sql</p>";
-	if( !empty($remove_constraints) ) $wpdb->query($sql);	
+	if( !empty($remove_constraints) ) $wpdb->query("$sql");	
 	
 
 }
@@ -1566,7 +1564,7 @@ function vtm_delete_table($table, $prefix = VTM_TABLE_PREFIX) {
 	global $wpdb;
 
 	$sql = "DROP TABLE IF EXISTS " . $prefix . $table;
-	$result = $wpdb->query($sql);
+	$result = $wpdb->query("$sql");
 
 }
 
@@ -1593,7 +1591,7 @@ function vtm_character_update_1_9($beforeafter) {
 				
 				if (vtm_count($result) == 0) {
 					$sql = "RENAME TABLE $table TO $newtable";
-					$result = $wpdb->query($sql);
+					$result = $wpdb->query("$sql");
 					if (isset($result) && $result === false) {
 						$errors++;
 					}
@@ -2119,7 +2117,7 @@ function vtm_factory_defaults($action = "update") {
 		$list = implode(', ', $tablelist);
 		$sql = "DROP TABLE $list";
 		//echo "<p>SQL: $sql</p>";
-		$wpdb->query($sql);
+		$wpdb->query("$sql");
 	}
 	
     vtm_character_install($action);

@@ -317,16 +317,16 @@ function vtm_print_background_shortcode($atts, $content = null) {
 	$sqloffices = "SELECT co.CHARACTER_ID, office.NAME as NAME, 
 			domain.NAME as DOMAIN
 		FROM 
-			" . $wpdb->prefix . "vtm_OFFICE office,
-			" . $wpdb->prefix . "vtm_DOMAIN domain,
-			" . $wpdb->prefix . "vtm_CHARACTER_OFFICE co
+			%i office,
+			%i domain,
+			%i co
 		WHERE
 			co.OFFICE_ID = office.ID
 			AND co.DOMAIN_ID = domain.ID
 			AND office.VISIBLE = 'Y'
 			AND domain.VISIBLE = 'Y'
 		ORDER BY co.CHARACTER_ID, office.ORDERING";
-	$temp = $wpdb->get_results($sqloffices);
+	$temp = $wpdb->get_results($wpdb->prepare("$sqloffices", $wpdb->prefix."vtm_OFFICE", $wpdb->prefix."vtm_DOMAIN", $wpdb->prefix."vtm_CHARACTER_OFFICE"));
 	//echo "<p>SQL: $sqloffices<p>";
 	//print_r($temp);
 	$offices = array();
@@ -419,7 +419,7 @@ function vtm_get_character_from_email ($email, $setting = 'name') {
 				AND paths.ID = chara.ROAD_OR_PATH_ID
 			ORDER BY chara.CHARACTER_STATUS_ID ASC, chara.LAST_UPDATED DESC, chara.name
 			LIMIT 1";
-	$result = $wpdb->get_results($wpdb->prepare($sqlCharID, $email));
+	$result = $wpdb->get_results($wpdb->prepare("$sqlCharID", $email));
 	$id   = $result[0]->id;
 	$name = $result[0]->name;
 	$path = $result[0]->pathname;
@@ -1323,7 +1323,7 @@ function vtm_print_spend_button($atts, $content=null) {
 					'CHARACTER_ID'             => $characterID,
 					'TEMPORARY_STAT_ID'        => $statID,
 					'TEMPORARY_STAT_REASON_ID' => $reasonID,
-					'AWARDED'                  => Date('Y-m-d'),
+					'AWARDED'                  => gmdate('Y-m-d'),
 					'AMOUNT'                   => $amount * -1,
 					'COMMENT'                  => $comment
 				);

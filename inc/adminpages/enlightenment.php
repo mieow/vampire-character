@@ -50,8 +50,7 @@ function vtm_render_enlighten_add_form($type, $addaction) {
 
 	} elseif ('edit-' . $type == $addaction) {
 		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "ROAD_OR_PATH WHERE ID = %s";
-		$sql = $wpdb->prepare("$sql", $id);
-		$data =$wpdb->get_results("$sql");
+		$data = $wpdb->get_results($wpdb->prepare("$sql", $id));
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		

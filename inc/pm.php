@@ -202,7 +202,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			// add in row actions
 			//$title .= vtm_pm_render_row_actions($post);
 			
-			echo esc_html($title);
+			echo wp_kses($title, 'data');
 		}
 	}
 	add_filter('manage_vtmpm_posts_columns', 'vtm_pm_replace_title_column');
@@ -1084,19 +1084,19 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		elseif ($fromtype == 0 && !vtm_isST()) {
 			// Yes
 			$allow = $wpdb->get_var($wpdb->prepare(
-				"SELECT ISANONYMOUS FROM " . VTM_TABLE_PREFIX . "PM_TYPE
-				WHERE ID = %s", $totype));
+				"SELECT ISANONYMOUS FROM %i
+				WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $totype));
 			
 			if ($allow == 'N') {
-			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totype));
+			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $totype));
 			$to_ana = strtoupper(substr($to, 0, 1)) == 'A' ? 'an' : 'a';
 				$output .= "<li>You cannot send to $to_ana $to without providing a return address</li>";
 			}
 		} 
 		// No - to and from must be same type/method 
 		elseif ($fromtype != $totype && $fromtype != 0) {
-			$from = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $fromtype));
-			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totype));
+			$from = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $fromtype));
+			$to = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $totype));
 			
 			$from_ana = strtoupper(substr($from, 0, 1)) == 'A' ? 'an' : 'a';
 			$to_ana = strtoupper(substr($to, 0, 1)) == 'A' ? 'an' : 'a';
@@ -1772,9 +1772,9 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$totypeid   = get_post_meta( $postID, '_vtmpm_to_type', true );
 			$fromtypeid = get_post_meta( $postID, '_vtmpm_from_type', true );
 			if ($totypeid)
-				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $totypeid)));
+				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $totypeid)));
 			elseif ($fromtypeid)
-				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $fromtypeid)));
+				$pmclass = "vtm_pm_type_" . sanitize_key($wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $fromtypeid)));
 			else
 				$pmclass = "";
 			$tochid = get_post_meta( $postID, '_vtmpm_to_characterID', true );
@@ -2244,7 +2244,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
     }
     function column_pm_type($item){
 		global $wpdb;
-        return esc_html($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $item->PM_TYPE_ID)));
+        return esc_html($wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $item->PM_TYPE_ID)));
     }
 
     function get_columns(){
@@ -2487,7 +2487,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 		if ($item->PM_TYPE_ID == 0) {
 			$type = "Post Office";
 		} else {
-			$type = esc_html($wpdb->get_var($wpdb->prepare("SELECT NAME FROM " . VTM_TABLE_PREFIX . "PM_TYPE WHERE ID = %s", $item->PM_TYPE_ID)));
+			$type = esc_html($wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "PM_TYPE", $item->PM_TYPE_ID)));
 		}
 		
         return $type;

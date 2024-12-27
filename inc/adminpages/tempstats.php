@@ -232,7 +232,7 @@ function vtm_update_temp_stat($selectedID, $amount, $stat, $statID, $reasonID,
 		'CHARACTER_ID'      => $selectedID,
 		'TEMPORARY_STAT_ID' => $statID,
 		'TEMPORARY_STAT_REASON_ID' => $reasonID,
-		'AWARDED'  => Date('Y-m-d'),
+		'AWARDED'  => gmdate('Y-m-d'),
 		'AMOUNT'   => $change,
 		'COMMENT'  => $comment
 	);

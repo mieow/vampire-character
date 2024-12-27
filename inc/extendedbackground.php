@@ -716,7 +716,7 @@ function vtm_generate_phone($characterID, $prefix) {
 	}
 	elseif (strlen($number) < $length) {
 		for ($i = strlen($number) ; $i < $length ; $i++) {
-			$number .= rand(0,9);
+			$number .= wp_rand(0,9);
 		}
 	}
 	
@@ -727,13 +727,13 @@ function vtm_generate_phone($characterID, $prefix) {
 		FROM " . $wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS
 		WHERE PM_CODE = %s";
 	$prepsql = $wpdb->prepare("$sql", "$prefix$number");
-	$ismatch = $wpdb->get_var($prepsql);
+	$ismatch = $wpdb->get_var("$prepsql");
 	if ($ismatch) {
 		$loopcount = 0;
 		do {
 			$number++;
 			$prepsql = $wpdb->prepare("$sql", "$prefix$number");
-			$ismatch = $wpdb->get_var($prepsql);
+			$ismatch = $wpdb->get_var("$prepsql");
 			$loopcount++;
 			
 		} while ($ismatch && $loopcount < 10);

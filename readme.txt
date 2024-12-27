@@ -1,6 +1,6 @@
 ﻿=== Vampire Character Manager === 
 Contributors: magent
-Tags: vampire, character, generation, roleplay, rpg, lrp, larp
+Tags: vampire, character generation, rpg, lrp, larp
 Requires at least: 6.2
 Tested up to: 6.7.1
 Stable tag: 2.13
@@ -440,7 +440,7 @@ placeholder image, option to change Display Name/Password)
 
 = Upgrading to 2.8 =
 
-Review the new email settings for basic skinning of the HTML emails the plugin now sends.
+Review the new email settings for basic skinning of HTML emails.
 
 Review the new settings for auto-generating phone numbers in the Messaging Configuration tab.
 
@@ -448,7 +448,7 @@ Have a look at your Caitiff entry in the Clan tab of the Data Tables page and, i
 
 = Upgrading to 2.6 / 2.7 =
 
-You will need to review the new Primary Path settings for each of your character generation templates. Save each template once you have updated the settings.
+Review the new Primary Path settings for each of your character generation templates. Save each template once you have updated the settings.
 
 Then go through each character and manually select their primary path in the Disciplines section and add that path to their character (if it doesn't already exist).
 

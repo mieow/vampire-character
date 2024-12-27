@@ -301,8 +301,7 @@ function vtm_get_discipline_xp_costs_per_level($disciplineid, $level, $clanid) {
 					AND cdisciplines.ID = cclandisciplines.DISCIPLINE_ID
 					AND cdisciplines.ID = %s
 					AND steps.NEXT_VALUE > %s";
-	$clansql = $wpdb->prepare("$clansql", $clanid, $disciplineid, $level);
-	$result = $wpdb->get_results($clansql);
+	$result = $wpdb->get_results($wpdb->prepare("$clansql", $clanid, $disciplineid, $level));
 
 	
 	// non-clan cost model
@@ -317,8 +316,7 @@ function vtm_get_discipline_xp_costs_per_level($disciplineid, $level, $clanid) {
 						AND steps.COST_MODEL_ID = ncmodels.ID
 						AND ncclans.ID = %s
 						AND steps.NEXT_VALUE > %s";
-		$nonsql = $wpdb->prepare("$nonsql", $clanid, $level);
-		$result = $wpdb->get_results($nonsql);
+		$result = $wpdb->get_results($wpdb->prepare("$nonsql", $clanid, $level));
 	}			
 	
 	return $result;
@@ -378,21 +376,21 @@ function vtm_render_details_section($characterID) {
 	foreach ($requestItemTables as $itemtable => $discard) {
 		//Table has SPECIALISATION_AT column?
 		$columns = "";
-		$existing_columns = $wpdb->get_col("DESC " . VTM_TABLE_PREFIX . $itemtable, 0);
+		$existing_columns = $wpdb->get_col($wpdb->prepare("DESC %i",VTM_TABLE_PREFIX . $itemtable), 0);
 
 		$match_columns = array_intersect(array("SPECIALISATION_AT"), $existing_columns);
-		$columns = empty($match_columns) ? "" : ",SPECIALISATION_AT";
+		$column1 = empty($match_columns) ? "" : "SPECIALISATION_AT";
 		$match_columns = array_intersect(array("HAS_SPECIALISATION"), $existing_columns);
-		$columns .= empty($match_columns) ? "" : ",HAS_SPECIALISATION";
+		$column2 = empty($match_columns) ? "" : "HAS_SPECIALISATION";
 
-		$itemInfo[$itemtable] = $wpdb->get_results("SELECT ID,NAME $columns FROM " . VTM_TABLE_PREFIX . $itemtable, OBJECT_K);
+		$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,%i, %i FROM %i", $column1, $column2, VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
 		
 		
 	}
 	// Query the character table
 	$charTableInfo = array();
 	foreach ($requestChTables as $chartable => $discard) {
-		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM i% WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
+		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM %i WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
 		//print "SQL: $sql<br>";
 		$charTableInfo[$chartable] = $wpdb->get_results("$sql", OBJECT_K);
 	}
@@ -1646,7 +1644,8 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 		$colclass = 'vtmsubsection';
 	}
 	
-	$allxpdata = $wpdb->get_results(call_user_func($sqlfunction, $characterID));
+	$preparedsql = call_user_func($sqlfunction, $characterID);
+	$allxpdata = $wpdb->get_results("$preparedsql");
 	//if ($type == 'merit') print_r($allxpdata);
 	
 	$max2display = vtm_get_max_dots($allxpdata, $maxRating);
@@ -2544,7 +2543,7 @@ function vtm_save_to_pending($data, $details, $playerID, $characterID) {
 			'CHARTABLE'       => $chartable,
 			'CHARTABLE_ID'    => $chartableid,
 			'CHARTABLE_LEVEL' => $level,
-			'AWARDED'         => Date('Y-m-d'),
+			'AWARDED'         => gmdate('Y-m-d'),
 			'AMOUNT'          => $xpcost * -1,
 			'COMMENT'         => trim($comment),
 			'SPECIALISATION'  => trim($spec),
@@ -2618,7 +2617,7 @@ function vtm_save_merit_to_pending ($type, $table, $itemtable, $itemidname, $pla
 				'CHARTABLE'       => $table,
 				'CHARTABLE_ID'    => $ids[$index],
 				'CHARTABLE_LEVEL' => $level,
-				'AWARDED'         => Date('Y-m-d'),
+				'AWARDED'         => gmdate('Y-m-d'),
 				'AMOUNT'          => $costlvls[$index] * -1,
 				'COMMENT'         => $comments[$index],
 				'SPECIALISATION'  => $specialisations[$index],
@@ -2785,14 +2784,14 @@ function vtm_validate_details($characterID) {
 	foreach ($requestItemTables as $itemtable => $discard) {
 		//Table has SPECIALISATION_AT column?
 		$columns = "";
-		$existing_columns = $wpdb->get_col("DESC " . VTM_TABLE_PREFIX . $itemtable, 0);
+		$existing_columns = $wpdb->get_col($wpdb->prepare("DESC %i", VTM_TABLE_PREFIX . $itemtable), 0);
 
 		$match_columns = array_intersect(array("SPECIALISATION_AT"), $existing_columns);
-		$columns = empty($match_columns) ? "" : ",SPECIALISATION_AT";
+		$column1 = empty($match_columns) ? "" : "SPECIALISATION_AT";
 		$match_columns = array_intersect(array("HAS_SPECIALISATION"), $existing_columns);
-		$columns .= empty($match_columns) ? "" : ",HAS_SPECIALISATION";
+		$column2 .= empty($match_columns) ? "" : "HAS_SPECIALISATION";
 
-		$itemInfo[$itemtable] = $wpdb->get_results("SELECT ID,NAME $columns FROM " . VTM_TABLE_PREFIX . $itemtable, OBJECT_K);
+		$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,%i, %i FROM %i", $column1, $column2, VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
 		
 	}
 

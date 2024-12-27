@@ -93,7 +93,7 @@ function vtm_send_email($email, $subject, $content) {
 		}
 	}
 
-	$body = file_get_contents($template);
+	$body = wp_remote_get($template);
 	if ($body === false) {
 		print "<p>Failed to read email template from " . esc_html($template) . "</p>";
 		return false;

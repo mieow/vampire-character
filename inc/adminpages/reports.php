@@ -124,7 +124,7 @@ function vtm_report_switch($report) {
 			break;
 		case 'signin_report':
 			$reportclass = new vtmclass_report_signin();
-			$reportclass->pdftitle = "Signin Sheet " . Date('F Y');
+			$reportclass->pdftitle = "Signin Sheet " . gmdate('F Y');
 			$reportclass->pdforientation = 'P';
 			break;
 		case 'sect_report':

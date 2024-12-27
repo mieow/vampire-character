@@ -508,8 +508,8 @@ function vtm_merit_input_validation($type) {
 	if (!empty($_REQUEST[$type . '_name'])){
 	
 		if ($_REQUEST['action'] == 'add') {
-			$sql = $wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "MERIT
-				WHERE NAME = %s", $_REQUEST[$type . '_name']);
+			$sql = $wpdb->prepare("SELECT ID FROM %i
+				WHERE NAME = %s", VTM_TABLE_PREFIX. "MERIT", $_REQUEST[$type . '_name']);
 			$match = $wpdb->get_var("$sql");
 			//echo "<p>Result: $match, SQL: $sql</p>";
 			if (isset($match) && $match > 0) {

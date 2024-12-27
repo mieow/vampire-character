@@ -170,7 +170,7 @@ function vtm_get_total_xp($playerID = 0, $characterID = 0) {
 			FROM
 				" . $wpdb->prefix . "vtm_PLAYER_XP as xpspends
 			WHERE
-				xpspends.$filteron = '%s'";
+				xpspends.$filteron = %s";
 	$sql = $wpdb->prepare("$sql", $filterid);
 	
 	//echo "<p>SQL: $sql</p>";
@@ -490,7 +490,7 @@ function vtm_get_character_email($characterID) {
         $statusClause = "";
 		$playerStatusID = "";
         if ($playerStatus != null && $playerStatus != "") {
-			$playerStatusID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . $table_prefix . "PLAYER_STATUS WHERE NAME = %s", $playerStatus));
+			$playerStatusID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s", $table_prefix . "PLAYER_STATUS", $playerStatus));
             $statusClause = " AND player_status_id = %d ";
         }
 
@@ -1126,7 +1126,7 @@ function vtm_get_character_email($characterID) {
 		global $wpdb;
 
 		$result = $wpdb->update($wpdb->prefix . "vtm_CHARACTER",
-				array ('LAST_UPDATED' => Date('Y-m-d')),
+				array ('LAST_UPDATED' => gmdate('Y-m-d')),
 				array ('ID' => $characterID)
 			);
 	}
@@ -1567,7 +1567,7 @@ function vtm_pm_link($linktext, $args) {
 function  vtm_get_characterID_from_pm_code($code) {
 	global $wpdb;
 	
-	return $wpdb->get_var($wpdb->prepare("SELECT CHARACTER_ID FROM " . $wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS WHERE PM_CODE = '%s'", $code));
+	return $wpdb->get_var($wpdb->prepare("SELECT CHARACTER_ID FROM " . $wpdb->prefix . "vtm_CHARACTER_PM_ADDRESS WHERE PM_CODE = %s", $code));
 	
 }
 

@@ -70,7 +70,7 @@ add_action( 'template_redirect', 'vtm_print_redirect' );
 function vtm_get_chargen_wordpressid($characterID) {
 	global $wpdb;
 	
-	return $wpdb->get_var($wpdb->prepare("SELECT WORDPRESS_ID FROM " . VTM_TABLE_PREFIX . "CHARACTER_GENERATION WHERE CHARACTER_ID = %s", $characterID));
+	return $wpdb->get_var($wpdb->prepare("SELECT WORDPRESS_ID FROM %i WHERE CHARACTER_ID = %s", VTM_TABLE_PREFIX . "CHARACTER_GENERATION", $characterID));
 }
 
 function vtm_render_printable($characterID) {
