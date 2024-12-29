@@ -374,7 +374,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 		$vtmglobal['config'] = vtm_getConfig();
 		
 		if ($submitted) {
-			$characterName             = $_POST['charName'];
+			$characterName             = stripslashes($_POST['charName']);
 			$characterPublicClanId     = $_POST['charPubClan'];
 			$characterPrivateClanId    = $_POST['charPrivClan'];
 			$characterGenerationId     = $_POST['charGen'];
@@ -384,17 +384,17 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$characterPlayerId         = $_POST['charPlayer'];
 			$characterTypeId           = $_POST['charType'];
 			$characterStatusId         = $_POST['charStatus'];
-			$characterStatusComment    = $_POST['charStatusComment'];
+			$characterStatusComment    = stripslashes($_POST['charStatusComment']);
 			$characterRoadOrPathId     = $_POST['charRoadOrPath'];
 			$characterRoadOrPathRating = $_POST['charRoadOrPathRating'];
 			$characterDomainId         = $_POST['charDomain'];
 			$characterSectId           = $_POST['charSect'];
-			$characterWordpressName    = $_POST['charWordPress'];
+			$characterWordpressName    = stripslashes($_POST['charWordPress']);
 			$characterVisible          = $_POST['charVisible'];
 			$characterNatureId         = isset($_POST['charNature']) ? $_POST['charNature'] : 0;
 			$characterDemeanourId      = isset($_POST['charDemeanour']) ? $_POST['charDemeanour'] : 0;
 
-			$characterHarpyQuote       = $_POST['charHarpyQuote'];
+			$characterHarpyQuote       = stripslashes($_POST['charHarpyQuote']);
 			$characterPortraitURL      = $_POST['charPortraitURL'];
 			$characterTemplateID       = $_POST['charTemplateID'];
 		} 
@@ -450,17 +450,17 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$characterDetails = $wpdb->get_results($wpdb->prepare("$sql", $characterID));
 
 			foreach ($characterDetails as $characterDetail) {
-				$characterName             = esc_html($characterDetail->NAME);
+				$characterName             = stripslashes(esc_html($characterDetail->NAME));
 				$characterPublicClanId     = $characterDetail->PUBLIC_CLAN_ID;
 				$characterPrivateClanId    = $characterDetail->PRIVATE_CLAN_ID;
 				$characterGenerationId     = $characterDetail->GENERATION_ID;
 				$characterDateOfBirth      = $characterDetail->DATE_OF_BIRTH;
 				$characterDateOfEmbrace    = $characterDetail->DATE_OF_EMBRACE;
-				$characterSire             = esc_html($characterDetail->SIRE);
+				$characterSire             = stripslashes(esc_html($characterDetail->SIRE));
 				$characterPlayerId         = $characterDetail->PLAYER_ID;
 				$characterTypeId           = $characterDetail->CHARACTER_TYPE_ID;
 				$characterStatusId         = $characterDetail->CHARACTER_STATUS_ID;
-				$characterStatusComment    = esc_html($characterDetail->CHARACTER_STATUS_COMMENT);
+				$characterStatusComment    = stripslashes(esc_html($characterDetail->CHARACTER_STATUS_COMMENT));
 				$characterRoadOrPathId     = $characterDetail->ROAD_OR_PATH_ID;
 				$characterRoadOrPathRating = $characterDetail->ROAD_OR_PATH_RATING;
 				$characterDomainId         = $characterDetail->DOMAIN_ID;
@@ -482,7 +482,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$characterProfiles = $wpdb->get_results($wpdb->prepare("$sql", $characterID));
 
 			foreach ($characterProfiles as $characterProfile) {
-				$characterHarpyQuote  = esc_html($characterProfile->QUOTE);
+				$characterHarpyQuote  = stripslashes(esc_html($characterProfile->QUOTE));
 				$characterPortraitURL = $characterProfile->PORTRAIT;
 			}
 			
@@ -717,19 +717,19 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$thisgroup = $stat->grouping;
 			
 			if ($thisgroup != $lastgroup) {
-				$output .= "<tr><td colspan=4><h4>" . esc_html($thisgroup) . "</h4></td></tr>$head";
+				$output .= "<tr><td colspan=4><h4>" . stripslashes(esc_html($thisgroup)) . "</h4></td></tr>$head";
 			}
 
 			$statName = $stat->name;
 			$currentStat = $arr[$statName];
-			$output .= "<tr><td>" . esc_html($stat->name);
+			$output .= "<tr><td>" . stripslashes(esc_html($stat->name));
 			switch($stat->name) {
 				case 'Willpower': $output .= "*"; break;
 			}
 			
 			$output .= "</td>"
 				. "<td>" . vtm_printSelectCounter($statName, $currentStat->level, 1, 10) . "</td>"
-				. "<td><input type='text' name='" . $statName . "Comment' value='" . esc_html($currentStat->comment) . "' /></td>"
+				. "<td><input type='text' name='" . $statName . "Comment' value='" . stripslashes(esc_html($currentStat->comment)) . "' /></td>"
 				. "<td>";
 
 			if ($currentStat->grouping == "Virtue"  && $statName != "Courage") {
@@ -771,9 +771,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			}
 
 			$skillName = "skill" . $skillCount;
-			$output .= "<tr><td>" . esc_html($characterSkill->name) . "</td>"
+			$output .= "<tr><td>" . stripslashes(esc_html($characterSkill->name)) . "</td>"
 				. "<td>" . vtm_printSelectCounter($skillName, $characterSkill->level, 1, 10) . "</td>"
-				. "<td><input type='text' name='"     . $skillName . "Comment' value='" . esc_html($characterSkill->comment) . "' /></td>"
+				. "<td><input type='text' name='"     . $skillName . "Comment' value='" . stripslashes(esc_html($characterSkill->comment)) . "' /></td>"
 				. "<td><input type='checkbox' name='" . $skillName . "Delete' value='"  . $characterSkill->cskillid . "' />"
 				.     "<input type='HIDDEN' name='"   . $skillName . "ID' value='"      . $characterSkill->cskillid . "' /></td></tr>";
 
@@ -788,7 +788,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$output .= "<table id='gvid_uctskn'><tr><td colspan=4><h4>New Abilities</h4></td></tr>$head";
 			$skillBlock = "";
 			foreach ($skills as $skill) {
-				$skillBlock .= "<option value='" . $skill->id . "'>" . esc_html($skill->name) . "</option>";
+				$skillBlock .= "<option value='" . $skill->id . "'>" . stripslashes(esc_html($skill->name)) . "</option>";
 			}
 
 			for ($i = 0; $i < 20; ) {
@@ -853,7 +853,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$output .= "<tr>";
 
 			$disciplineName = "discipline" . $disciplineCount;
-			$output .= "<td class='vtmcol_key'>" . esc_html($characterDiscipline->name) . "</td>"
+			$output .= "<td class='vtmcol_key'>" . stripslashes(esc_html($characterDiscipline->name)) . "</td>"
 				. "<td>" . vtm_printSelectCounter($disciplineName, $characterDiscipline->level, 1, 10) . "</td>";
 			
 			$output .= "<td>";
@@ -964,7 +964,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 				$output .= "<tr>";
 
 				$backgroundName = "background" . $backgroundCount;
-				$output .= "<td>" . esc_html($characterBackground->name) . "</td>"
+				$output .= "<td>" . stripslashes(esc_html($characterBackground->name)) . "</td>"
 					. "<td>" . vtm_printSelectCounter($backgroundName, $characterBackground->level, 1, 10) . "</td>"
 					. "<td>";
 				if ($characterBackground->has_sector == 'Y') {
@@ -982,7 +982,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 					$output .= "<input type='hidden' name='" . $backgroundName . "Sector' value='' />";
 				}
 				$output .= "</td>"
-					. "<td><input type='text' name='"     . $backgroundName . "Comment' value='" . esc_html($characterBackground->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $backgroundName . "Comment' value='" . stripslashes(esc_html($characterBackground->comment))  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $backgroundName . "Delete' value='"  . $characterBackground->cbackgroundid . "' />"
 					.     "<input type='HIDDEN' name='"   . $backgroundName . "ID' value='"      . $characterBackground->cbackgroundid . "' /></td>";
 
@@ -1042,9 +1042,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterMerits as $characterMerit) {
 				$meritName = "merit" . $meritCount;
-				$output .= "<tr><td>" . esc_html($characterMerit->name) . " (" . $characterMerit->value . ")</td>"
+				$output .= "<tr><td>" . stripslashes(esc_html($characterMerit->name)) . " (" . $characterMerit->value . ")</td>"
 					. "<td>" . vtm_printSelectCounter($meritName, $characterMerit->level, -7, 7) . "</td>"
-					. "<td><input type='text' name='"     . $meritName . "Comment' value='" . esc_html($characterMerit->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $meritName . "Comment' value='" . stripslashes(esc_html($characterMerit->comment))  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $meritName . "Delete' value='"  . $characterMerit->cmeritid . "' />"
 					.     "<input type='HIDDEN' name='"   . $meritName . "ID' value='"      . $characterMerit->cmeritid . "' /></td></tr>";
 
@@ -1098,9 +1098,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterComboDisciplines as $characterComboDiscipline) {
 				$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
-				$output .= "<tr><td>" . esc_html($characterComboDiscipline->name) . "</td>"
+				$output .= "<tr><td>" . stripslashes(esc_html($characterComboDiscipline->name)) . "</td>"
 					. "<td>Learned<input type='HIDDEN' name='" . $comboDisciplineName . "' value='0' /></td>"
-					. "<td><input type='text' name='"     . $comboDisciplineName . "Comment' value='" . esc_html($characterComboDiscipline->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $comboDisciplineName . "Comment' value='" . stripslashes(esc_html($characterComboDiscipline->comment)) . "' /></td>"
 					. "<td><input type='checkbox' name='" . $comboDisciplineName . "Delete' value='"  . $characterComboDiscipline->ccombo_disciplineid . "' />"
 					.     "<input type='HIDDEN' name='"   . $comboDisciplineName . "ID' value='"      . $characterComboDiscipline->ccombo_disciplineid . "' /></td></tr>";
 
@@ -1110,13 +1110,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$comboDisciplineBlock = "";
 			foreach ($comboDisciplines as $comboDiscipline) {
-				$comboDisciplineBlock .= "<option value='" . $comboDiscipline->id . "'>" .esc_html( $comboDiscipline->name) . "</option>";
+				$comboDisciplineBlock .= "<option value='" . $comboDiscipline->id . "'>" .stripslashes(esc_html( $comboDiscipline->name)) . "</option>";
 			}
 
 			$comboDisciplineName = "comboDiscipline" . $comboDisciplineCount;
 			$output .= "<tr><td><select name='" . $comboDisciplineName . "SID'>" . $comboDisciplineBlock . "</select></td>"
 				. "<td><select name='" . $comboDisciplineName . "'><option value='-100'>Not Learned</option><option value='1'>Learned</option></select></td>"
-				. "<td><input type='text' name='" . esc_html($comboDisciplineName) . "Comment' /></td>"
+				. "<td><input type='text' name='" . $comboDisciplineName . "Comment' /></td>"
 				. "<td></td></tr>";
 			$comboDisciplineCount++;
 
@@ -1168,13 +1168,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterPaths as $characterPath) {
 				$pathName = "path" . $pathCount;
-				$output .= "<tr><td>" . esc_html($characterPath->name) . " (" . esc_html(substr($characterPath->disname, 0, 5))  .")";
+				$output .= "<tr><td>" . stripslashes(esc_html($characterPath->name)) . " (" . esc_html(substr($characterPath->disname, 0, 5))  .")";
 				if (isset($characterMajikDisc[$characterPath->pathid])) {
 					$output .= " (Primary Path)";
 				} 
 				$output .= "</td><td>";
 				$output .= vtm_printSelectCounter($pathName, $characterPath->level, 1, 5) . "</td>";
-				$output .= "<td><input type='text' name='"     . $pathName . "Comment' value='" . esc_html($characterPath->comment)  . "' /></td>"
+				$output .= "<td><input type='text' name='"     . $pathName . "Comment' value='" . stripslashes(esc_html($characterPath->comment))  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $pathName . "Delete' value='"  . $characterPath->cpathid . "' />"
 					.     "<input type='HIDDEN' name='"   . $pathName . "ID' value='"      . $characterPath->cpathid . "' /></td></tr>";
 
@@ -1186,7 +1186,7 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$pathBlock = "";
 			foreach ($paths as $path) {
-				$pathBlock .= "<option value='" . $path->id . "'>" . esc_html($path->name) . " (" . esc_html(substr($path->disname, 0, 5))  .")</option>";
+				$pathBlock .= "<option value='" . $path->id . "'>" . stripslashes(esc_html($path->name)) . " (" . esc_html(substr($path->disname, 0, 5))  .")</option>";
 			}
 
 			for ($i = 0; $i < 2; $i++) {
@@ -1233,9 +1233,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			$arr = array();
 			foreach($characterRituals as $characterRitual) {
 				$ritualName = "ritual" . $ritualCount;
-				$output .= "<tr><td>" . esc_html($characterRitual->name) . " (" . esc_html(substr($characterRitual->disname, 0, 5))  . " " . $characterRitual->ritlevel .")</td>"
+				$output .= "<tr><td>" . stripslashes(esc_html($characterRitual->name)) . " (" . esc_html(substr($characterRitual->disname, 0, 5))  . " " . $characterRitual->ritlevel .")</td>"
 					. "<td>Learned<input type='HIDDEN' name='" . $ritualName . "' value='0' /></td>"
-					. "<td><input type='text' name='"     . $ritualName . "Comment' value='" . esc_html($characterRitual->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $ritualName . "Comment' value='" . stripslashes(esc_html($characterRitual->comment))  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $ritualName . "Delete' value='"  . $characterRitual->critualid . "' />"
 					.     "<input type='HIDDEN' name='"   . $ritualName . "ID' value='"      . $characterRitual->critualid . "' /></td></tr>";
 
@@ -1296,9 +1296,9 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 			foreach($characterOffices as $characterOffice) {
 				$officeName = "office" . $officeCount;
 				$output .= "<tr><td>" . esc_html($characterOffice->name) . "</td>"
-					. "<td>" . esc_html($characterOffice->domainname) . "</td>"
+					. "<td>" . stripslashes(esc_html($characterOffice->domainname)) . "</td>"
 					. "<td>In office<input type='HIDDEN' name='" . $officeName . "' value='0' /></td>"
-					. "<td><input type='text' name='"     . $officeName . "Comment' value='" . esc_html($characterOffice->comment)  . "' /></td>"
+					. "<td><input type='text' name='"     . $officeName . "Comment' value='" . stripslashes(esc_html($characterOffice->comment))  . "' /></td>"
 					. "<td><input type='checkbox' name='" . $officeName . "Delete' value='"  . $characterOffice->cofficeid . "' />"
 					.     "<input type='HIDDEN' name='"   . $officeName . "ID' value='"      . $characterOffice->cofficeid . "' /></td></tr>";
 				$i++;
@@ -1309,13 +1309,13 @@ function vtm_displayUpdateCharacter($characterID, $submitted) {
 
 			$officeBlock = "";
 			foreach ($offices as $office) {
-				$officeBlock .= "<option value='" . $office->ID . "'>" . esc_html($office->name) . "</option>";
+				$officeBlock .= "<option value='" . $office->ID . "'>" . stripslashes(esc_html($office->name)) . "</option>";
 			}
 
 			$domainBlock = "";
 			$domains = vtm_listDomains();
 			foreach ($domains as $domain) {
-				$domainBlock .= "<option value='" . $domain->ID ."'>" . esc_html($domain->name) . "</option>";
+				$domainBlock .= "<option value='" . $domain->ID ."'>" . stripslashes(esc_html($domain->name)) . "</option>";
 			}
 
 			for ($i = 0; $i < 2; $i++) {
@@ -2283,6 +2283,8 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 		if ($failed) {
 			echo "<p style='color:red'>Failed when trying to add the experience point spends to the character</p>";
 			return;
+		} else {
+			echo "<p>Updated experience point spend successfully</p>";
 		}
 
 		// Transfer freebies to character tables
@@ -2352,10 +2354,13 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 		if ($failed) {
 			echo "<p style='color:red'>Failed when trying to add the freebie point spends to the character</p>";
 			return;
+		} else {
+			echo "<p>Updated experience point spends successfully</p>";
 		}
 		
 		// Approve Pending Detail for extended backgrounds
 		//		Questions, Backgrounds, Merits and Flaws
+		echo "<p>Approving pending extended backgrounds</p>";
 		$tables = array("CHARACTER_EXTENDED_BACKGROUND", "CHARACTER_BACKGROUND", "CHARACTER_MERIT");
 		foreach ($tables as $table) {
 			$sql = "SELECT ID, PENDING_DETAIL FROM " . VTM_TABLE_PREFIX . $table .
@@ -2370,6 +2375,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 		}
 		
 		// Create initial tables for WP, Path, etc
+		echo "<p>Setting up initial character table entries, e.g. Willpower</p>";
 		$RoadOrPathRating = $wpdb->get_var($wpdb->prepare("SELECT ROAD_OR_PATH_RATING FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ID = %s", $characterID));
 		$willpower = $wpdb->get_var($wpdb->prepare("SELECT LEVEL FROM 
 				" . $wpdb->prefix . "vtm_CHARACTER_STAT cs,
@@ -2391,6 +2397,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
 					AND ch.ID = %s";
 		$result = $wpdb->get_row($wpdb->prepare("$sql", $characterID));
 		
+		echo "<p>Creating Wordpress account " . esc_html($result->WORDPRESS_ID) . " with role " . esc_html($result->WORDPRESS_ROLE) . "</p>";
 		$login       = $result->WORDPRESS_ID;
 		$email       = $result->EMAIL;
 		$displayname = $result->NAME;
@@ -2527,17 +2534,17 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
           case 'CLAN':
-                return esc_html($item->$column_name);
+                return stripslashes(esc_html($item->$column_name));
           case 'PLAYER':
-                return esc_html($item->$column_name);
+                return stripslashes(esc_html($item->$column_name));
           case 'WORDPRESS_ID':
-                return esc_html($item->$column_name);
+                return stripslashes(esc_html($item->$column_name));
          case 'TEMPLATE':
-                return esc_html($item->$column_name);
+                return stripslashes(esc_html($item->$column_name));
          case 'CONCEPT':
-                return esc_html($item->$column_name);
+                return stripslashes(esc_html($item->$column_name));
          case 'NOTE_TO_ST':
-                return esc_html($item->$column_name);
+                return stripslashes(esc_html($item->$column_name));
          default:
                 return print_r($item,true); 
         }
@@ -2553,7 +2560,7 @@ class vtmclass_admin_charapproval_table extends vtmclass_MultiPage_ListTable {
         );
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
-            esc_html($item->NAME),
+            stripslashes(esc_html($item->NAME)),
             $item->ID,
             $this->row_actions($actions)
         );

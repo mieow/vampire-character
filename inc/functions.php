@@ -1699,6 +1699,10 @@ function vtm_output_allowedhtml() {
 			'class' => array(),
 			'style' => array()
 		),
+		'li' => array(
+			'class' => array(),
+			'style' => array()
+		),
 		'tbody' => array(
 			'class' => array(),
 			'style' => array()
@@ -1738,7 +1742,8 @@ function vtm_output_allowedhtml() {
 		'br' => array(
 		
 		),
-		'strong' => array()
+		'strong' => array(),
+		'br' => array()
 	);
 	
 }

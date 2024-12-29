@@ -93,12 +93,13 @@ function vtm_send_email($email, $subject, $content) {
 		}
 	}
 
-	$body = wp_remote_get($template);
+
+	$body = file_get_contents($template);
+	//print $template;
 	if ($body === false) {
 		print "<p>Failed to read email template from " . esc_html($template) . "</p>";
 		return false;
 	}
-	
 	
 	// Replace macros with content, etc
 	$body = preg_replace("/\[Subject\]/", $subject, $body);

@@ -612,7 +612,7 @@ function vtm_render_basic_info($step) {
 		
 		$output .= "<select name='priv_clan'>\n";
 		foreach ($clans as $clan) {
-			$output .= "<option value='" . esc_html($clan->ID) . "' " . selected( $clan->ID, $priv_clan, false) . ">" . vtm_formatOutput($clan->NAME) . "</option>\n";
+			$output .= "<option value='" . $clan->ID . "' " . selected( $clan->ID, $priv_clan, false) . ">" . vtm_formatOutput($clan->NAME) . "</option>\n";
 		}
 		$output .= "</select>\n";
 	}
@@ -626,7 +626,7 @@ function vtm_render_basic_info($step) {
 	} else {
 		$output .= "<select name='pub_clan'><option value='-1'>[Same as Actual]</option>\n";
 		foreach ($clans as $clan) {
-			$output .= "<option value='" . esc_html($clan->ID) . "' " . selected( $clan->ID, $pub_clan, false) . ">" . vtm_formatOutput($clan->NAME) . "</option>\n";
+			$output .= "<option value='" . $clan->ID . "' " . selected( $clan->ID, $pub_clan, false) . ">" . vtm_formatOutput($clan->NAME) . "</option>\n";
 		}
 		$output .= "</select>\n";
 	}
@@ -645,7 +645,7 @@ function vtm_render_basic_info($step) {
 		foreach (vtm_get_sects(true) as $sect) {
 			if ($vtmglobal['settings']['limit-sect-method'] != 'exclude' ||
 			    ($vtmglobal['settings']['limit-sect-method'] == 'exclude' && $vtmglobal['settings']['limit-sect-id'] != $sect->ID)) 
-				$output .= "<option value='" . esc_html($sect->ID) . "' " . selected( $sect->ID, $sectid, false) . ">" . vtm_formatOutput($sect->NAME) . "</option>\n";		
+				$output .= "<option value='" . $sect->ID . "' " . selected( $sect->ID, $sectid, false) . ">" . vtm_formatOutput($sect->NAME) . "</option>\n";		
 		}
 		$output .= "</select>\n";
 	}
@@ -849,7 +849,7 @@ function vtm_render_freebie_section($items, $saved, $pendingfb, $pendingxp, $fre
 				// Pending Detail
 				$detail = isset($pendingfb[$key]) ? vtm_formatOutput($pendingfb[$key]->pending_detail, 1) : '';
 
-				//echo "<li>" . esc_html($key) . ": name: $name, from: $levelfrom, current: $current, xp: $levelxp, spec: $specialisation, saved from: " .
+				//echo "<li>" . $key . ": name: $name, from: $levelfrom, current: $current, xp: $levelxp, spec: $specialisation, saved from: " .
 				//(isset($saved[$key]->level_from) ? $saved[$key]->level_from : "not-set") . ", pendingfb: " .
 				//(isset($pendingfb[$key]->value) ? $pendingfb[$key]->value : "not-set") . ", posted: " .
 				//(isset($posted[$key]) ? $posted[$key] : "not-set") . ", submitted: $submitted</li>\n";
@@ -869,7 +869,7 @@ function vtm_render_freebie_section($items, $saved, $pendingfb, $pendingxp, $fre
 					$coloutput[$colindex] .= "<tr style='display:none'><td colspan=$colspan>\n";
 					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_spec[" . $key . "]' value='$specialisation' />\n";
 					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_detail[" . $key . "]' value='$detail' />\n";
-					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_itemid[" . $key . "]' value='" . esc_html($item['ITEMTABLE_ID']) . "' />\n";
+					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_itemid[" . $key . "]' value='" . $item['ITEMTABLE_ID'] . "' />\n";
 					$coloutput[$colindex] .= "</td></tr>\n";
 				
 					$namehtml = vtm_formatName($item['ITEMNAME'], $item['DESCRIPTION'], $specialisation);
@@ -1105,7 +1105,7 @@ function vtm_render_xp_section($items, $saved, $xpcosts, $pendingfb,
 					$maxpathlevel = 5;
 
 				
-				// echo "<li>" . esc_html($key) . ": name: $name, from: $levelfrom, fb: $levelfb, xp: $current, spec: $specialisation, saved from: " .
+				// echo "<li>" . $key . ": name: $name, from: $levelfrom, fb: $levelfb, xp: $current, spec: $specialisation, saved from: " .
 				// (isset($saved[$key]->level_from) ? $saved[$key]->level_from : "not-set") . ", pendingfb: " .
 				// (isset($pendingfb[$key]->value) ? $pendingfb[$key]->value : "not-set") . ", posted: " .
 				// (isset($posted[$key]) ? $posted[$key] : "not-set") . ", submitted: $submitted</li>\n";
@@ -1141,8 +1141,8 @@ function vtm_render_xp_section($items, $saved, $xpcosts, $pendingfb,
 					// Hidden fields
 					$coloutput[$colindex] .= "<tr style='display:none'><td colspan=$colspan>";
 					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_comment[$key]' value='$specialisation' />";
-					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_itemid[$key]' value='" . esc_html($item['ITEMTABLE_ID']) . "' />\n";
-					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_name[$key]' value='" . vtm_formatOutput($item['ITEMNAME']) . "' />\n";
+					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_itemid[$key]' value='" . $item['ITEMTABLE_ID'] . "' />\n";
+					$coloutput[$colindex] .= "<input type='hidden' name='{$postvariable}_name[$key]' value='" . $item['ITEMNAME'] . "' />\n";
 					$coloutput[$colindex] .= "</td></tr>\n";
 					
 					$namehtml = vtm_formatName($item['ITEMNAME'], $item['DESCRIPTION'], $specialisation);
@@ -1373,7 +1373,7 @@ function vtm_render_chargen_virtues($step) {
 		//echo "<p>method: {$vtmglobal['settings']['limit-road-method']}, id: {$vtmglobal['settings']['limit-road-id']}, pathid: {$path->ID}</p>";
 			if ($vtmglobal['settings']['limit-road-method'] != 'exclude' || 
 					($vtmglobal['settings']['limit-road-method'] == 'exclude' && $vtmglobal['settings']['limit-road-id'] != $path->ID)) {
-				$output .= "<option value='" . esc_html($path->ID) . "' " . selected($path->ID, $selectedpath, false) . ">" . stripslashes($path->NAME) . "</option>\n";
+				$output .= "<option value='" . $path->ID . "' " . selected($path->ID, $selectedpath, false) . ">" . stripslashes($path->NAME) . "</option>\n";
 			}
 		}
 		$output .= "</select>\n";
@@ -1742,11 +1742,11 @@ function vtm_render_chargen_extbackgrounds($step) {
 		$text = isset($posted[$id]) ? $posted[$id] : (isset($question->PENDING_DETAIL) ? $question->PENDING_DETAIL : '');
 	
 		$output .= "<h4>{$question->TITLE}</h4><p class='gvext_ques'>{$question->BACKGROUND_QUESTION}</p>\n";
-		$output .= "<input type='hidden' name='question_title[$id]' value='" . esc_html($question->TITLE) . "' />\n";
+		$output .= "<input type='hidden' name='question_title[$id]' value='" . $question->TITLE . "' />\n";
 		if ($submitted)
-			$output .= "<div class='vtmext_section'>" . wpautop(vtm_formatOutput($text, 1)) . "</div>\n";
+			$output .= "<div class='vtmext_section'>" . wpautop($text) . "</div>\n";
 		else
-			$output .= "<p><textarea name='question[$id]' rows='4' cols='80'>" . vtm_formatOutput($text) . "</textarea></p>\n";
+			$output .= "<p><textarea name='question[$id]' rows='4' cols='80'>" . $text . "</textarea></p>\n";
 	}
 
 	return $output;
@@ -1972,7 +1972,7 @@ function vtm_render_chargen_paths($step) {
 					$level_fb = isset($pendingfb[$key]) ? $pendingfb[$key]->value : 0;
 					$level_xp = isset($pendingxp[$key]) ? $pendingxp[$key]->value : 0;
 
-					$output .= "<tr><td class='vtmcol_key'>" . esc_html($path['ITEMNAME']) . "</td>";
+					$output .= "<tr><td class='vtmcol_key'>" . $path['ITEMNAME'] . "</td>";
 					$output .= "<td class='vtmdot_5'>";
 					$output .= "<input type='hidden' name='path_disc_id[$key]' value='$dkey'>";
 					if ($path['ITEMTABLE_ID'] == $primarypid) {
@@ -2113,7 +2113,7 @@ function vtm_render_choose_template($tag) {
 	
 	$output .= "<table>";
 	foreach ($result as $template) {
-		$output .= "<tr><td><input type='radio' id='seltempl{{$template->ID}}' name='chargen_template' value='" . esc_html($template->ID) . "' ";
+		$output .= "<tr><td><input type='radio' id='seltempl{{$template->ID}}' name='chargen_template' value='" . $template->ID . "' ";
 		
 		if (sizeof($result) == 1 || $template->ID == $result[0]->ID) {
 			$output .= 'checked="checked"';
@@ -2163,7 +2163,7 @@ function vtm_validate_chargen($laststep) {
 	//echo "<p>Do Validate ($laststep, {$vtmglobal['characterID']}, $ok, $errormessages)</p>";
 		
 	if ($errormessages != "") {
-		echo "<div class='vtm_error'><ul>" . esc_html($errormessages) . "</ul></div>\n";
+		echo "<div class='vtm_error'><ul>" . wp_kses($errormessages,vtm_output_allowedhtml()) . "</ul></div>\n";
 	}
 	
 	return $ok;
@@ -2587,7 +2587,7 @@ function vtm_save_finish() {
 		array (
 			'ID' => $vtmglobal['characterID']
 		),
-		array('%s', '%s', '%s', '%d', '%s')
+		array('%s', '%s', '%s', '%d', '%s', '%d')
 	);		
 	if (!$result && $result !== 0) {
 		echo "<p style='color:red'>Failed to save:</p>\n";
@@ -2597,7 +2597,7 @@ function vtm_save_finish() {
 		print_r($data);
 		echo "</pre>";
 	}
-	
+
 	// Save CHARACTER_GENERATION information
 	$data = array (
 		'NOTE_TO_ST'  => trim($_POST['noteforST']),
