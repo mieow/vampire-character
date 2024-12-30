@@ -1186,9 +1186,9 @@ function vtm_numberToBoxes($base, $input) {
 }
 
 function vtm_formatOutput($string, $allowhtml = 0) {
-	$string = stripslashes($string);
 	//$string = $allowhtml ? $string : htmlspecialchars($string, ENT_QUOTES);
-	$string = $allowhtml ? $string : htmlentities($string, ENT_QUOTES);
+	$string = $allowhtml ? wp_kses($string, "post") : wp_kses(htmlspecialchars($string, ENT_QUOTES), "strip");
+	$string = stripslashes($string);
 	return $string;
 }
 
@@ -1609,7 +1609,7 @@ function vtm_get_page_link($id, $characterID, $idname, $name) {
 		return "(Error: check configuration for page settings) " . $name;
 	} else {
 		$link = get_page_link($id);
-		return sprintf('<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),esc_html($name));
+		return sprintf('<a href="%s?%s=%s">%s</a>',$link,$idname,urlencode($characterID),esc_html(stripslashes($name)));
 	}
 	
 }

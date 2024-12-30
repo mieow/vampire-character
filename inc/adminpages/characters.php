@@ -234,7 +234,7 @@ function vtm_character_options() {
 		
 			$i = 0;
 			foreach ($result as $character) {
-				$name = esc_html($character->charactername);
+				$name = esc_html(stripslashes($character->charactername));
 			
 				echo "<tr";
 				if ($i % 2) echo " class='alternate'";
@@ -248,7 +248,7 @@ function vtm_character_options() {
 				//else
 				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?characterID='. urlencode($character->ID) . '">' . $name . '</a>';
 				if ($character->chargen_status != 'Approved')
-					echo esc_html($character->charactername) . " [" . esc_html($character->template) . "]";
+					echo esc_html(stripslashes($character->charactername)) . " [" . esc_html($character->template) . "]";
 				elseif (!empty($character->wordpress_id))
 					echo wp_kses(vtm_get_page_link(vtm_get_stlink_page('viewCharSheet'), $character->wordpress_id, "CHARACTER", $character->charactername), array('a' => array('href' => array())));
 				else

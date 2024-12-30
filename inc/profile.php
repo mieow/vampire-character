@@ -286,15 +286,15 @@ function vtm_get_profile_content() {
 	
 	// Title, with link to view character for STs
 	$characterDisplayName = vtm_isST() ? 
-							"<a href='" . vtm_get_stlink_url('viewCharSheet') . "?CHARACTER=" . urlencode($character) . "'>" . $displayName . "</a>" 
-							: vtm_formatOutput($displayName);
+							"<a href='" . vtm_get_stlink_url('viewCharSheet') . "?CHARACTER=" . urlencode($character) . "'>" . esc_html($displayName) . "</a>" 
+							: esc_html($displayName);
 	$output .= "<h1>" . $characterDisplayName . "</h1>";
 	
 	// Profile info
 	$output .= "<table class='gvplugin vtmprofile' id=\"gvid_prof_out\">\n";
 	$output .= "<tr><td class=\"gvcol_1 gvcol_val\">\n";
 	// Character Info
-$output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />{$mycharacter->quote}</p>\n";
+	$output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />" .wp_kses(stripslashes($mycharacter->quote), "post"). "</p>\n";
 	$output .= "<table class='gvplugin vtmprofile' id=\"gvid_prof_in\">\n";
     $output .= "<tr><td class=\"gvcol_1 gvcol_key\">Player:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->player) . "</td></tr>";
 	$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Clan:</td><td class=\"gvcol_2 gvcol_val\">" . vtm_formatOutput($mycharacter->clan);
@@ -437,7 +437,7 @@ $output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />{$mycharacter->quote}</p
 		
 		$output .= "<table>\n";
 		$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Display Name:</td><td class=\"gvcol_2 gvcol_val\">";
-		$output .= "<input type='text' size=50 maxlength=50 name=\"displayName\" value=\"" . vtm_formatOutput($displayName) . "\">";
+		$output .= "<input type='text' size=50 maxlength=50 name=\"displayName\" value=\"" . wp_kses($displayName,"data") . "\">";
 		$output .= "</td>\n";
 		$output .= "<td><input type='submit' name=\"displayNameUpdate\" value=\"Update\"></td>";
 		$output .= "</tr>";
@@ -482,7 +482,7 @@ $output .= "<p><img alt='[Clan Icon]' src='$clanIcon' />{$mycharacter->quote}</p
 			$output .= "</div><div class='vtmext_section vtmprofile'>";
 			$output .= "<h4>Upload a Portrait image</h4>";
 			$output .= "Enter a web address to a profile image: <form id='portrait_set' method='post'>";
-			$output .= "	<input type='text' name='vtm_portrait_set' value='" . $mycharacter->portrait . "' size=60 />";
+			$output .= "	<input type='text' name='vtm_portrait_set' value='" . wp_kses($mycharacter->portrait, "data") . "' size=60 />";
 			$output .= "	<input id='set_vtm_portrait' name='set_vtm_portrait' type='submit' value='Save' />";
 			$output .= "</form>";
 			if (get_option( 'vtm_user_upload_image', '0'  == '1')) {

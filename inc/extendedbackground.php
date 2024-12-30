@@ -162,7 +162,7 @@ function vtm_get_editbackgrounds_tab($characterID) {
 		if ($background->HAS_SPECIALISATION == 'Y') {
 			$content .= "<tr><th>Specialisation:</th></tr>";
 			$content .= "<tr><td>";
-			$content .= "<input type='text' name='charbgComment[$i]' value='{$background->COMMENT}' />";
+			$content .= "<input type='text' name='charbgComment[$i]' value='" . vtm_formatOutput($background->COMMENT) . "' />";
 			$content .= "</td></tr>\n";
 		}
 		if ($background->HAS_SECTOR == 'Y') {
@@ -296,7 +296,7 @@ function vtm_get_editmerits_tab($characterID) {
 		$content .= "</th></tr>";
 		$content .= "<tr><td><textarea name='pendingmerit[$i]' rows='5' cols='100'>";
 		if (isset($pendingmerit[$i]))
-			$content .= vtm_formatOutput($pendingmerit[$i]);
+			$content .= vtm_formatOutput($pendingmerit[$i], 1);
 		else
 			if ($merit->PENDING_DETAIL == "")
 				$content .= vtm_formatOutput($merit->APPROVED_DETAIL, 1);

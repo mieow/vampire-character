@@ -524,7 +524,7 @@ function vtm_render_approve_form($showform, $id, $data) {
 		<input type="hidden" name="extbackground" value="<?php print esc_html($id); ?>" />
 		<table style='width:500px'>
 		<tr>
-			<td>Description: </td><td><?php print esc_html($pending); ?></td>
+			<td>Description: </td><td><?php print wp_kses(stripslashes($pending), "post"); ?></td>
 		</tr>
 		<tr>
 			<td>Denied Reason:  </td>
