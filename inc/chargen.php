@@ -2630,8 +2630,8 @@ function vtm_save_finish() {
 			
 			// for one of these tables, it is a free spend so there is nowhere to save
 			// the specialisation to
-			if ($table == 'SKILL' || $table == 'BACKGROUND')
-				continue;
+			//if ($table == 'SKILL' || $table == 'BACKGROUND')
+			//	continue;
 			
 			switch($table) {
 				Case 'PENDING_FREEBIE_SPEND': $colname = 'SPECIALISATION'; break;
@@ -4090,7 +4090,7 @@ function vtm_get_free_levels($table) {
 				ctd.ITEMTABLE, ctd.ITEMTABLE_ID,
 				IFNULL(sector.ID,0) as SECTOR_ID, 
 				IFNULL(sector.NAME,'') as SECTOR,
-				ctd.MULTIPLE
+				ctd.MULTIPLE, ctd.CHARTABLE
 			FROM 
 				" . $wpdb->prefix . "vtm_CHARGEN_TEMPLATE_DEFAULTS ctd
 				LEFT JOIN (
@@ -4112,6 +4112,17 @@ function vtm_get_free_levels($table) {
 	$indexes = array();
 	foreach ($results as $row) {
 		$key = sanitize_key($row->NAME);
+		
+		// get the row this free dot is in in the character_* table
+		$row->CHARTABLE_ID = $wpdb->get_var($wpdb->prepare("
+			SELECT ID 
+			FROM %i 
+			WHERE 
+				CHARACTER_ID = %s
+				AND %i = %s
+				AND LEVEL = %s
+				AND COMMENT = %s", $wpdb->prefix . "vtm_" . $row->CHARTABLE, $vtmglobal['characterID'], $row->ITEMTABLE."_ID", $row->ITEMTABLE_ID, $row->LEVEL, $row->SPECIALISATION));
+				
 		if ($row->MULTIPLE == 'Y') {
 			if (isset($indexes[$key])) {
 				$indexes[$key]++;
@@ -7359,8 +7370,8 @@ function vtm_get_chargen_specialties() {
 				}
 				elseif (isset($free[$key]) && $item['SPECIALISATION_AT'] != 0) {
 					$specialities[$key] = $init;
-					$specialities[$key]['tablename'] = $free[$key]->ITEMTABLE;
-					$specialities[$key]['tableid']   = $free[$key]->ITEMTABLE_ID;
+					$specialities[$key]['tablename'] = $free[$key]->CHARTABLE;
+					$specialities[$key]['tableid']   = $free[$key]->CHARTABLE_ID;
 					$specialities[$key]['spec']      = $free[$key]->SPECIALISATION;
 					$specialities[$key]['level']     = $free[$key]->LEVEL;
 				}
@@ -7406,8 +7417,8 @@ function vtm_get_chargen_specialties() {
 			}
 			elseif (isset($free[$key]) && $item['SPECIALISATION_AT'] == 'Y') {
 				$specialities[$key] = $init;
-				$specialities[$key]['tablename'] = $free[$key]->ITEMTABLE;
-				$specialities[$key]['tableid']   = $free[$key]->ITEMTABLE_ID;
+				$specialities[$key]['tablename'] = $free[$key]->CHARTABLE;
+				$specialities[$key]['tableid']   = $free[$key]->CHARTABLE_ID;
 				$specialities[$key]['spec']      = $free[$key]->SPECIALISATION;
 				$specialities[$key]['level']     = $free[$key]->LEVEL;
 			}
