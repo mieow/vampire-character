@@ -387,9 +387,8 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		$wpdb->show_errors();
 		
-		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
-				WHERE ID = %d";
-		$data = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		$data = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
+				WHERE ID = %d", $selectedID));
 		
 		$table    = $data[0]->CHARTABLE;
 		$approvalok = 0;
