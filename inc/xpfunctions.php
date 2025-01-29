@@ -372,21 +372,8 @@ function vtm_render_details_section($characterID) {
 	// print "<br>";
 	
 	// Query the Item Table information
-	$itemInfo = array();
-	foreach ($requestItemTables as $itemtable => $discard) {
-		//Table has SPECIALISATION_AT column?
-		$columns = "";
-		$existing_columns = $wpdb->get_col($wpdb->prepare("DESC %i",VTM_TABLE_PREFIX . $itemtable), 0);
-
-		$match_columns = array_intersect(array("SPECIALISATION_AT"), $existing_columns);
-		$column1 = empty($match_columns) ? "" : "SPECIALISATION_AT";
-		$match_columns = array_intersect(array("HAS_SPECIALISATION"), $existing_columns);
-		$column2 = empty($match_columns) ? "" : "HAS_SPECIALISATION";
-
-		$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,%i, %i FROM %i", $column1, $column2, VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
-		
-		
-	}
+	$itemInfo = vtm_QueryItemTable($requestItemTables);
+	
 	// Query the character table
 	$charTableInfo = array();
 	foreach ($requestChTables as $chartable => $discard) {
@@ -2780,20 +2767,7 @@ function vtm_validate_details($characterID) {
 	
 	
 	// Query the Item Table information
-	$itemInfo = array();
-	foreach ($requestItemTables as $itemtable => $discard) {
-		//Table has SPECIALISATION_AT column?
-		$columns = "";
-		$existing_columns = $wpdb->get_col($wpdb->prepare("DESC %i", VTM_TABLE_PREFIX . $itemtable), 0);
-
-		$match_columns = array_intersect(array("SPECIALISATION_AT"), $existing_columns);
-		$column1 = empty($match_columns) ? "" : "SPECIALISATION_AT";
-		$match_columns = array_intersect(array("HAS_SPECIALISATION"), $existing_columns);
-		$column2 .= empty($match_columns) ? "" : "HAS_SPECIALISATION";
-
-		$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,%i, %i FROM %i", $column1, $column2, VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
-		
-	}
+	$itemInfo = vtm_QueryItemTable($requestItemTables);
 
 	// Query the character table
 	$charTableInfo = array();
@@ -2970,6 +2944,37 @@ function vtm_validate_details($characterID) {
 	*/
 	return $outputError;
 	
+}
+
+function vtm_QueryItemTable($requestItemTables) {
+	global $wpdb;
+	
+	
+	$itemInfo = array();
+	foreach ($requestItemTables as $itemtable => $discard) {
+		//Table has SPECIALISATION_AT column?
+		$columns = "";
+		$existing_columns = $wpdb->get_col($wpdb->prepare("DESC %i", VTM_TABLE_PREFIX . $itemtable), 0);
+
+		$specatYN = array_intersect(array("SPECIALISATION_AT"), $existing_columns);
+		$hasspecYN = array_intersect(array("HAS_SPECIALISATION"), $existing_columns);
+
+		if (empty($specatYN) && empty($hasspecYN)) {
+			$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME FROM %i", VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
+		}
+		elseif (!empty($specatYN) && empty($hasspecYN)) {
+			$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,SPECIALISATION_AT FROM %i", VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
+		}
+		elseif (empty($specatYN) && !empty($hasspecYN)) {
+			$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,HAS_SPECIALISATION FROM %i", VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
+		}
+		else {
+			$itemInfo[$itemtable] = $wpdb->get_results($wpdb->prepare("SELECT ID,NAME,SPECIALISATION_AT,HAS_SPECIALISATION FROM %i", VTM_TABLE_PREFIX . $itemtable), OBJECT_K);
+		}
+
+		
+	}
+	return $itemInfo;
 }
 
 ?>
