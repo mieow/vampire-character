@@ -16,7 +16,6 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 	public function __construct() {
 		parent::__construct(
 	 		'vtmplugin_widget', // Base ID
-			'Character Login Widget', // Name
 			array(
 				'description' => __( 'For login/logout and useful links', 'vampire-character' ),
 				'customize_selective_refresh' => true,
@@ -37,7 +36,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		
 		if ( is_user_logged_in() ) {
 			$current_user = wp_get_current_user();
-				$title = apply_filters( 'widget_title', 'Welcome, ' . $current_user->display_name );
+			$title = apply_filters( 'widget_title', 'Welcome, ' . esc_html($current_user->display_name) );
 			echo wp_kses($before_title . $title . $after_title, vtm_output_allowedhtml());
 			?>
 			<ul>
@@ -454,14 +453,16 @@ class StuSolarCalc_Widget extends WP_Widget {
 			$timeGMT =  gmdate("H:i", time() + 3600*$instance['offset']);  //  without Daylight Savings Time
 		}
 		
-		$sunrisetime = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 90.83, $instance['offset']);
-		$sunsettime = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 90.83, $instance['offset']);
-		$civilstart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 96, $instance['offset']);  //  96 replaces $zenith
-		$civilend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 96, $instance['offset']);  //  96 replaces $zenith
-		$nautstart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 102, $instance['offset']);  //  102 replaces $zenith
-		$nautend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 102, $instance['offset']);  //  102 replaces $zenith
-		$astrostart = date_sunrise(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 108, $instance['offset']);  //  108 replaces $zenith
-		$astroend = date_sunset(time(), SUNFUNCS_RET_STRING, $instance['lat'], $instance['long'], 108, $instance['offset']);  //  108 replaces $zenith
+		$suninfo = date_sun_info(time(), $instance['lat'], $instance['long']);
+		
+		$sunrisetime = date('H:i', $suninfo["sunrise"]);
+		$sunsettime = date('H:i', $suninfo["sunset"]);
+		$civilstart = date('H:i', $suninfo["civil_twilight_begin"]);
+		$civilend = date('H:i', $suninfo["civil_twilight_end"]);
+		$nautstart = date('H:i', $suninfo["nautical_twilight_begin"]);
+		$nautend = date('H:i', $suninfo["nautical_twilight_end"]);
+		$astrostart = date('H:i', $suninfo["astronomical_twilight_begin"]);
+		$astroend = date('H:i', $suninfo["astronomical_twilight_end"]);
 
 		if ($timeGMT > $astroend) { 
 		$setday = 'Night Time';     

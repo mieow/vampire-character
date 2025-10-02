@@ -230,7 +230,9 @@ function vtm_get_owners() {
 	return $list;
 }
 
-class vtmclass_owner_table extends WP_List_Table {
+class vtmclass_owner_table extends vtmclass_WP_List_Table {
+	protected $ownerlist;
+	protected $ownerselect;
    
     function __construct(){
         global $status, $page;
@@ -476,7 +478,9 @@ class vtmclass_owner_table extends WP_List_Table {
 
 }
 
-class vtmclass_domain_table extends WP_List_Table {
+class vtmclass_domain_table extends vtmclass_WP_List_Table {
+	protected $ownerlist;
+	protected $ownerselect;
    
     function __construct(){
         global $status, $page;

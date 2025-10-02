@@ -184,7 +184,12 @@ PLAYERS TABLE
 
 
 class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
-   
+	protected $default_playerstatus;
+	protected $default_playertype;
+	protected $active_playertype;
+	protected $type;
+	protected $active_playerstatus;
+
     function __construct(){
         global $status, $page;
                 

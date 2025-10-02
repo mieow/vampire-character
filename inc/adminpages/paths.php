@@ -198,6 +198,8 @@ ROAD/PATHS TABLE
 
 
 class vtmclass_admin_path_table extends vtmclass_MultiPage_ListTable {
+	protected $filter_discipline;
+	protected $active_filter_discipline;
    
     function __construct(){
         global $status, $page;

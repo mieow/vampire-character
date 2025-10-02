@@ -399,20 +399,23 @@ function vtm_get_character_email($characterID) {
 }
 
     function vtm_print_name_value_pairs($atts, $content=null) {
-        $output = "";
-        if (vtm_isST()) {
-            $output .= "<table>";
-            foreach($_POST as $key=>$value) {
-				$output .= "<tr><td>" . $key . "</td><td>";
+		$output = "";
+		if (vtm_isST()) {
+			$output .= "<table>";
+			foreach($_POST as $key=>$value) {
+				$output .= "<tr><td>" . esc_html($key) . "</td><td>";
 				if (is_array($value))
 					foreach($value as $key2 => $val2) {
-						$output .= "$key2 = $val2,";
+						$output .= esc_html($key2) . " = " . esc_html($val2) . ",";
 					}
+				else {
+					$output .= esc_html($value);
+				}
 				$output .= "</td></tr>";
-            }
-            $output .= "</table>";
-        }
-        return $output;
+			}
+			$output .= "</table>";
+		}
+		return $output;
     }
     add_shortcode('debug_name_value_pairs', 'vtm_print_name_value_pairs');
 
@@ -1186,6 +1189,11 @@ function vtm_numberToBoxes($base, $input) {
 }
 
 function vtm_formatOutput($string, $allowhtml = 0) {
+
+	if ($string == null || $string == '') {
+		return '';
+	}
+
 	//$string = $allowhtml ? $string : htmlspecialchars($string, ENT_QUOTES);
 	$string = $allowhtml ? wp_kses($string, "post") : wp_kses(htmlspecialchars($string, ENT_QUOTES), "strip");
 	$string = stripslashes($string);

@@ -1102,6 +1102,12 @@ RITUALS TABLE
 
 
 class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
+	protected $filter_discipline;
+	protected $active_filter_discipline;
+	protected $filter_level;
+	protected $active_filter_level;
+	protected $filter_book;
+	protected $active_filter_book;
    
     function __construct(){
         global $status, $page;

@@ -2,6 +2,14 @@
 require_once VTM_CHARACTER_URL . 'inc/classes.php';
 
 class vtmclass_report_flaws extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $active_filter_player_status;
+	protected $active_filter_merit_or_flaw;
+	protected $filter_character_status;
+	protected $active_filter_character_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_visible;
+	protected $filter_character_type;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -177,6 +185,13 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
 }
 
 class vtmclass_report_quotes extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -288,6 +303,14 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
 
 
 class vtmclass_report_prestige extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+	protected $active_filter_clan;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -302,7 +325,7 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
             case 'COMMENT':
                 return esc_html($item->$column_name);
             case 'LEVEL':
-                return $item->$column_name;
+                return isset($item->$column_name) ? $item->$column_name : '';
             default:
                 return print_r($item,true); 
         }
@@ -454,6 +477,15 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 }
 
 class vtmclass_report_signin extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+	protected $active_filter_clan;
+	protected $totalqs;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -639,6 +671,14 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
 
 
 class vtmclass_report_sect extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+	protected $active_filter_selectsect;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -762,6 +802,13 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
 }
 
 class vtmclass_report_activity extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -851,6 +898,14 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 }
 
 class vtmclass_report_sector extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+	protected $active_filter_background;
 
     function column_default($item, $column_name){
         switch($column_name){

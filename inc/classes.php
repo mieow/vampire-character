@@ -52,6 +52,16 @@ class vtmclass_character {
 	var $backgrounds_done;
 	var $backgrounds_total;
 	var $addresses;
+
+	var $attributegroups;
+	var $abilitygroups;
+	var $attributes;
+	var $abilities;
+	var $backgrounds;
+	var $disciplines;
+	var $primary_paths;
+	var $secondary_paths;
+	var $meritsandflaws;
 	
 	function load ($characterID){
 		global $wpdb;
@@ -932,6 +942,23 @@ MULTI-PAGE LIST TABLE
  * @subpackage List_Table
  */
 class vtmclass_WP_List_Table {
+	protected $filter_status;
+	protected $filter_type;
+	protected $filter_visible;
+	protected $filter_multiple;
+	protected $filter_group;
+	protected $active_filter_visible;
+	protected $active_filter_multiple;
+	protected $active_filter_group;
+	protected $_column_headers;
+	protected $type;
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
 
 	/**
 	 * The current list of items

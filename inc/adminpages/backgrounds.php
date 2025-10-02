@@ -1430,7 +1430,7 @@ BACKGROUNDS TABLE
 
 
 class vtmclass_admin_backgrounds_table extends vtmclass_MultiPage_ListTable {
-   
+	
     function __construct(){
         global $status, $page;
                 

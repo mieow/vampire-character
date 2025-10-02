@@ -45,18 +45,18 @@ add_action('admin_enqueue_scripts', 'vtm_admin_css');
 function vtm_register_character_settings() {
 	global $wp_roles;
 
-	register_setting( 'vtm_options_group', 'vtm_pdf_title' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_footer' );
+	register_setting( 'vtm_options_group', 'vtm_pdf_title', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_footer', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
 	register_setting( 'vtm_options_group', 'vtm_pdf_titlefont' );
 	register_setting( 'vtm_options_group', 'vtm_pdf_titlecolour' );
 	register_setting( 'vtm_options_group', 'vtm_pdf_divcolour' );
 	register_setting( 'vtm_options_group', 'vtm_pdf_divtextcolour' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_divlinewidth' );
+	register_setting( 'vtm_options_group', 'vtm_pdf_divlinewidth', array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
 	register_setting( 'vtm_options_group', 'vtm_pdf_dotcolour' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_dotlinewidth' );
+	register_setting( 'vtm_options_group', 'vtm_pdf_dotlinewidth', array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
 
 	register_setting( 'vtm_options_group', 'vtm_view_bgcolour' );
-	register_setting( 'vtm_options_group', 'vtm_view_dotlinewidth' );
+	register_setting( 'vtm_options_group', 'vtm_view_dotlinewidth', array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
 	register_setting( 'vtm_options_group', 'vtm_dot1colour' );
 	register_setting( 'vtm_options_group', 'vtm_dot2colour' );
 	register_setting( 'vtm_options_group', 'vtm_dot3colour' );
@@ -65,27 +65,17 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_options_group', 'vtm_pend_dotcolour' ); // depreciated
 	register_setting( 'vtm_options_group', 'vtm_xp_dotcolour' ); // depreciated
 	register_setting( 'vtm_options_group', 'vtm_chargen_freebie' ); // depreciated
-	//register_setting( 'vtm_options_group', 'vtm_pend_bgcolour' );
-	//register_setting( 'vtm_options_group', 'vtm_pend_dotlinewidth' );
-	//register_setting( 'vtm_options_group', 'vtm_xp_bgcolour' );
-	//register_setting( 'vtm_options_group', 'vtm_xp_dotlinewidth' );
-	//register_setting( 'vtm_options_group', 'vtm_chargen_dotlinewidth' );
-	//register_setting( 'vtm_options_group', 'vtm_chargen_bgcolour' );
-	//register_setting( 'vtm_options_group', 'vtm_chargen_freedot' );
-	//register_setting( 'vtm_options_group', 'vtm_chargen_selectdot' );
-	//register_setting( 'vtm_options_group', 'vtm_chargen_empty' );
 	
-	register_setting( 'vtm_options_group', 'vtm_signin_columns' );
-	//register_setting( 'vtm_options_group', 'vtm_web_columns' );
+	register_setting( 'vtm_options_group', 'vtm_signin_columns', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
 	register_setting( 'vtm_options_group', 'vtm_web_pagewidth' );
 	register_setting( 'vtm_options_group', 'vtm_news_blogroll' );
 
-	register_setting( 'vtm_features_group', 'vtm_feature_temp_stats' );
-	register_setting( 'vtm_features_group', 'vtm_feature_maps' );
-	register_setting( 'vtm_features_group', 'vtm_feature_reports' );
-	register_setting( 'vtm_features_group', 'vtm_feature_email' );
-	register_setting( 'vtm_features_group', 'vtm_feature_news' );
-	register_setting( 'vtm_features_group', 'vtm_feature_pm' );
+	register_setting( 'vtm_features_group', 'vtm_feature_temp_stats', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_maps', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_reports', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_email', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_news', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_pm', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
 	add_settings_section(
 		'vtmfeatures',
 		"Plugin Features",
@@ -374,8 +364,9 @@ function vtm_make_filter($sqlresult) {
 		else {
 			$keylist = array_keys(get_object_vars($item));
 			if (count($keylist) == 1) {
-				array_push($keys, sanitize_key($item->$keylist[0]));
-				array_push($vals, $item->$keylist[0]);
+				$key = $keylist[0];
+				array_push($keys, sanitize_key($item->$key));
+				array_push($vals, $item->$key);
 			}
 		}
 	}

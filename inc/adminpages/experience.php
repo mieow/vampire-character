@@ -298,7 +298,7 @@ function vtm_render_costmodel_page($type){
 
 	<form id="new-<?php print esc_html($type); ?>" method="post" action='<?php print esc_url($current_url); ?>'>
 	<input type="hidden" name="tab" value="<?php print esc_html($type); ?>" />
-	<input type="hidden" name="costmodel" value="<?php print esc_html($_REQUEST['costmodel']); ?>" />
+	<input type="hidden" name="costmodel" value="<?php print esc_html($id); ?>" />
 	<input type="hidden" name="action" value="save" />
 	<p>Cost Model Name:
 	<input type="text"   name="costmodel_name" value="<?php print esc_html($name); ?>"></p>
@@ -387,8 +387,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		$wpdb->show_errors();
 		
-		$data = $wpdb->get_results($wpdb->prepare("SELECT * FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
-				WHERE ID = %d", $selectedID));
+		$data = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE ID = %d", VTM_TABLE_PREFIX . "PENDING_XP_SPEND", $selectedID));
 		
 		$table    = $data[0]->CHARTABLE;
 		$approvalok = 0;

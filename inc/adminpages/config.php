@@ -111,6 +111,7 @@ function vtm_render_config_general() {
 			
 			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
 			$options = $wpdb->get_results("$sql");
+			
 		?>
 
 		<form id='options_form' method='post'>
@@ -118,13 +119,13 @@ function vtm_render_config_general() {
 			<!---
 			<tr>
 				<td>URL to Android XML Output</td>
-				<td><input type="text" name="androidlink" value="<?php print esc_html($options[0]->ANDROID_LINK); ?>" size=60 /></td>
+				<td><input type="text" name="androidlink" value="<?php print esc_html(isset($options[0]) ? $options[0]->ANDROID_LINK : ""); ?>" size=60 /></td>
 				<td>Page where android app connects to for character sheet output.</td>
 			</tr>
 			--->
 			<tr>
 				<td>URL to Profile Placeholder image</td>
-				<td><input type="text" name="placeholder" value="<?php print esc_html($options[0]->PLACEHOLDER_IMAGE); ?>" size=60 /></td>
+				<td><input type="text" name="placeholder" value="<?php print esc_html(isset($options[0]) ? $options[0]->PLACEHOLDER_IMAGE: ""); ?>" size=60 /></td>
 				<td>This image is used in place of a character portrait on the profile page.</td>
 			</tr><tr>
 				<td>Home City</td>
@@ -157,14 +158,14 @@ function vtm_render_config_general() {
 			</tr><tr>
 				<td>Assign XP By</td>
 				<td>
-				<input type="radio" name="assignxp" value="Y" <?php if ($options[0]->ASSIGN_XP_BY_PLAYER == 'Y') print "checked"; ?>>Player
-				<input type="radio" name="assignxp" value="N" <?php if ($options[0]->ASSIGN_XP_BY_PLAYER == 'N') print "checked"; ?>>Character	
+				<input type="radio" name="assignxp" value="Y" <?php if (isset($options[0]) && $options[0]->ASSIGN_XP_BY_PLAYER == 'Y') print "checked"; ?>>Player
+				<input type="radio" name="assignxp" value="N" <?php if (isset($options[0]) && $options[0]->ASSIGN_XP_BY_PLAYER == 'N') print "checked"; ?>>Character	
 				<td>Experience can be assigned to players or to characters</td>
 			</tr><tr>
 				<td>Use Nature/Demeanour</td>
 				<td>
-				<input type="radio" name="usenature" value="Y" <?php if ($options[0]->USE_NATURE_DEMEANOUR == 'Y') print "checked"; ?>>Yes
-				<input type="radio" name="usenature" value="N" <?php if ($options[0]->USE_NATURE_DEMEANOUR == 'N') print "checked"; ?>>No	
+				<input type="radio" name="usenature" value="Y" <?php if (isset($options[0]) && $options[0]->USE_NATURE_DEMEANOUR == 'Y') print "checked"; ?>>Yes
+				<input type="radio" name="usenature" value="N" <?php if (isset($options[0]) && $options[0]->USE_NATURE_DEMEANOUR == 'N') print "checked"; ?>>No	
 				<td>Enter and Display Nature and Demeanours for characters.</td>
 			</tr><tr>
 				<td>Display a Character Background on the Character Profile</td>
@@ -1274,7 +1275,7 @@ function vtm_render_config_database() {
 				?>
 				<form id='options_form' name='import_data_form' method='post' enctype="multipart/form-data">
 				<input type='file' name='vtm_import' id='vtm_import'  multiple='false' />
-				<?php echo esc_html(wp_nonce_field( 'vtm_import', 'vtm_import_nonce' )); ?>
+				<?php echo wp_nonce_field( 'vtm_import', 'vtm_import_nonce' ); ?>
 				<input type="submit" name="select_import_data" class="button-primary" value="Import" />
 				</form>
 				<?php

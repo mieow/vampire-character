@@ -1232,10 +1232,10 @@ function vtm_character_install_data($initdatapath) {
 				while(! feof($filehandle)) {
 					if ($i == 0) {
 						// first line is the headings
-						$headings = fgetcsv($filehandle,0,",");
+						$headings = fgetcsv($filehandle,0,",",'"', "\\");
 					} else {
 						// remaining lines are data
-						$line = fgetcsv($filehandle,0,",");
+						$line = fgetcsv($filehandle,0,",",'"', "\\");
 						if ($line > 0) {
 							$j=0;
 							foreach ($headings as $heading) {
@@ -1256,7 +1256,7 @@ function vtm_character_install_data($initdatapath) {
 				// If the headings from the csv and db table match then no issues
 				// If the csv headings are all in the dbtable and the missing ones
 				//		don't have constraints then we should be okay
-				$tgtinfo = $wpdb->get_results("SHOW COLUMNS FROM %i;", VTM_TABLE_PREFIX . "$tablename", ARRAY_A);
+				$tgtinfo = $wpdb->get_results($wpdb->prepare("SHOW COLUMNS FROM %i;", VTM_TABLE_PREFIX . "$tablename"), ARRAY_A);
 				//print_r($tgtinfo);
 				$tgtheadings = array_column($tgtinfo, 'Field');
 				$tgttype = array_column($tgtinfo, 'Type');
@@ -2148,39 +2148,65 @@ function vtm_export_data($filepath, $dirname) {
 			$table = $tablelist[$id];
 			$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
 			
-			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "$table ORDER BY ID";
-			$contents = $wpdb->get_results("$sql");
-			
+			// Prepare Headings
 			$sql = "SHOW COLUMNS FROM " . VTM_TABLE_PREFIX . $table;
 			$info = $wpdb->get_results("$sql");
 			foreach ($info as $index => $data) {
 				$headings[] = $data->Field;
 			}
+			$headingrow = implode(',', $headings) . "\n";
 			
-			//echo "<li>$path/$filename</li>";
-			//print_r($contents);
-			//echo "</li>";
-			// Open CSV file
-			$file = fopen("$path/$filename","w");
-			// output headings
-			//print_r($headings);
-			fputcsv($file, $headings);
-			// output contents
+			// Prepare Data
+			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "$table ORDER BY ID";
+			$contents = $wpdb->get_results("$sql");
+			
+			$dataout = "";
 			if (vtm_count($contents) > 0) {
 				foreach ($contents as $data) {
+					$row = array();
 					foreach ($headings as $heading) {
-						$row[] = $data->$heading;
+						// if the text has "
+						//		then escape the double-quotes
+						//		add encapsulate with double quotes
+						$tmp = preg_replace('[\r\n]','\\r\\n',$data->$heading);
+						if (preg_match('/[,"\']/',$tmp)) {
+							$row[] = '"' . str_replace('"','\"',$tmp) . '"';
+						} else {
+							$row[] = $tmp;
+						}
 					}
-					//echo "<li>row:";
-					//print_r($row);
-					//echo "<li>";
-					fputcsv($file, $row);
-					unset($row);
+					$dataout .= implode(',', $row) . "\n";
 				}
 			}
 			
-			// close file
-			fclose($file);
+			// Write CSV file
+			$success = $wp_filesystem->put_contents( "$path/$filename", $headingrow .$dataout , FS_CHMOD_FILE );
+
+			if ( !$success ) {
+				echo "<p>Error creating $filename file.</p>\n";
+			}
+			
+			// // Open CSV file
+			// $file = fopen("$path/$filename","w");
+			// // output headings
+			// //print_r($headings);
+			// fputcsv($file, $headings);
+			// // output contents
+			// if (vtm_count($contents) > 0) {
+				// foreach ($contents as $data) {
+					// foreach ($headings as $heading) {
+						// $row[] = $data->$heading;
+					// }
+					// //echo "<li>row:";
+					// //print_r($row);
+					// //echo "<li>";
+					// fputcsv($file, $row);
+					// unset($row);
+				// }
+			// }
+			
+			// // close file
+			// fclose($file);
 			unset($headings);
 			
 		}

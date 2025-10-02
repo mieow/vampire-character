@@ -88,6 +88,8 @@ function vtm_render_master_path_page(){
 }
 
 class vtmclass_master_path extends vtmclass_Report_ListTable {
+	protected $pathreasons;
+	protected $defaultreason;
 
    function column_default($item, $column_name){
         switch($column_name){
