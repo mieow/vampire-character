@@ -3,8 +3,8 @@ Contributors: magent
 Tags: vampire, character generation, rpg, lrp, larp
 Requires at least: 6.2
 Tested up to: 6.7.1
-Stable tag: 2.13
-Requires PHP: 7.4
+Stable tag: 2.14
+Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -127,6 +127,13 @@ the issue.  Also include any error messages.
 4. Spend Experience
 
 == Changelog ==
+
+= 2.14 =
+
+* Security: Fixed XSS vulnerabilities - added output encoding, sanitising inputs, SQL injection, etc.
+* Improvements: Updated functions depreciated in PHP8 - plugin should be able to work in older PHP versions but is untested
+* Fixed issue with accessing character generation page if it was set to only allow character gen when logged in
+
 
 = 2.13 = 
 
