@@ -1807,4 +1807,21 @@ function vtm_count($input) {
 	
 	return 0;
 }
+
+function vtm_get_field_length($table, $field) {
+	global $wpdb;
+	
+	$field_length = $wpdb->get_col_length($table, $field);
+	
+	if (is_wp_error($field_length) || $field_length === null) {
+		$field_length = 60;
+		print("<p>Warning: Could not determine field length for $table.$field, defaulting to $field_length</p>");
+	} else {
+		if (is_array($field_length))
+			$field_length = $field_length['length'];
+		else
+			$field_length = $field_length;
+	}
+	return $field_length;
+}
 ?>

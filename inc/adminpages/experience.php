@@ -498,9 +498,13 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		$wpdb->show_errors();
 	
 		if ($data2update->CHARTABLE_ID != 0) {
+
+			// Get the length limit for the COMMENT field
+			$comment_length = vtm_get_field_length(VTM_TABLE_PREFIX . $data2update->CHARTABLE, 'COMMENT');
+
 			$data = array (
 				'LEVEL'   => $data2update->CHARTABLE_LEVEL,
-				'COMMENT' => $data2update->SPECIALISATION,
+				'COMMENT' => substr($data2update->SPECIALISATION, 0, $comment_length),
 			);
 			$result = $wpdb->update(VTM_TABLE_PREFIX . $data2update->CHARTABLE,
 				$data,
@@ -508,6 +512,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			);
 			if (!$result && $result !== 0) {
 				$wpdb->print_error();
+				print_r($data);
 				echo "<p style='color:red'>" . esc_html("Failed to update {$data2update->CHARTABLE} spend to character {$data2update->CHARACTER_ID}") . "</p>\n";
 			}
 			elseif ($result === 0) {
@@ -541,6 +546,8 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 	
 		$wpdb->show_errors();
+		
+		$result = null;
 				
 		// update thaum/necro primary path
 		$pathok = 1;
@@ -658,11 +665,12 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		*/
 		
 		if ($data2update->CHARTABLE_ID == 0 && $data2update->CHARTABLE_LEVEL >= 0) { /* add merit */
+			$comment_length = vtm_get_field_length(VTM_TABLE_PREFIX . $data2update->CHARTABLE, 'COMMENT');
 			$data = array (
 				'CHARACTER_ID'         => $data2update->CHARACTER_ID,
 				$data2update->ITEMTABLE . "_ID" => $data2update->ITEMTABLE_ID,
 				'LEVEL'                => $data2update->CHARTABLE_LEVEL,
-				'COMMENT'              => $data2update->SPECIALISATION,
+				'COMMENT'              => substr($data2update->SPECIALISATION, 0, $comment_length),
 			);
 			$result = $wpdb->insert(VTM_TABLE_PREFIX . $data2update->CHARTABLE,
 				$data,
@@ -688,11 +696,11 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 	
 		$wpdb->show_errors();
 		
-		
+		$comment_length = vtm_get_field_length(VTM_TABLE_PREFIX . $data2update->CHARTABLE, 'COMMENT');
 		$data = array (
 			'CHARACTER_ID'         => $data2update->CHARACTER_ID,
 			'COMBO_DISCIPLINE_ID'  => $data2update->ITEMTABLE_ID,
-			'COMMENT'              => $data2update->SPECIALISATION,
+			'COMMENT'              => substr($data2update->SPECIALISATION, 0, $comment_length),
 		);
 		$result = $wpdb->insert(VTM_TABLE_PREFIX . $data2update->CHARTABLE,
 			$data,

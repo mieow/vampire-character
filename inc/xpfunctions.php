@@ -2798,7 +2798,15 @@ function vtm_validate_details($characterID) {
 				}
 				$outputError .= "</li>";
 			}
-	}
+			// Check if the length of training notes exceeds the maximum allowed
+			if (isset($spend['training']) && strlen($spend['training']) > 164) {
+				$outputError .= "<li>Training information for {$itemInfo[$itemtable][$itemid]->NAME} exceeds the maximum length of 164 characters</li>";
+			}
+			if (isset($spend['spec']) && strlen($spend['spec']) > 64) {
+				$outputError .= "<li>Specialisation {$itemInfo[$itemtable][$itemid]->NAME} exceeds the maximum length of 64 characters</li>";
+			}
+			
+		}
 	if (!empty($outputError)) {
 		$outputError = "<ul>$outputError</ul>";
 	}
