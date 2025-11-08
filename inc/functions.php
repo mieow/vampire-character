@@ -420,13 +420,14 @@ function vtm_get_character_email($characterID) {
     add_shortcode('debug_name_value_pairs', 'vtm_print_name_value_pairs');
 
     function vtm_printSelectCounter($name, $selectedValue, $lowerValue, $upperValue) {
-	
+
+		$haszero = false;
 		switch ($name) {
-			case 'Conscience'  : $upperValue = 5; break;
-			case 'Conviction'  : $upperValue = 5; break;
-			case 'Self Control': $upperValue = 5; break;
+			case 'Conscience'  : $upperValue = 5; $haszero = true; break;
+			case 'Conviction'  : $upperValue = 5; $haszero = true; break;
+			case 'Self Control': $upperValue = 5; $haszero = true; break;
 			case 'Courage'     : $upperValue = 5; break;
-			case 'Instinct'    : $upperValue = 5; break;
+			case 'Instinct'    : $upperValue = 5; $haszero = true; break;
 		}
 	
         $output = "<select name=\"" . $name . "\">";
@@ -434,12 +435,15 @@ function vtm_get_character_email($characterID) {
             $selectedValue = "-100";
             $output .= "<option value=\"-100\">No Value</option>";
         }
-        for ($i = $lowerValue; $i <= $upperValue; $i++) {
+        if ($haszero == true) {
+            $output .= "<option value=\"0\">0</option>";
+        }
+		for ($i = $lowerValue; $i <= $upperValue; $i++) {
             $output .= "<option";
             if ((int) $selectedValue == $i) {
                 $output .= " selected";
             }
-            $output .= ">" . $i . "</option>";
+            $output .= " value=\"" . $i . "\">" . $i . "</option>";
         }
         $output .= "</select>";
         return $output;
