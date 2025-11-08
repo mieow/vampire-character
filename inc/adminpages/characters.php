@@ -1356,6 +1356,9 @@ function vtm_processCharacterUpdate($characterID) {
 	
 	$wpdb->show_errors();
 
+	// Get wordpress ID of logged in user
+	$current_user = wp_get_current_user();
+
 	$characterName             = $_POST['charName'];
 	$characterPlayer           = $_POST['charPlayer'];
 	$characterPublicClan       = $_POST['charPubClan'];
@@ -1404,6 +1407,10 @@ function vtm_processCharacterUpdate($characterID) {
 	}
 
 	if ((int) $characterID > 0) {
+
+		// Get existing character info
+		$current_character = new vtmclass_character();
+		$current_character->load($characterID);
 		
 		$result = $wpdb->update($table_prefix . "CHARACTER",
 				array (
@@ -1425,6 +1432,9 @@ function vtm_processCharacterUpdate($characterID) {
 			$wpdb->print_error();
 			echo "<p style='color:red'>Could not update " . esc_html($characterName) . " (" . esc_html($characterID) . ")</p>";
 			return $characterID;
+		} 
+		elseif ($result > 0) {
+			vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character details, $result changes made.");
 		}
 		
 	}
@@ -1492,6 +1502,9 @@ function vtm_processCharacterUpdate($characterID) {
 		echo "<p style='color:red'>Could not update profile for " . esc_html($characterName) . " (" . esc_html($tableIDs['profile']) . ")</p>";
 		return $characterID;
 	}
+	elseif ($result > 0) {
+		vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character profile");
+	}
 	
 	// Update character generation template
 	if (empty(vtm_get_character_templateid($characterID))) {
@@ -1515,6 +1528,9 @@ function vtm_processCharacterUpdate($characterID) {
 		$wpdb->print_error();
 		echo "<p style='color:red'>Could not update character generation template for " . esc_html($characterName) . "</p>";
 		return $characterID;
+	}
+	elseif ($result > 0) {
+		vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character generation template");
 	}
 	
 	// Update stats
@@ -1544,6 +1560,9 @@ function vtm_processCharacterUpdate($characterID) {
 				$wpdb->print_error();
 				echo "<p style='color:red'>Could not update " . esc_html($currentStat) . " for " . esc_html($characterName) . "</p>";
 				return $characterID;
+			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character attribute " . esc_html($currentStat) . " to " . esc_html($_POST[$currentStat]));
 			}
 		}
 	}
@@ -1580,6 +1599,9 @@ function vtm_processCharacterUpdate($characterID) {
 				$wpdb->print_error();
 				echo "<p style='color:red'>Could not update skill</p>";
 				return $characterID;
+			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character ability");
 			}
 		}
 		$skillCounter++;
@@ -1621,6 +1643,9 @@ function vtm_processCharacterUpdate($characterID) {
 				echo "<p style='color:red'>Could not update discipline</p>";
 				return $characterID;
 			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated disciplines");
+			}
 			
 			// If discipline has a primary path selected
 			if (isset($_POST[$currentDiscipline . "PrimaryPath"]) && $_POST[$currentDiscipline . "PrimaryPath"] > 0){
@@ -1646,6 +1671,9 @@ function vtm_processCharacterUpdate($characterID) {
 					$wpdb->print_error();
 					echo "<p style='color:red'>Could not update primary path</p>";
 					return $characterID;
+				}
+				elseif ($result > 0) {
+					vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated primary path");
 				}
 				
 			}
@@ -1691,6 +1719,9 @@ function vtm_processCharacterUpdate($characterID) {
 				echo "<p style='color:red'>Could not update combo discipline</p>";
 				return $characterID;
 			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated combo disciplines");
+			}
 			$sql = "";
 		}
 		$comboDisciplineCounter++;
@@ -1731,6 +1762,9 @@ function vtm_processCharacterUpdate($characterID) {
 				echo "<p style='color:red'>Could not update path</p>";
 				return $characterID;
 			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated paths");
+			}
 		}
 		$pathCounter++;
 	}
@@ -1766,6 +1800,9 @@ function vtm_processCharacterUpdate($characterID) {
 				$wpdb->print_error();
 				echo "<p style='color:red'>Could not update ritual</p>";
 				return $characterID;
+			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated rituals");
 			}
 		}
 		$ritualCounter++;
@@ -1804,6 +1841,9 @@ function vtm_processCharacterUpdate($characterID) {
 				echo "<p style='color:red'>Could not update background</p>";
 				return $characterID;
 			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated background");
+			}
 		}
 		$backgroundCounter++;
 	}
@@ -1840,6 +1880,9 @@ function vtm_processCharacterUpdate($characterID) {
 				echo "<p style='color:red'>Could not update merit/flaw</p>";
 				return $characterID;
 			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated merits/flaws");
+			}
 		}
 		$meritCounter++;
 	}
@@ -1873,6 +1916,9 @@ function vtm_processCharacterUpdate($characterID) {
 				echo "<p style='color:red'>Could not update office</p>";
 				return $characterID;
 			}
+			elseif ($result > 0) {
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated office");
+			}
 		}
 		$officeCounter++;
 	}
@@ -1890,6 +1936,9 @@ function vtm_processCharacterUpdate($characterID) {
 			$wpdb->print_error();
 			echo "<p style='color:red'>Could not update nature/demeanour</p>";
 			return $characterID;
+		}
+		elseif ($result > 0) {
+			vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated nature/demeanour");
 		}
 	
 	
@@ -2900,5 +2949,41 @@ function vtm_purge_table($characterID, $table, $column) {
 	
 
 	return $ok;
+}
+function vtm_log_change($characterID, $playerID, $storyteller, $comment) {
+	global $wpdb;
+
+	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "XP_REASON WHERE NAME LIKE 'Misc%'";
+	$result = $wpdb->get_results("$sql");
+	if (!$result && $result !== 0) {
+		$reasonID = 1;
+	}else {
+		$reasonID = $result[0]->ID;
+	}
+
+	$data = array (
+		'PLAYER_ID'    => $playerID,
+		'CHARACTER_ID' => $characterID,
+		'XP_REASON_ID' => $reasonID,
+		'AWARDED'      => gmdate('Y-m-d'),
+		'AMOUNT'       => 0,
+		'COMMENT'	   => "$storyteller: $comment"
+	);
+	$wpdb->insert(VTM_TABLE_PREFIX . "PLAYER_XP",
+					$data,
+					array (
+						'%d',
+						'%d',
+						'%d',
+						'%s',
+						'%d',
+						'%s'
+					)
+				);
+	if ($wpdb->insert_id  == 0) {
+		echo "<p style='color:red'><b>Error:</b> Character change not logged";
+		return 1;
+	} 
+	return 0;
 }
 ?>
