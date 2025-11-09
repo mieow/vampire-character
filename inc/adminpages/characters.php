@@ -1434,7 +1434,7 @@ function vtm_processCharacterUpdate($characterID) {
 			return $characterID;
 		} 
 		elseif ($result > 0) {
-			vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character details, $result changes made.");
+			vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character details, $result change(s) made.");
 		}
 		
 	}
@@ -1503,7 +1503,20 @@ function vtm_processCharacterUpdate($characterID) {
 		return $characterID;
 	}
 	elseif ($result > 0) {
-		vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character profile");
+		$logmessage = array();
+		$logmessage[] = "Updated character profile";
+		if ($current_character->quote != $characterHarpyQuote) {
+			$logmessage[] = "Changed harpy quote";
+		}
+		if ($current_character->portrait != $characterPortraitURL) {
+			if (empty($characterPortraitURL)) {
+				$logmessage[] = "Using site default portrait URL";
+			} else {
+				$logmessage[] = "Changed portrait URL";
+			}
+		}
+		vtm_log_change($characterID, $characterPlayer, $current_user->user_login, implode(", ", $logmessage));
+
 	}
 	
 	// Update character generation template
@@ -1537,23 +1550,43 @@ function vtm_processCharacterUpdate($characterID) {
 	$stats = vtm_listStats();
 	foreach ($stats as $stat) {
 		$currentStat = str_replace(" ", "_", $stat->name);
+		$logmessage = "";
+		$sql = "";
 		if ($_POST[$currentStat] != "" && $_POST[$currentStat] != "-100") {
+			// Delete where requested
 			if (isset($_POST[$currentStat . "Delete"]) && (int) $_POST[$currentStat . "Delete"] > 0) {
 				$sql = "DELETE FROM " . $table_prefix . "CHARACTER_STAT WHERE id = %d";
 				$sql = $wpdb->prepare("$sql", $_POST[$currentStat . "Delete"]);
+				$logmessage = "Deleted character attribute " . esc_html($stat->name);
 			}
+			// Update where the value is greater than zero and an update is requested
 			elseif (isset($_POST[$currentStat . "ID"]) && (int) $_POST[$currentStat . "ID"] > 0) {
 				$sql = "UPDATE " . $table_prefix . "CHARACTER_STAT
 								SET level   =  %d,
 									comment =  %s
 								WHERE id = %d";
 				$sql = $wpdb->prepare("$sql", $_POST[$currentStat], $_POST[$currentStat . "Comment"], $_POST[$currentStat . "ID"]);
+				$logmessage = "Updated character attribute " . esc_html($stat->name);
 			}
+			
+			// Delete where an update is requested, but the value is 0 (i.e. don't add virtues into the DB if set to 0)
+			elseif (isset($_POST[$currentStat . "ID"]) && (int) $_POST[$currentStat . "ID"] == 0) {
+				if (isset($_POST[$currentStat . "Delete"])) {
+					$sql = "DELETE FROM " . $table_prefix . "CHARACTER_STAT WHERE id = %d";
+					$sql = $wpdb->prepare("$sql", $_POST[$currentStat . "Delete"]);
+					$logmessage = "Deleted extra character attribute " . esc_html($stat->name);
+				}
+			}
+			// Otherwise add a new entry
 			else {
 
 				$sql = "INSERT INTO " . $table_prefix . "CHARACTER_STAT (character_id, stat_id, level, comment)
 								VALUES (%d, %d, %d, %s)";
 				$sql = $wpdb->prepare("$sql", $characterID, $stat->id, $_POST[$currentStat], $_POST[$currentStat . "Comment"]);
+				$logmessage = "Added character attribute " . esc_html($stat->name);
+			}
+			if ($sql == "") {
+				continue;
 			}
 			$result = $wpdb->query("$sql");
 			if (empty($sql) || (!$result && $result !== 0)) {
@@ -1562,7 +1595,7 @@ function vtm_processCharacterUpdate($characterID) {
 				return $characterID;
 			}
 			elseif ($result > 0) {
-				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character attribute " . esc_html($currentStat) . " to " . esc_html($_POST[$currentStat]));
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character attribute " . esc_html($stat->name));
 			}
 		}
 	}
@@ -1576,10 +1609,19 @@ function vtm_processCharacterUpdate($characterID) {
 	while ($skillCounter < $maxSkillCount) {
 		$currentSkill = "skill" . $skillCounter;
 		if ($_POST[$currentSkill] != "" && $_POST[$currentSkill] != "-100") {
+			$logmessage = array();
 			if ($skillCounter < $maxOldSkillCount) {
 				if (isset($_POST[$currentSkill . "Delete"]) && (int) $_POST[$currentSkill . "Delete"] > 0) {
 					$sql = "DELETE FROM " . $table_prefix . "CHARACTER_SKILL WHERE id = %d";
 					$sql = $wpdb->prepare("$sql", $_POST[$currentSkill . "Delete"]);
+
+					$skillname = $wpdb->get_var($wpdb->prepare("
+						SELECT skill.name
+						FROM " . $table_prefix . "CHARACTER_SKILL chrskill,
+							 " . $table_prefix . "SKILL skill
+						WHERE chrskill.skill_id = skill.id
+						  AND chrskill.id = %d", $_POST[$currentSkill . "Delete"]));
+					$logmessage[] = "Deleted ability " . vtm_formatOutput($skillname);
 				}
 				elseif (isset($_POST[$currentSkill . "ID"]) && (int) $_POST[$currentSkill . "ID"] > 0) {
 					$sql = "UPDATE " . $table_prefix . "CHARACTER_SKILL
@@ -1587,6 +1629,14 @@ function vtm_processCharacterUpdate($characterID) {
 										comment = %s
 									WHERE id = %d";
 					$sql = $wpdb->prepare("$sql", $_POST[$currentSkill], $_POST[$currentSkill . "Comment"], $_POST[$currentSkill . "ID"]);
+
+					$skillname = $wpdb->get_var($wpdb->prepare("
+						SELECT skill.name
+						FROM " . $table_prefix . "CHARACTER_SKILL chrskill,
+							 " . $table_prefix . "SKILL skill
+						WHERE chrskill.skill_id = skill.id
+						  AND chrskill.id = %d", $_POST[$currentSkill . "ID"]));
+					$logmessage[] = "Updated ability " . vtm_formatOutput($skillname);
 				}
 			}
 			else {
@@ -1597,11 +1647,11 @@ function vtm_processCharacterUpdate($characterID) {
 			$result = $wpdb->query("$sql");
 			if (empty($sql) || (!$result && $result !== 0)) {
 				$wpdb->print_error();
-				echo "<p style='color:red'>Could not update skill</p>";
+				echo "<p style='color:red'>Could not update ability</p>";
 				return $characterID;
 			}
 			elseif ($result > 0) {
-				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated character ability");
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, implode(", ", $logmessage));
 			}
 		}
 		$skillCounter++;
@@ -1615,11 +1665,20 @@ function vtm_processCharacterUpdate($characterID) {
 
 	while ($disciplineCounter < $maxDisciplineCount) {
 		$currentDiscipline = "discipline" . $disciplineCounter;
+		$logmessage = "";
 		if (isset($_POST[$currentDiscipline]) && $_POST[$currentDiscipline] != "" && $_POST[$currentDiscipline] != "-100") {
 			if ($disciplineCounter < $maxOldDisciplineCount) {
 				if (isset($_POST[$currentDiscipline . "Delete"]) && (int) $_POST[$currentDiscipline . "Delete"] > 0) {
 					$sql = "DELETE FROM " . $table_prefix . "CHARACTER_DISCIPLINE WHERE id = %d";
 					$sql = $wpdb->prepare("$sql", $_POST[$currentDiscipline . "Delete"]);
+
+					$disciplinename = $wpdb->get_var($wpdb->prepare("
+						SELECT discipline.name
+						FROM " . $table_prefix . "CHARACTER_DISCIPLINE chrdiscipline,
+							 " . $table_prefix . "DISCIPLINE discipline
+						WHERE chrdiscipline.DISCIPLINE_ID = discipline.id
+						  AND chrdiscipline.id = %d", $_POST[$currentDiscipline . "Delete"]));
+					$logmessage = "Deleted discipline " . vtm_formatOutput($disciplinename);
 					
 				}
 				elseif (isset($_POST[$currentDiscipline . "ID"]) && (int) $_POST[$currentDiscipline . "ID"] > 0) {
@@ -1628,6 +1687,14 @@ function vtm_processCharacterUpdate($characterID) {
 										comment = ''
 									WHERE id = %d";
 					$sql = $wpdb->prepare("$sql", $_POST[$currentDiscipline], $_POST[$currentDiscipline . "ID"]);
+
+					$disciplinename = $wpdb->get_var($wpdb->prepare("
+						SELECT discipline.name
+						FROM " . $table_prefix . "CHARACTER_DISCIPLINE chrdiscipline,
+							 " . $table_prefix . "DISCIPLINE discipline
+						WHERE chrdiscipline.DISCIPLINE_ID = discipline.id
+						  AND chrdiscipline.id = %d", $_POST[$currentDiscipline . "ID"]));
+					$logmessage = "Updated discipline " . vtm_formatOutput($disciplinename);
 					
 				}
 			}
@@ -1635,6 +1702,14 @@ function vtm_processCharacterUpdate($characterID) {
 				$sql = "INSERT INTO " . $table_prefix . "CHARACTER_DISCIPLINE (character_id, discipline_id, level, comment)
 								VALUES (%d, %d, %d, '')";
 				$sql = $wpdb->prepare("$sql", $characterID, $_POST[$currentDiscipline . "SID"], $_POST[$currentDiscipline]);
+
+				$disciplinename = $wpdb->get_var($wpdb->prepare("
+					SELECT discipline.name
+					FROM " . $table_prefix . "CHARACTER_DISCIPLINE chrdiscipline,
+							" . $table_prefix . "DISCIPLINE discipline
+					WHERE chrdiscipline.DISCIPLINE_ID = discipline.id
+						AND chrdiscipline.id = %d", $_POST[$currentDiscipline . "SID"]));
+				$logmessage = "Added discipline " . vtm_formatOutput($disciplinename);
 				
 			}
 			$result = $wpdb->query("$sql");
@@ -1644,7 +1719,7 @@ function vtm_processCharacterUpdate($characterID) {
 				return $characterID;
 			}
 			elseif ($result > 0) {
-				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, "Updated disciplines");
+				vtm_log_change($characterID, $characterPlayer, $current_user->user_login, $logmessage);
 			}
 			
 			// If discipline has a primary path selected
@@ -2953,6 +3028,9 @@ function vtm_purge_table($characterID, $table, $column) {
 function vtm_log_change($characterID, $playerID, $storyteller, $comment) {
 	global $wpdb;
 
+	// truncate comment to 160 chars
+	$comment = substr($comment, 0, vtm_get_field_length('PLAYER_XP', 'COMMENT'));
+
 	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "XP_REASON WHERE NAME LIKE 'Misc%'";
 	$result = $wpdb->get_results("$sql");
 	if (!$result && $result !== 0) {
@@ -2981,7 +3059,9 @@ function vtm_log_change($characterID, $playerID, $storyteller, $comment) {
 					)
 				);
 	if ($wpdb->insert_id  == 0) {
-		echo "<p style='color:red'><b>Error:</b> Character change not logged";
+		echo "<p style='color:red'><b>Error:</b> Character change '". vtm_formatOutput($comment) . "' not logged";
+		echo $wpdb->print_error();
+		echo "</p>";
 		return 1;
 	} 
 	return 0;
