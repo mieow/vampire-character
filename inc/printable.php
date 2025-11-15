@@ -668,7 +668,7 @@ class vtmclass_PDFcsheet extends FPDF
 		
 	}
 	
-	function Dots($level, $pending, $cellwidth, $xorig, $y, $max = 5, $rowheight, $dotheight = 0) {
+	function Dots($level, $pending, $cellwidth, $xorig, $y, $max = 5, $rowheight = 10, $dotheight = 0) {
 	
 		$padding = 0;
 	
