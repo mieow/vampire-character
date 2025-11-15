@@ -132,8 +132,9 @@ the issue.  Also include any error messages.
 
 * Security: Fixed XSS vulnerabilities - added output encoding, sanitising inputs, SQL injection, etc.
 * Improvements: Updated functions depreciated in PHP8 - plugin should be able to work in older PHP versions but is untested
-* Fixed issue with accessing character generation page if it was set to only allow character gen when logged in
-
+* Improvements: Changes to character sheets made by admins/Storytellers are now logged in the player xp spend table
+* Bug fix: Fixed issue with accessing character generation page if it was set to only allow character gen when logged in
+* Bug fix: Fixed issue with stripping/storing extra slashes in XP pending spend function
 
 = 2.13 = 
 
