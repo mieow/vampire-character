@@ -358,7 +358,11 @@ function vtm_render_details_section($characterID) {
 	foreach ($_REQUEST as $spend => $details) {
 		$data = explode(":",$spend);
 		if (count($data) > 1) {
-			$requestspends[$spend] = $details;
+			$requestspends[$spend] = array();
+			// clean up slashed and sanitise inputs in details array and keys
+			foreach ($details as $key => $value) {
+				$requestspends[$spend][sanitize_text_field(stripslashes($key))] = sanitize_text_field(stripslashes($value));
+			}
 			$requestItemTables[$data[1]] = 1;
 			if ($data[4] != 0) {
 				$requestChTables[$data[3]] = 1;
@@ -431,32 +435,32 @@ function vtm_render_details_section($characterID) {
 			// print "<br>\n";
 			
 			$rowoutput .= "<tr><td class='vtmcol_key'>".vtm_formatOutput($itemInfo[$itemtable][$itemid]->NAME);
-			$rowoutput .= "<input type='hidden' name='{$spend}[level]' value='{$level}'>";
-			$rowoutput .= "<input type='hidden' name='{$spend}[name]' value='{$itemInfo[$itemtable][$itemid]->NAME}'>";
+			$rowoutput .= "<input type='hidden' name='" . vtm_formatOutput($spend) . "[level]' value='" . vtm_formatOutput($level) . "'>";
+			$rowoutput .= "<input type='hidden' name='" . vtm_formatOutput($spend) . "[name]' value='" . vtm_formatOutput($itemInfo[$itemtable][$itemid]->NAME) . "'>";
 			$rowoutput .= "</td>";
 						
 			// specialisation
 			if (empty($comment)) {
 				if ($hasspec == 'Y' || ($specat > 0 && $specat <= $level)) {
 					$spec = empty($details['spec']) ? "" : $details['spec']; 
-					$rowoutput .= "<td><input type='text' name='{$spend}[spec]' value='{$spec}' size=15 maxlength=60></td>";
+					$rowoutput .= "<td><input type='text' name='" . vtm_formatOutput($spend) . "[spec]' value='" . vtm_formatOutput($spec) . "' size=15 maxlength=60></td>";
 				}
 				else {
 					$rowoutput .= "<td>&nbsp;</td>";
 				}
 			}
 			else {
-				$rowoutput .= "<td>".vtm_formatOutput($comment)."<input type='hidden' name='{$spend}[spec]' value='{$comment}'></td>";
+				$rowoutput .= "<td>".vtm_formatOutput($comment)."<input type='hidden' name='{$spend}[spec]' value='" . vtm_formatOutput($comment) . "'></td>";
 			}
 			
 			// Spend information
-			$rowoutput .= "<td>".vtm_formatOutput($spendcomment)."<input type='hidden' name='{$spend}[detail]' value='{$spendcomment}'></td>";
+			$rowoutput .= "<td>".vtm_formatOutput($spendcomment)."<input type='hidden' name='{$spend}[detail]' value='" . vtm_formatOutput($spendcomment) . "'></td>";
 			
 			// cost
 			$rowoutput .= "<td>".vtm_formatOutput($xpcost)."</td>";
 			
 			// Training
-			$rowoutput .= "<td><input type='text'  name='{$spend}[training]' value='$train' size=30 maxlength=160 /></td>";
+			$rowoutput .= "<td><input type='text'  name='" . vtm_formatOutput($spend) . "[training]' value='" . vtm_formatOutput($train) . "' size=30 maxlength=160 /></td>";
 			$rowoutput .= "</tr>";
 			
 		}
@@ -2511,11 +2515,11 @@ function vtm_save_to_pending($data, $details, $playerID, $characterID) {
 	$chartable   = $data[3];
 	$chartableid = $data[4];
 	$xpcost      = $data[5];
-	$spec        = isset($details['spec']) ? $details['spec'] : '';
+	$spec        = isset($details['spec']) ? stripslashes($details['spec']) : '';
 	$level       = isset($details['level']) ? $details['level'] : 0;
-	$training    = isset($details['training']) ? $details['training'] : '';
+	$training    = isset($details['training']) ? stripslashes($details['training']) : '';
 	$itemidname  = isset($details['name']) ? $details['name'] : '';
-	$comment     = isset($details['detail']) ? $details['detail'] : '';
+	$comment     = isset($details['detail']) ? stripslashes($details['detail']) : '';
 
 	// print "<p>$index: <br>";
 	// print_r($data);
@@ -2799,8 +2803,8 @@ function vtm_validate_details($characterID) {
 				$outputError .= "</li>";
 			}
 			// Check if the length of training notes exceeds the maximum allowed
-			if (isset($spend['training']) && strlen($spend['training']) > 164) {
-				$outputError .= "<li>Training information for {$itemInfo[$itemtable][$itemid]->NAME} exceeds the maximum length of 164 characters</li>";
+			if (isset($spend['training']) && strlen(stripslashes($spend['training'])) > 164) {
+				$outputError .= "<li>Training information for {$itemInfo[$itemtable][$itemid]->NAME} exceeds the maximum length of 164 characters: {$spend['training']}</li>";
 			}
 			if (isset($spend['spec']) && strlen($spend['spec']) > 64) {
 				$outputError .= "<li>Specialisation {$itemInfo[$itemtable][$itemid]->NAME} exceeds the maximum length of 64 characters</li>";
