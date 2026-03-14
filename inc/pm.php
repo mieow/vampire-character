@@ -424,7 +424,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 					$code, $address->PM_TYPE_ID)));
 				
 				echo "<option value='" . esc_html($value) . "' " . selected($value, $to, false) . ">" . 
-				esc_html($title) . "</option>";
+				esc_html(stripslashes($title)) . "</option>";
 				
 				$addrcount++;
 			}
@@ -432,7 +432,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		if (count($extra) > 0) {
 			foreach ($extra as $title => $value) {
 				echo "<option value='" . esc_html($value) . "' " . selected($value, $to, false) . ">" . 
-				esc_html($title) . "</option>";
+				esc_html(stripslashes($title)) . "</option>";
 			}
 		}
 		echo "</select>";
@@ -460,7 +460,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 				$code, $address->PM_TYPE_ID)));
 
 			echo "<option value='" . esc_html($value) . "' " . selected($value, $from, false) .
-				">" . esc_html($title) . "</option>";
+				">" . esc_html(stripslashes($title)) . "</option>";
 		}
 		echo "</select>";
 		echo "Select how you are contacting the recipient. ";
@@ -1837,7 +1837,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		$fromaddr = vtm_pm_getaddrfromcode($fromcode);
 		
 		$toaddr   = empty($toaddr) ? $tocode . 'unavailable' : $toaddr;
-		$fromaddr = empty($fromaddr) ? $fromcode . 'unavailable' : $fromaddr;
+		$fromaddr = empty($fromaddr) ? $fromcode . 'unavailable' : stripslashes($fromaddr);
 
 		// User has from address in their addressbook?
 		// If not, give them a link to add it 
