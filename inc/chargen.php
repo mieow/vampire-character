@@ -331,10 +331,10 @@ function vtm_get_chargen_content() {
 	
 	$output = "";
 	
-	$laststep = isset($_POST['step']) ? $_POST['step'] : '';
+	$laststep = isset($_REQUEST['step']) ? $_REQUEST['step'] : '';
 	
-	if (isset($_POST['chargen-step']))
-		$chargenstep = array_keys($_POST['chargen-step']);
+	if (isset($_REQUEST['chargen-step']))
+		$chargenstep = array_keys($_REQUEST['chargen-step']);
 	elseif ($vtmglobal['characterID'] > 0)
 		$chargenstep = array('basic_info');
 	else
@@ -4342,8 +4342,9 @@ function vtm_get_chargen_characterID() {
 	// return character ID
 
 	// Returning to character generation via a reference?
-	if (isset($_POST['chargen_reference']) && $_POST['chargen_reference'] != '') {
-		$charref = $_POST['chargen_reference'];
+	if ( (isset($_POST['chargen_reference']) && $_POST['chargen_reference'] != '') ||
+	    (isset($_GET['reference']) && $_GET['reference'] != ''))  {
+		$charref = isset($_POST['chargen_reference']) ? $_POST['chargen_reference'] : $_GET['reference'];
 		if (strpos($charref,'/') && strpos($charref,'/', strpos($charref,'/') + 1)) {
 			$ref = explode('/',$charref);
 			$id   = $ref[0] * 1;
@@ -5377,7 +5378,8 @@ function vtm_email_new_character($email, $playerid, $name, $clanid, $player, $co
 	$clan = vtm_get_clan_name($clanid);
 	$url = add_query_arg('reference', $ref, vtm_get_stlink_url('viewCharGen', true));
 	$url = add_query_arg('confirm', true, $url);
-		
+	$url = add_query_arg('step', 'select_template', $url);
+
 	$userbody = "<p>Hello $player,</p>
 	
 	<p>Your new character has been created:</p>
@@ -7793,7 +7795,9 @@ function vtm_validate_template($usepost = 1) {
 	$ok = 1;
 	$errormessages = "";
 	$complete = 1;
-	
+
+	$ref_values = isset($_GET['reference'])? $_GET['reference'] : '';
+
 	if (!$usepost) {
 		$template_values = '';
 		$ref_values = '';
@@ -7801,17 +7805,17 @@ function vtm_validate_template($usepost = 1) {
 	}
 	
 	$template     = $usepost ? (isset($_POST['chargen_template'])  ? $_POST['chargen_template'] : '') : $template_values;	
-	$reference    = $usepost ? (isset($_POST['chargen_reference']) ? $_POST['chargen_reference'] : '') : $ref_values;	
+	$reference    = $usepost ? (isset($_POST['chargen_reference']) ? $_POST['chargen_reference'] : $ref_values) : $ref_values;	
 	$emailconfirm = $usepost ? isset($_GET['confirm']) : $email_values;
 		
 	if (empty($template) && empty($reference)) {
-		$errormessages .= "<p>Select a template or enter a character generation reference number.</p>";
+		$errormessages .= "<p>'$reference'Select a template or enter a character generation reference number.</p>";
 	}
 	
 	if ($vtmglobal['characterID'] == -1) {
 		$errormessages .= "<div class='vtm_error'><p>Invalid Reference</p>";
 		if ($reference != '') {
-			$split = explode("/",$$reference);
+			$split = explode("/",$reference);
 			if ($split[3] != '0000') {
 				$errormessages .= "<p>Check that you are logged
 				in under the same account that you originally created the character under.</p>";
