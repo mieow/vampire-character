@@ -36,13 +36,13 @@ function vtm_PM_post_type() {
 		'public'              => true,
 		'show_ui'             => true,
 		'show_in_menu'        => true,
-		'show_in_nav_menus'   => true,
-		'show_in_admin_bar'   => true,
+		'show_in_nav_menus'   => false,
+		'show_in_admin_bar'   => false,
 		'menu_position'       => 6,
 		'can_export'          => true,
-		'has_archive'         => true,
+		'has_archive'         => false,
 		'exclude_from_search' => true,
-		'publicly_queryable'  => true,
+		'publicly_queryable'  => false,
 		'capability_type'     => 'post',
 		'delete_with_user'    => true,
 		// 'map_meta_cap'        => false,
@@ -2321,6 +2321,10 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 
 }
 class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
+	protected $filter_addressbook;
+	protected $filter_address_type;
+	protected $active_filter_addressbook;
+	protected $active_filter_address_type;
    
     function __construct(){
         global $status, $page;
