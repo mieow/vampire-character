@@ -2,7 +2,7 @@
 Contributors: magent
 Tags: vampire, character generation, rpg, lrp, larp
 Requires at least: 6.2
-Tested up to: 6.7.1
+Tested up to: 7.0
 Stable tag: 2.14
 Requires PHP: 8.1
 License: GPLv2 or later
@@ -64,6 +64,10 @@ Features are:
 1. Activate Plugin 
 
 == Frequently Asked Questions ==
+
+= Can I get the plugin updated to support V5?
+
+V5 is close enough to V20 that it's technically possible, but the chances of me actually getting the chance to work on it is very low.
 
 = I want multiple characters under the same email address, each with a Wordpress login but Wordpress won't allow it =
 
@@ -133,8 +137,14 @@ the issue.  Also include any error messages.
 * Security: Fixed XSS vulnerabilities - added output encoding, sanitising inputs, SQL injection, etc.
 * Improvements: Updated functions depreciated in PHP8 - plugin should be able to work in older PHP versions but is untested
 * Improvements: Changes to character sheets made by admins/Storytellers are now logged in the player xp spend table
+* Improvements: Confirmation reference link in email now takes players straight to the Basic Info character generation tab
+* Improvements: Changes to stats, abilities, are logged in the XP change table
 * Bug fix: Fixed issue with accessing character generation page if it was set to only allow character gen when logged in
 * Bug fix: Fixed issue with stripping/storing extra slashes in XP pending spend function
+* Bug fix: The title of other character's message can no longer be seen in the archive page
+* Bug fix: Fixed issue where free skills and backgrounds at character gen lose their specialities
+* Bug fix: Fixed issues approving XP where the comment/training info was longer than the database field it was supposed to get saved to
+* Bug fix: Fixed issue where Instinct, etc, was being added to the sheet when the character was being saved
 
 = 2.13 = 
 
