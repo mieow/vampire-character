@@ -381,7 +381,11 @@ function vtm_render_details_section($characterID) {
 	// Query the character table
 	$charTableInfo = array();
 	foreach ($requestChTables as $chartable => $discard) {
-		$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM %i WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
+		if (vtm_column_exists(VTM_TABLE_PREFIX . $chartable, "LEVEL")) {
+			$sql = $wpdb->prepare("SELECT ID,COMMENT,LEVEL FROM %i WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
+		} else {
+		$sql = $wpdb->prepare("SELECT ID,COMMENT FROM %i WHERE CHARACTER_ID = %s",VTM_TABLE_PREFIX . $chartable, $characterID);
+		}
 		//print "SQL: $sql<br>";
 		$charTableInfo[$chartable] = $wpdb->get_results("$sql", OBJECT_K);
 	}
