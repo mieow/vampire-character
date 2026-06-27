@@ -1711,9 +1711,31 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		return $title;
 	}
 
+	function vtm_pm_get_visible_title($postID) {
+		$title = trim(get_the_title($postID));
+		if (empty($title)) {
+			$title = '[No Subject]';
+		}
+		return $title;
+	}
+
+	function vtm_pm_filter_document_title($title) {
+		if (!is_singular('vtmpm')) {
+			return $title;
+		}
+
+		$post = get_queried_object();
+		if (!$post || empty($post->ID)) {
+			return $title;
+		}
+
+		return vtm_pm_get_title_for_current_user($post->ID);
+	}
+	add_filter( 'pre_get_document_title', 'vtm_pm_filter_document_title' );
+
 	function vtm_pm_render_pmhead($postID, $subjecthtag) {
 		$info = vtm_pm_getpostmeta($postID);
-		$title = vtm_pm_get_title_for_current_user($postID);
+		$title = vtm_pm_get_visible_title($postID);
 		//print_r($info);
 		?>
 					<header class="entry-header">
