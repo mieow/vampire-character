@@ -3,7 +3,7 @@ Contributors: magent
 Tags: vampire, character generation, rpg, lrp, larp
 Requires at least: 6.2
 Tested up to: 7.0
-Stable tag: 2.14
+Stable tag: 2.15
 Requires PHP: 8.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -131,6 +131,11 @@ the issue.  Also include any error messages.
 4. Spend Experience
 
 == Changelog ==
+
+= 2.15 =
+
+* Bug fix: Actually fixed seeing the title of other character's message can no longer be seen in the archive page instead of blocking them from seeing all messages
+
 
 = 2.14 =
 
