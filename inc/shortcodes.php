@@ -1455,8 +1455,7 @@ function vtm_print_inbox_summary($atts, $content=null) {
 		$postID = $post->ID;
 		$status = get_post_meta( $postID, '_vtmpm_to_status', true );
 				
-		$title = get_the_title($post);
-		if (empty($title)) {$title = "[No Subject]";}
+		$title = vtm_pm_get_title_for_current_user($postID);
 		
 		$fromid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
 		$authorid = get_post_field( 'post_author', $postID );

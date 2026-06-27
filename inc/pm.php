@@ -42,7 +42,7 @@ function vtm_PM_post_type() {
 		'can_export'          => true,
 		'has_archive'         => false,
 		'exclude_from_search' => true,
-		'publicly_queryable'  => false,
+		'publicly_queryable'  => true,
 		'capability_type'     => 'post',
 		'delete_with_user'    => true,
 		// 'map_meta_cap'        => false,
@@ -70,7 +70,7 @@ function vtm_PM_post_type() {
             'edit_private_posts'     => 'read',
             'edit_published_posts'   => 'read'
         ),
-		//'rewrite' => array('slug' => 'vtmpmxxx'),
+		'rewrite'             => array( 'slug' => 'vtmpm' ),
 	);
 	register_post_type( 'vtmpm', $args );
 
@@ -176,8 +176,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		if ($column_name == 'subject') {
 			
 			$post    = get_post( $post_ID );
-			$subject = esc_attr(get_the_title());
-			$subject = empty($subject) ? '(no title)' : $subject;
+			$subject = esc_attr(vtm_pm_get_title_for_current_user($post_ID));
 			
 			if ($post->post_status == 'publish') {
 				$link = get_permalink($post_ID);
@@ -1673,17 +1672,57 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		
 		return $characterID;
 	}
+	function vtm_pm_can_view_post_title($postID) {
+		$post = get_post($postID);
+		if (!$post || $post->post_type !== 'vtmpm') {
+			return true;
+		}
+
+		if (vtm_isST()) {
+			return true;
+		}
+
+		$current_user = wp_get_current_user();
+		$chid = vtm_pm_getchidfromauthid($current_user->ID);
+		$tochid = get_post_meta( $postID, '_vtmpm_to_characterID', true );
+		$fromchid = get_post_meta( $postID, '_vtmpm_from_characterID', true );
+
+		if ($post->post_author == $current_user->ID) {
+			return true;
+		}
+		if ($chid && $chid == $tochid) {
+			return true;
+		}
+		if ($chid && $chid == $fromchid) {
+			return true;
+		}
+
+		return false;
+	}
+
+	function vtm_pm_get_title_for_current_user($postID) {
+		$title = trim(get_the_title($postID));
+		if (empty($title)) {
+			$title = '[No Subject]';
+		}
+		if (!vtm_pm_can_view_post_title($postID)) {
+			return '[hidden]';
+		}
+		return $title;
+	}
+
 	function vtm_pm_render_pmhead($postID, $subjecthtag) {
 		$info = vtm_pm_getpostmeta($postID);
+		$title = vtm_pm_get_title_for_current_user($postID);
 		//print_r($info);
 		?>
 					<header class="entry-header">
-					<<?php echo esc_html($subjecthtag); ?> class="entry-title"><?php echo esc_html(get_the_title($postID)); ?></<?php echo esc_html($subjecthtag); ?>>
+					<<?php echo esc_html($subjecthtag); ?> class="entry-title"><?php echo esc_html($title); ?></<?php echo esc_html($subjecthtag); ?>>
 					<div class="vtm_pmhead">
 						<span class="vtm_pmhead_to">To: <?php echo esc_html($info['ToFull']); ?></span>
 						<span class="vtm_pmhead_from">From: <?php echo esc_html($info['FromFull']); ?></span>
 						<span class="vtm_pmhead_sent">Sent: <?php echo esc_html(get_the_time( get_option( 'date_format' )) ); ?></span>
-						<span class="vtm_pmhead_subject">Subject: <?php echo esc_html(get_the_title($postID)); ?></span>
+						<span class="vtm_pmhead_subject">Subject: <?php echo esc_html($title); ?></span>
 					</div>
 					</header>
 		<?php
