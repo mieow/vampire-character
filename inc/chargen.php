@@ -1,5 +1,5 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 function vtm_default_chargen_settings() {
 	global $wpdb;
 	global $vtmglobal;
@@ -1567,15 +1567,15 @@ function vtm_render_finishing($step) {
 	// Date of Birth
 	$dob = $wpdb->get_var($wpdb->prepare("SELECT DATE_OF_BIRTH FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ID = %s", $vtmglobal['characterID']));
 	$dob_array = explode('-',$dob);
-	$dob_day   = isset($_POST['day_dob'])   ? $_POST['day_dob']   : (isset($dob) ? date('d', strtotime($dob)) : '');
-	$dob_month = isset($_POST['month_dob']) ? $_POST['month_dob'] : (isset($dob) ? date('m', strtotime($dob)) : '');
+	$dob_day   = isset($_POST['day_dob'])   ? $_POST['day_dob']   : (isset($dob) ? gmdate('d', strtotime($dob)) : '');
+	$dob_month = isset($_POST['month_dob']) ? $_POST['month_dob'] : (isset($dob) ? gmdate('m', strtotime($dob)) : '');
 	$dob_year  = isset($_POST['year_dob'])  ? $_POST['year_dob']  : (isset($dob) ? $dob_array[0] : '');
 	
 	// Date of Embrace
 	$doe = $wpdb->get_var($wpdb->prepare("SELECT DATE_OF_EMBRACE FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ID = %s", $vtmglobal['characterID']));
 	$doe_array = explode('-',$doe);
-	$doe_day   = isset($_POST['day_doe'])   ? $_POST['day_doe']   : (isset($doe) ? date('d', strtotime($doe)) : '');
-	$doe_month = isset($_POST['month_doe']) ? $_POST['month_doe'] : (isset($doe) ? date('m', strtotime($doe)) : '');
+	$doe_day   = isset($_POST['day_doe'])   ? $_POST['day_doe']   : (isset($doe) ? gmdate('d', strtotime($doe)) : '');
+	$doe_month = isset($_POST['month_doe']) ? $_POST['month_doe'] : (isset($doe) ? gmdate('m', strtotime($doe)) : '');
 	$doe_year  = isset($_POST['year_doe'])  ? $_POST['year_doe']  : (isset($doe) ? $doe_array[0] : '');
 	
 	// Sire
@@ -6964,14 +6964,14 @@ function vtm_validate_finishing($usepost = 1) {
 		
 		$dob = $wpdb->get_var($wpdb->prepare("SELECT DATE_OF_BIRTH FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ID = %s", $vtmglobal['characterID']));
 		$dob_array = explode('-',$dob);
-		$dbday_dob   = isset($_POST['day_dob'])   ? $_POST['day_dob']   : (isset($dob) ? date('d', strtotime($dob)) : '');
-		$dbmonth_dob = isset($_POST['month_dob']) ? $_POST['month_dob'] : (isset($dob) ? date('m', strtotime($dob)) : '');
+		$dbday_dob   = isset($_POST['day_dob'])   ? $_POST['day_dob']   : (isset($dob) ? gmdate('d', strtotime($dob)) : '');
+		$dbmonth_dob = isset($_POST['month_dob']) ? $_POST['month_dob'] : (isset($dob) ? gmdate('m', strtotime($dob)) : '');
 		$dbyear_dob  = isset($_POST['year_dob'])  ? $_POST['year_dob']  : (isset($dob) ? $dob_array[0] : '0000');
 		
 		$doe = $wpdb->get_var($wpdb->prepare("SELECT DATE_OF_EMBRACE FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ID = %s", $vtmglobal['characterID']));
 		$doe_array = explode('-',$doe);
-		$dbday_doe   = isset($_POST['day_doe'])   ? $_POST['day_doe']   : (isset($doe) ? date('d', strtotime($doe)) : '');
-		$dbmonth_doe = isset($_POST['month_doe']) ? $_POST['month_doe'] : (isset($doe) ? date('m', strtotime($doe)) : '');
+		$dbday_doe   = isset($_POST['day_doe'])   ? $_POST['day_doe']   : (isset($doe) ? gmdate('d', strtotime($doe)) : '');
+		$dbmonth_doe = isset($_POST['month_doe']) ? $_POST['month_doe'] : (isset($doe) ? gmdate('m', strtotime($doe)) : '');
 		$dbyear_doe  = isset($_POST['year_doe'])  ? $_POST['year_doe']  : (isset($dob) ? $doe_array[0] : '0000');
 		
 		$dbsire = $wpdb->get_var($wpdb->prepare("SELECT SIRE FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE ID = %s", $vtmglobal['characterID']));

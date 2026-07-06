@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 function vtm_character_backgrounds() {
 	if ( !current_user_can( 'manage_options' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );

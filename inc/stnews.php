@@ -1,4 +1,5 @@
 <?php 
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 $vtmglobal['cronbatch'] = 5; // emails per batch
 

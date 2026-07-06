@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_viewcharacter_content_filter($content) {
 
@@ -212,8 +213,8 @@ function vtm_get_viewcharacter_content() {
 	$backgrounds = $mycharacter->getBackgrounds();
 	$disciplines = $mycharacter->getDisciplines();
 	
-	$sql = "SELECT NAME, PARENT_ID FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE;";
-	$allgroups = $wpdb->get_results("$sql");	
+	$sql = "SELECT NAME, PARENT_ID FROM %i";
+	$allgroups = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SKILL_TYPE;"));	
 	
 	$secondarygroups = array();
 	foreach ($allgroups as $group) {

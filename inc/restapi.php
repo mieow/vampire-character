@@ -2,6 +2,7 @@
 /* ---------------------------------------------------------------
 https://developer.wordpress.org/rest-api/extending-the-rest-api/adding-custom-endpoints/
 ------------------------------------------------------------------ */
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 require_once VTM_CHARACTER_URL . 'inc/classes.php';
 
@@ -66,8 +67,8 @@ function vtm_api_get_character (WP_REST_Request $request) {
 function vtm_get_config ($field) {
 
         global $wpdb;
-        $sql = "SELECT $field FROM " . VTM_TABLE_PREFIX . "CONFIG";
-        $configs = $wpdb->get_results("$sql");
+        $sql = "SELECT %i FROM %i";
+        $configs = $wpdb->get_results($wpdb->prepare("$sql", $field, VTM_TABLE_PREFIX . "CONFIG"));
 
         return $configs[0]->$field;
 

@@ -1,5 +1,5 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_get_shortcode_id($base) {
 	static $shortcode_id;

@@ -1,5 +1,5 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 add_action( 'phpmailer_init', 'vtm_phpmailer_setup' );
 function vtm_phpmailer_setup( $phpmailer ) {
 	

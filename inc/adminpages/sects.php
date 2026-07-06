@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 
 function vtm_render_sect_page(){
@@ -44,8 +45,8 @@ function vtm_render_sect_add_form($type, $addaction) {
 		$nextaction = $_REQUEST['action'];
 
 	} elseif ('edit-' . $type == $addaction) {
-		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "SECT WHERE ID = %s";
-		$data =$wpdb->get_row($wpdb->prepare("$sql", $id));
+		$sql = "SELECT * FROM %i WHERE ID = %s";
+		$data =$wpdb->get_row($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $id));
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -219,9 +220,9 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 			
 		} else {
 		
-			$sql = "delete from " . VTM_TABLE_PREFIX . "SECT where ID = %d;";
+			$sql = "delete from %i where ID = %d;";
 			
-			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+			$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $selectedID));
 		
 			echo "<p style='color:green'>Deleted affiliation " . esc_html($selectedID) . "</p>";
 		}
@@ -311,7 +312,7 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 		
 		
 		/* Get the data from the database */
-		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "SECT sects";
+		$sql = "SELECT * FROM %i sects";
 							
 		/* order the data according to sort columns */
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
@@ -319,7 +320,7 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 				
 		//echo "<p>SQL: $sql</p>";
 		
-		$data =$wpdb->get_results("$sql");
+		$data =$wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT"));
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

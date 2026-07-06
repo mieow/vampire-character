@@ -1,5 +1,5 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /* FUNCTIONS
 ----------------------------------------------------------------- */
@@ -1819,7 +1819,7 @@ function vtm_get_field_length($table, $field) {
 	
 	if (is_wp_error($field_length) || $field_length === null) {
 		$field_length = 60;
-		print("<p>Warning: Could not determine field length for $table.$field, defaulting to $field_length</p>");
+		print("<p>Warning: Could not determine field length for " . esc_html("$table.$field") . ", defaulting to " . esc_html($field_length) . "</p>");
 	} else {
 		if (is_array($field_length))
 			$field_length = $field_length['length'];
@@ -1827,5 +1827,20 @@ function vtm_get_field_length($table, $field) {
 			$field_length = $field_length;
 	}
 	return $field_length;
+}
+
+function iso8859_1_to_utf8(string $s): string {
+    $s .= $s;
+    $len = \strlen($s);
+
+    for ($i = $len >> 1, $j = 0; $i < $len; ++$i, ++$j) {
+        switch (true) {
+            case $s[$i] < "\x80": $s[$j] = $s[$i]; break;
+            case $s[$i] < "\xC0": $s[$j] = "\xC2"; $s[++$j] = $s[$i]; break;
+            default: $s[$j] = "\xC3"; $s[++$j] = \chr(\ord($s[$i]) - 64); break;
+        }
+    }
+
+    return substr($s, 0, $j);
 }
 ?>

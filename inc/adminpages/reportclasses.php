@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+
 require_once VTM_CHARACTER_URL . 'inc/classes.php';
 
 class vtmclass_report_flaws extends vtmclass_Report_ListTable {

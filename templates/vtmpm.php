@@ -2,7 +2,7 @@
 /*
 Template Name: Private Message
 */
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 get_header(); ?>
 
 		<div id="primary">

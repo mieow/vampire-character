@@ -1,18 +1,19 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_count_XP4approval() {
 	global $wpdb;
 	
 	$sql = "SELECT COUNT(pxp.ID) as count
 			FROM 
-				" . VTM_TABLE_PREFIX . "PENDING_XP_SPEND pxp,
-				" . VTM_TABLE_PREFIX . "CHARACTER ch,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cs
+				%i pxp,
+				%i ch,
+				%i cs
 			WHERE
 				pxp.CHARACTER_ID = ch.ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results("$sql");
+	$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "PENDING_XP_SPEND", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "CHARGEN_STATUS"));
 	
 	return (count($result) > 0 ? $result[0]->count : 0);
 }
@@ -22,40 +23,37 @@ function vtm_count_BG4approval() {
 	$count = 0;	
 	$sql = "SELECT COUNT(cb.ID) as count
 			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND cb,
-				" . VTM_TABLE_PREFIX . "CHARACTER ch,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cs
+				%i cb,
+				%i ch,
+				%i cs
 			WHERE NOT(cb.PENDING_DETAIL = '') AND cb.DENIED_DETAIL = ''
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND ch.ID = cb.CHARACTER_ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results("$sql");
+	$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "CHARGEN_STATUS"));
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	//echo "<p>SQL: $sql</p>";
 	//print_r($result);
 	
 	$sql = "SELECT COUNT(cm.ID) as count
-			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER_MERIT cm,
-				" . VTM_TABLE_PREFIX . "CHARACTER ch,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cs
+			FROM %i cm, %i ch, %i cs
 			WHERE NOT(cm.PENDING_DETAIL = '') AND cm.DENIED_DETAIL = ''
 				AND ch.ID = cm.CHARACTER_ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results("$sql");
+	$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER_MERIT", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "CHARGEN_STATUS"));
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	
 	$sql = "SELECT COUNT(cxb.ID) as count
 			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER_EXTENDED_BACKGROUND cxb,
-				" . VTM_TABLE_PREFIX . "CHARACTER ch,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cs
+				%i cxb,
+				%i ch,
+				%i cs
 			WHERE NOT(cxb.PENDING_DETAIL = '') AND cxb.DENIED_DETAIL = ''
 				AND ch.ID = cxb.CHARACTER_ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND cs.NAME = 'Approved'";
-	$result = $wpdb->get_results("$sql");
+	$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER_EXTENDED_BACKGROUND", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "CHARGEN_STATUS"));
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	
 	return $count;
@@ -64,15 +62,13 @@ function vtm_count_CharGen4approval() {
 	global $wpdb;
 	
 	$sql = "SELECT COUNT(ch.ID)
-			FROM 
-				" . VTM_TABLE_PREFIX . "CHARACTER ch,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgs
+			FROM %i ch, %i cgs
 			WHERE 
 				cgs.NAME = 'Submitted'
 				AND ch.DELETED = 'N'
 				AND ch.CHARGEN_STATUS_ID = cgs.ID";
 	//echo "<p>SQL: $sql</p>";
-	return $wpdb->get_var("$sql");
+	return $wpdb->get_var($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "CHARGEN_STATUS"));
 }
 
 /* WORDPRESS TOOLBAR 

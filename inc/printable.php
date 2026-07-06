@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 require_once VTM_CHARACTER_URL . 'lib/fpdf.php';
 require_once VTM_CHARACTER_URL . 'inc/classes.php';
 
@@ -82,6 +83,9 @@ function vtm_render_printable($characterID) {
 	global $textrowheight;
 	global $vtmglobal;
 	global $overrun;
+
+	// Initialize date formatter for abbreviated month names
+	$monthFormatter = new IntlDateFormatter(null, IntlDateFormatter::NONE, IntlDateFormatter::NONE, null, null, 'MMM');
 
 	$mycharacter = new vtmclass_character();
 	$mycharacter->load($characterID);
@@ -194,8 +198,8 @@ function vtm_render_printable($characterID) {
 		$primarypaths   = $mycharacter->primary_paths;
 		$secondarypaths = $mycharacter->secondary_paths;
 		
-		$sql = "SELECT NAME, PARENT_ID FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE;";
-		$allgroups = $wpdb->get_results("$sql");	
+		$sql = "SELECT NAME, PARENT_ID FROM %i;";
+		$allgroups = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SKILL_TYPE"));	
 		
 		$secondarygroups = array();
 		foreach ($allgroups as $group) {
@@ -373,9 +377,9 @@ function vtm_render_printable($characterID) {
 		$dob = explode('-',$mycharacter->date_of_birth);
 		$doe = explode('-',$mycharacter->date_of_embrace);
 		$doa = explode('-',$mycharacter->date_of_approval);
-		$dobm = strftime("%b", strtotime($mycharacter->date_of_birth));
-		$doem = strftime("%b", strtotime($mycharacter->date_of_embrace));
-		$doam = strftime("%b", strtotime($mycharacter->date_of_approval));
+		$dobm = $monthFormatter->format(strtotime($mycharacter->date_of_birth));
+		$doem = $monthFormatter->format(strtotime($mycharacter->date_of_embrace));
+		$doam = $monthFormatter->format(strtotime($mycharacter->date_of_approval));
 		
 		$pdf->BasicInfoTableRow( array(
 				'Date of Birth',   ($dob[2] * 1) . " $dobm " . $dob[0],

@@ -1,5 +1,5 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 function vtm_xp_spend_content_filter($content) {
 
   if (is_page(vtm_get_stlink_page('viewXPSpend')) && is_user_logged_in()) {

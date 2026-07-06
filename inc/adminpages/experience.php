@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 /* EXPERIENCE APPROVALS
 ------------------------------------------------------------------- */
@@ -124,10 +125,10 @@ function vtm_render_costmodel_page($type){
 					$ok = 1;
 					
 					/* clans */
-					$sql = "SELECT clans.NAME FROM " . VTM_TABLE_PREFIX . "CLAN clans
+					$sql = "SELECT clans.NAME FROM %i clans
 							WHERE	clans.CLAN_COST_MODEL_ID = %s
 									OR clans.NONCLAN_COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CLAN", $id, $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following clans:";
 						echo "<ul>";
@@ -137,9 +138,9 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* stats */
-					$sql = "SELECT stats.NAME FROM " . VTM_TABLE_PREFIX . "STAT stats
+					$sql = "SELECT stats.NAME FROM %i stats
 							WHERE stats.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "STAT",$id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following attributes:";
 						echo "<ul>";
@@ -149,9 +150,9 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* skills */
-					$sql = "SELECT skills.NAME FROM " . VTM_TABLE_PREFIX . "SKILL skills
+					$sql = "SELECT skills.NAME FROM %i skills
 							WHERE skills.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SKILL", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following abilities:";
 						echo "<ul>";
@@ -161,9 +162,9 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* backgrounds */
-					$sql = "SELECT bgdnds.NAME FROM " . VTM_TABLE_PREFIX . "BACKGROUND bgdnds
+					$sql = "SELECT bgdnds.NAME FROM %i bgdnds
 							WHERE bgdnds.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
+					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "BACKGROUND", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following backgrounds:";
 						echo "<ul>";

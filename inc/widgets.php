@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 include_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
 
@@ -280,11 +281,11 @@ function vtm_get_clan_link() {
 	$characterID = vtm_establishCharacterID($character);
 
 	$sql = "SELECT clans.CLAN_PAGE_LINK 
-			FROM " . $wpdb->prefix . "vtm_CLAN clans,
-				" . $wpdb->prefix . "vtm_CHARACTER characters
+			FROM %i clans,
+				 %i characters
 			WHERE clans.ID = characters.PRIVATE_CLAN_ID
 				AND characters.ID = %d;";
-	$result = $wpdb->get_var($wpdb->prepare("$sql", $characterID));
+	$result = $wpdb->get_var($wpdb->prepare("$sql", $wpdb->prefix . "vtm_CLAN", $wpdb->prefix . "vtm_CHARACTER", $characterID));
 	
 	return $result;
 	
@@ -455,14 +456,14 @@ class StuSolarCalc_Widget extends WP_Widget {
 		
 		$suninfo = date_sun_info(time(), $instance['lat'], $instance['long']);
 		
-		$sunrisetime = date('H:i', $suninfo["sunrise"]);
-		$sunsettime = date('H:i', $suninfo["sunset"]);
-		$civilstart = date('H:i', $suninfo["civil_twilight_begin"]);
-		$civilend = date('H:i', $suninfo["civil_twilight_end"]);
-		$nautstart = date('H:i', $suninfo["nautical_twilight_begin"]);
-		$nautend = date('H:i', $suninfo["nautical_twilight_end"]);
-		$astrostart = date('H:i', $suninfo["astronomical_twilight_begin"]);
-		$astroend = date('H:i', $suninfo["astronomical_twilight_end"]);
+		$sunrisetime = gmdate('H:i', $suninfo["sunrise"]);
+		$sunsettime = gmdate('H:i', $suninfo["sunset"]);
+		$civilstart = gmdate('H:i', $suninfo["civil_twilight_begin"]);
+		$civilend = gmdate('H:i', $suninfo["civil_twilight_end"]);
+		$nautstart = gmdate('H:i', $suninfo["nautical_twilight_begin"]);
+		$nautend = gmdate('H:i', $suninfo["nautical_twilight_end"]);
+		$astrostart = gmdate('H:i', $suninfo["astronomical_twilight_begin"]);
+		$astroend = gmdate('H:i', $suninfo["astronomical_twilight_end"]);
 
 		if ($timeGMT > $astroend) { 
 		$setday = 'Night Time';     

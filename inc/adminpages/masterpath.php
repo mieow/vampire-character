@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_character_master_path() {
 	if ( !current_user_can( 'manage_options' ) )  {
@@ -220,8 +221,8 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
         $hidden = array();
         $sortable = $this->get_sortable_columns();
 		
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "PATH_REASON WHERE NAME = 'Path Change'";
-		$this->defaultreason = $wpdb->get_var("$sql");
+		$sql = "SELECT ID FROM %i WHERE NAME = 'Path Change'";
+		$this->defaultreason = $wpdb->get_var($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "PATH_REASON"));
 		$this->pathreasons = vtm_listPathReasons();
 
 		/* filters */
@@ -233,10 +234,10 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 					paths.name as PATHNAME,
 					SUM(charpaths.AMOUNT) as LEVEL
 				FROM
-					" . VTM_TABLE_PREFIX . "CHARACTER characters,
-					" . VTM_TABLE_PREFIX . "PLAYER players,
-					" . VTM_TABLE_PREFIX . "CHARACTER_ROAD_OR_PATH charpaths,
-					" . VTM_TABLE_PREFIX . "ROAD_OR_PATH paths
+					%i characters,
+					%i players,
+					%i charpaths,
+					%i paths
 				WHERE
 					characters.PLAYER_ID = players.ID
 					AND charpaths.CHARACTER_ID = characters.ID
@@ -251,7 +252,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 		
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
-		$data = $wpdb->get_results($wpdb->prepare("$sql",$filterinfo[1]));
+		$data = $wpdb->get_results($wpdb->prepare("$sql",VTM_TABLE_PREFIX . "CHARACTER",VTM_TABLE_PREFIX . "PLAYER",VTM_TABLE_PREFIX . "CHARACTER_ROAD_OR_PATH",VTM_TABLE_PREFIX . "ROAD_OR_PATH", $filterinfo[1]));
 		
  		
         $current_page = $this->get_pagenum();

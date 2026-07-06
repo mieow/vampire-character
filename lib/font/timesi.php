@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 $type = 'Core';
 $name = 'Times-Italic';
 $up = -100;

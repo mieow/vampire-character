@@ -1,6 +1,10 @@
 <?php
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 // NO TABS IN TABLE DECLARATIONS
+
+# Add new tables for consent form items
+# Add default for new consent page link
+
 
 register_activation_hook(__FILE__, "vtm_character_install");
 register_activation_hook( __FILE__, 'vtm_character_install_data' );
@@ -1223,30 +1227,73 @@ function vtm_character_install_data($initdatapath) {
 		$sql = "select ID from " . VTM_TABLE_PREFIX . $tablename;
 		$rows = vtm_count($wpdb->get_results("$sql"));
 		if (!$rows) {
-			if (file_exists($datafile)) {
-				$filehandle = fopen($datafile,"r");
+			global $wp_filesystem;
+			require_once(ABSPATH . 'wp-admin/includes/file.php');
+			WP_Filesystem();
+			
+			if ($wp_filesystem->is_file($datafile)) {
+				$file_contents = $wp_filesystem->get_contents($datafile);
 				
-				// Read the data file, line by line
-				$i=0;
+				if ($file_contents === false) {
+					error_log("VTM: Could not read data file: $datafile");
+					return;
+				}
+				
+				// Parse CSV data line by line
+				$lines = explode("\n", $file_contents);
+				$i = 0;
 				$data = array();
-				while(! feof($filehandle)) {
-					if ($i == 0) {
+				$headings = array();
+				
+				foreach ($lines as $lineContent) {
+					$lineContent = trim($lineContent);
+					if (empty($lineContent)) {
+						continue;
+					}
+					
+					// Parse CSV line manually to match fgetcsv behavior
+					$fields = array();
+					$field = '';
+					$in_quotes = false;
+					$len = strlen($lineContent);
+					
+					for ($c = 0; $c < $len; $c++) {
+						$char = $lineContent[$c];
+						
+						if ($char === '"') {
+							if ($in_quotes && isset($lineContent[$c + 1]) && $lineContent[$c + 1] === '"') {
+								// Escaped quote
+								$field .= '"';
+								$c++;
+							} else {
+								// Toggle quote state
+								$in_quotes = !$in_quotes;
+							}
+						} elseif ($char === ',' && !$in_quotes) {
+							// Field separator
+							$fields[] = $field;
+							$field = '';
+						} else {
+							$field .= $char;
+						}
+					}
+					$fields[] = $field;
+					
+					if ($i === 0) {
 						// first line is the headings
-						$headings = fgetcsv($filehandle,0,",",'"', "\\");
+						$headings = $fields;
 					} else {
 						// remaining lines are data
-						$line = fgetcsv($filehandle,0,",",'"', "\\");
-						if ($line > 0) {
-							$j=0;
+						if (count($fields) > 0) {
+							$j = 0;
 							foreach ($headings as $heading) {
-								$data[$i-1][$heading] = $line[$j];
+								$data[$i - 1][$heading] = isset($fields[$j]) ? $fields[$j] : '';
 								$j++;
 							}
 						}
 					}
 					$i++;
 				}
-				fclose($filehandle);
 				
 				//if ($tablename == "COMBO_DISCIPLINE")
 				//	print_r($data);
@@ -2183,7 +2230,7 @@ function vtm_export_data($filepath, $dirname) {
 			$success = $wp_filesystem->put_contents( "$path/$filename", $headingrow .$dataout , FS_CHMOD_FILE );
 
 			if ( !$success ) {
-				echo "<p>Error creating $filename file.</p>\n";
+				echo "<p>Error creating " . esc_html($filename) . " file.</p>\n";
 			}
 			
 			// // Open CSV file
@@ -2218,22 +2265,36 @@ function vtm_export_data($filepath, $dirname) {
 	//echo "<p>Creating zip: $zipfilename</p>";
 	$zip = new ZipArchive();
 	chdir($path);
+	
+	global $wp_filesystem;
+	require_once(ABSPATH . 'wp-admin/includes/file.php');
+	WP_Filesystem();
+	
 	//if ($zip->open($zipfilename, ZipArchive::CREATE)) {
-	if ($zip->open($zipfilename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE) === TRUE && is_writable($filepath)) {
+	if ($zip->open($zipfilename, ZIPARCHIVE::CREATE | ZIPARCHIVE::OVERWRITE) === TRUE && $wp_filesystem->is_dir($filepath)) {
 		for ($i = 0 ; $i < count($tables) ; $i++) {
 			$lvl = count($tables) - $i;
 			$tablelist = $tables[$i];
 			for ($id = 0 ; $id < count($tablelist) ; $id++) {
 				$table = $tablelist[$id];
 				$filename = sprintf("%'02s-%'03s.%s.csv", $lvl, $id+1, $table);
-				if (file_exists("$filename") && is_readable("$filename")) {
+				
+				global $wp_filesystem;
+				require_once(ABSPATH . 'wp-admin/includes/file.php');
+				WP_Filesystem();
+				
+				if ($wp_filesystem->is_file("$filename")) {
 					//echo "<li>Adding file (" . ($i + 1) .":" . ($id+1) . "): $filename";
 					//$ok = $zip->addFile("$filename");
-					$contents = file_get_contents($filename);
-					$ok = $zip->addFromString("$dirname/$filename", $contents);
-					if (!$ok) {
-						echo "Failed to add " . esc_html($filename) . " to zip</li>";
-					} 
+					$contents = $wp_filesystem->get_contents("$filename");
+					if ($contents !== false) {
+						$ok = $zip->addFromString("$dirname/$filename", $contents);
+						if (!$ok) {
+							echo "Failed to add " . esc_html($filename) . " to zip</li>";
+						}
+					} else {
+						echo "Failed to read file: " . esc_html("$filename") . "</li>";
+					}
 				} else {
 					echo "<p>Failed to find file: " . esc_html("$path/$filename") . "</p>";
 				}

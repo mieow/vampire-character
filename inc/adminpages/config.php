@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 
 function vtm_character_config() {
@@ -1275,7 +1276,7 @@ function vtm_render_config_database() {
 				?>
 				<form id='options_form' name='import_data_form' method='post' enctype="multipart/form-data">
 				<input type='file' name='vtm_import' id='vtm_import'  multiple='false' />
-				<?php echo wp_nonce_field( 'vtm_import', 'vtm_import_nonce' ); ?>
+				<?php wp_nonce_field( 'vtm_import', 'vtm_import_nonce' ); ?>
 				<input type="submit" name="select_import_data" class="button-primary" value="Import" />
 				</form>
 				<?php

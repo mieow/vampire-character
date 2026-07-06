@@ -1,5 +1,5 @@
 <?php 
-
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 // CODE:
 //	* No spaces
 //	* Alphanumeric characters
@@ -748,8 +748,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$nextaction = $_REQUEST['action'];
 
 		} elseif ('edit-' . $type == $addaction) {
-			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS WHERE ID = %s";
-			$sql = $wpdb->prepare("$sql", $id);
+			$sql = "SELECT * FROM %i WHERE ID = %s";
+			$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESS", $id);
 			$data =$wpdb->get_row("$sql");
 			
 			$name       = $data->NAME;
@@ -871,8 +871,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$nextaction = $_REQUEST['action'];
 
 		} elseif ('edit-' . $type == $addaction) {
-			$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK WHERE ID = %s";
-			$sql = $wpdb->prepare("$sql", $id);
+			$sql = "SELECT * FROM %i WHERE ID = %s";
+			$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK", $id);
 			$data =$wpdb->get_row("$sql");
 			
 			$name       = $data->NAME;
@@ -2458,9 +2458,9 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
  	function delete($selectedID) {
 		global $wpdb;
 		
-		$sql = "delete from " . VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK where ID = %d;";
+		$sql = "delete from %i where ID = %d;";
 			
-		$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER_PM_ADDRESSBOOK", $selectedID));
 		
 		echo "<p style='color:green'>Deleted address " . esc_html($selectedID) . "</p>";
 	}
@@ -2593,8 +2593,8 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 			'postoffice'  => get_option( 'vtm_pm_ic_postoffice_location','Post Office')
 		);
 		
-		$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "PM_TYPE";
-		$this->filter_address_type = vtm_make_filter($wpdb->get_results("$sql"));
+		$sql = "SELECT ID, NAME FROM %i";
+		$this->filter_address_type = vtm_make_filter($wpdb->get_results("$sql", VTM_TABLE_PREFIX. "PM_TYPE"));
 		$this->filter_address_type['0'] = 'Post Office';
 		
 		/* set active filters */
