@@ -46,7 +46,8 @@ function vtm_render_sect_add_form($type, $addaction) {
 
 	} elseif ('edit-' . $type == $addaction) {
 		$sql = "SELECT * FROM %i WHERE ID = %s";
-		$data =$wpdb->get_row($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $id));
+		$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $id);
+		$data = $wpdb->get_row($sql);
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -202,14 +203,12 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 		
 		/* Check if question in use */
 		$sql = "select characters.NAME
-				from 
-					" . VTM_TABLE_PREFIX . "CHARACTER characters,
-					" . VTM_TABLE_PREFIX . "SECT sects
+				from %i characters, %i sects
 				where 
 					characters.SECT_ID = sects.ID 
 					and sects.ID = %d;";
-					
-		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "SECT", $selectedID);
+		$isused = $wpdb->get_results($sql);
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this affiliation has been use for the following characters:";
 			echo "<ul>";
@@ -221,8 +220,8 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 		} else {
 		
 			$sql = "delete from %i where ID = %d;";
-			
-			$result = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $selectedID));
+			$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $selectedID);
+			$result = $wpdb->get_results($sql);
 		
 			echo "<p style='color:green'>Deleted affiliation " . esc_html($selectedID) . "</p>";
 		}
