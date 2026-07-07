@@ -122,8 +122,62 @@ function vtm_establishCharacter($character) {
 	return $character;
 }
 
+function vtm_storyteller_role() {
+	add_role( 'storyteller', 'Storyteller', get_role( 'editor' )->capabilities );
+}
 
+// Add the simple_role.
+add_action( 'init', 'vtm_storyteller_role' );
 
+// view_character - read-only access to character information
+// edit_character - edit characters, including character approvals
+// view_player - read-only access to player information
+// edit_player - edit players, including disabling inactive players
+// manage_xp - assign and approve XP spends
+// character_reports - view reports that include character information, e.g. backgrounds
+// player_reports - view other reports, such as attendance
+// system_config - data tables relating to the V:tM system
+// site_config - data tables and website config and skinning
+// manage_admin - general game admin
+// manage_newsletter - access to send newsletters
+// manage_pms - access to view and send character PMs
+// manage_maps - map data table management
+function vtm_role_caps() {
+	// Gets the simple_role role object.
+	$role = get_role( 'storyteller' );
 
+	// Add a new capability.
+	$role->add_cap( 'vtm_view_character', true );
+	$role->add_cap( 'vtm_edit_character', true );
+	$role->add_cap( 'vtm_view_player', true );
+	$role->add_cap( 'vtm_edit_player', true );
+	$role->add_cap( 'vtm_manage_xp', true );
+	$role->add_cap( 'vtm_character_reports', true );
+	$role->add_cap( 'vtm_player_reports', true );
+	$role->add_cap( 'vtm_system_config', true );
+	$role->add_cap( 'vtm_site_config', true );
+	$role->add_cap( 'vtm_manage_admin', true );
+	$role->add_cap( 'vtm_manage_newsletter', true );
+	$role->add_cap( 'vtm_manage_pms', true );
+	$role->add_cap( 'vtm_manage_maps', true );
+
+	$role = get_role( 'administrator' );
+	$role->add_cap( 'vtm_view_character', true );
+	$role->add_cap( 'vtm_edit_character', true );
+	$role->add_cap( 'vtm_view_player', true );
+	$role->add_cap( 'vtm_edit_player', true );
+	$role->add_cap( 'vtm_manage_xp', true );
+	$role->add_cap( 'vtm_character_reports', true );
+	$role->add_cap( 'vtm_player_reports', true );
+	$role->add_cap( 'vtm_system_config', true );
+	$role->add_cap( 'vtm_site_config', true );
+	$role->add_cap( 'vtm_manage_admin', true );
+	$role->add_cap( 'vtm_manage_newsletter', true );
+	$role->add_cap( 'vtm_manage_pms', true );
+	$role->add_cap( 'vtm_manage_maps', true );
+}
+
+// Add simple_role capabilities, priority must be after the initial role definition.
+add_action( 'init', 'vtm_role_caps', 11 );
 
 ?>
