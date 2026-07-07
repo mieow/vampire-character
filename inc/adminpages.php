@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 require_once VTM_CHARACTER_URL . 'inc/adminpages/reports.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/reportclasses.php';
@@ -22,6 +23,7 @@ require_once VTM_CHARACTER_URL . 'inc/adminpages/tempstats.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/chargentemplates.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/sects.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/skill_types.php';
+require_once VTM_CHARACTER_URL . 'inc/adminpages/consent.php';
 
 if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
@@ -45,37 +47,37 @@ add_action('admin_enqueue_scripts', 'vtm_admin_css');
 function vtm_register_character_settings() {
 	global $wp_roles;
 
-	register_setting( 'vtm_options_group', 'vtm_pdf_title', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
-	register_setting( 'vtm_options_group', 'vtm_pdf_footer', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
-	register_setting( 'vtm_options_group', 'vtm_pdf_titlefont' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_titlecolour' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_divcolour' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_divtextcolour' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_divlinewidth', array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
-	register_setting( 'vtm_options_group', 'vtm_pdf_dotcolour' );
-	register_setting( 'vtm_options_group', 'vtm_pdf_dotlinewidth', array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_title',         array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_footer',        array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_titlefont',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_titlecolour',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color')  );
+	register_setting( 'vtm_options_group', 'vtm_pdf_divcolour',     array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_divtextcolour', array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_divlinewidth',  array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_dotcolour',     array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_pdf_dotlinewidth',  array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
 
-	register_setting( 'vtm_options_group', 'vtm_view_bgcolour' );
+	register_setting( 'vtm_options_group', 'vtm_view_bgcolour',     array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
 	register_setting( 'vtm_options_group', 'vtm_view_dotlinewidth', array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
-	register_setting( 'vtm_options_group', 'vtm_dot1colour' );
-	register_setting( 'vtm_options_group', 'vtm_dot2colour' );
-	register_setting( 'vtm_options_group', 'vtm_dot3colour' );
-	register_setting( 'vtm_options_group', 'vtm_dot4colour' );
-	register_setting( 'vtm_options_group', 'vtm_view_dotcolour' ); // depreciated
-	register_setting( 'vtm_options_group', 'vtm_pend_dotcolour' ); // depreciated
-	register_setting( 'vtm_options_group', 'vtm_xp_dotcolour' ); // depreciated
-	register_setting( 'vtm_options_group', 'vtm_chargen_freebie' ); // depreciated
+	register_setting( 'vtm_options_group', 'vtm_dot1colour',        array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_dot2colour',        array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_dot3colour',        array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_dot4colour',        array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_options_group', 'vtm_view_dotcolour',    array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') ); // depreciated
+	register_setting( 'vtm_options_group', 'vtm_pend_dotcolour',    array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') ); // depreciated
+	register_setting( 'vtm_options_group', 'vtm_xp_dotcolour',      array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') ); // depreciated
+	register_setting( 'vtm_options_group', 'vtm_chargen_freebie',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') ); // depreciated
 	
 	register_setting( 'vtm_options_group', 'vtm_signin_columns', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
-	register_setting( 'vtm_options_group', 'vtm_web_pagewidth' );
-	register_setting( 'vtm_options_group', 'vtm_news_blogroll' );
+	register_setting( 'vtm_options_group', 'vtm_web_pagewidth',  array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_options_group', 'vtm_news_blogroll',  array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); // checkbox
 
 	register_setting( 'vtm_features_group', 'vtm_feature_temp_stats', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_features_group', 'vtm_feature_maps', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_features_group', 'vtm_feature_reports', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_features_group', 'vtm_feature_email', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_features_group', 'vtm_feature_news', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_features_group', 'vtm_feature_pm', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_maps',       array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_reports',    array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_email',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_news',       array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_pm',         array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
 	add_settings_section(
 		'vtmfeatures',
 		"Plugin Features",
@@ -137,62 +139,63 @@ function vtm_register_character_settings() {
 		)
 	);	
 	
-	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_mustbeloggedin' );
-	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_showsecondaries' );
-	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_humanity' );
-	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_emailtag' ); 			// depreciated
-	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_name' ); 	// depreciated
-	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_address' ); 	// depreciated
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_mustbeloggedin',     array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_showsecondaries',    array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_humanity',           array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_emailtag',           array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); 			// depreciated
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_name',    array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); 	// depreciated
+	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_email_from_address', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); 	// depreciated
 	
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_mobile_prefix' );
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_landline_prefix' );
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_telephone_digits' );
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_postcode_prefix' );
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_location' );
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_enabled' );
-	register_setting( 'vtm_pm_options_group', 'vtm_pm_send_to_dead_characters' );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_mobile_prefix',           array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_landline_prefix',         array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_telephone_digits',        array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_postcode_prefix',         array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_location',  array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_ic_postoffice_enabled',   array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
+	register_setting( 'vtm_pm_options_group', 'vtm_pm_send_to_dead_characters', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
 	
-	register_setting( 'vtm_email_options_group', 'vtm_emailtag' );
-	register_setting( 'vtm_email_options_group', 'vtm_email_debug' );
-	register_setting( 'vtm_email_options_group', 'vtm_replyto_name' );
-	register_setting( 'vtm_email_options_group', 'vtm_replyto_address' );
-	register_setting( 'vtm_email_options_group', 'vtm_method' );
-	register_setting( 'vtm_email_options_group', 'vtm_smtp_host' );
-	register_setting( 'vtm_email_options_group', 'vtm_smtp_port' );
-	register_setting( 'vtm_email_options_group', 'vtm_smtp_username' );
-	register_setting( 'vtm_email_options_group', 'vtm_smtp_pw' );
-	register_setting( 'vtm_email_options_group', 'vtm_smtp_auth' );
-	register_setting( 'vtm_email_options_group', 'vtm_smtp_secure' );
-	register_setting( 'vtm_email_options_group', 'vtm_email_signature' );
-	register_setting( 'vtm_email_options_group', 'vtm_email_font' );
-	register_setting( 'vtm_email_options_group', 'vtm_email_background' );
-	register_setting( 'vtm_email_options_group', 'vtm_email_textcolor' );
-	register_setting( 'vtm_email_options_group', 'vtm_email_linecolor' );
+	register_setting( 'vtm_email_options_group', 'vtm_emailtag',  array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_email_options_group', 'vtm_email_debug',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_replyto_name',     array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_email_options_group', 'vtm_replyto_address',  array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_email_options_group', 'vtm_method',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_smtp_host',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_smtp_port',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_smtp_username',  array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_email_options_group', 'vtm_smtp_pw',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_smtp_auth',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_smtp_secure',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_email_signature',   array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_email_options_group', 'vtm_email_font',        array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_email_options_group', 'vtm_email_background',  array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_email_textcolor',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
+	register_setting( 'vtm_email_options_group', 'vtm_email_linecolor',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );
 
-	register_setting( 'vtm_profile_options_group', 'vtm_max_width' );
-	register_setting( 'vtm_profile_options_group', 'vtm_max_height' );
-	register_setting( 'vtm_profile_options_group', 'vtm_max_size' );
-	register_setting( 'vtm_profile_options_group', 'vtm_user_set_image' );
-	register_setting( 'vtm_profile_options_group', 'vtm_user_upload_image' );
-	register_setting( 'vtm_profile_options_group', 'vtm_image_effect' );
-	register_setting( 'vtm_profile_options_group', 'vtm_user_set_quote' );
+	register_setting( 'vtm_profile_options_group', 'vtm_max_width',         array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_profile_options_group', 'vtm_max_height',        array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_profile_options_group', 'vtm_max_size',          array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );
+	register_setting( 'vtm_profile_options_group', 'vtm_user_set_image',    array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
+	register_setting( 'vtm_profile_options_group', 'vtm_user_upload_image', array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
+	register_setting( 'vtm_profile_options_group', 'vtm_image_effect',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_profile_options_group', 'vtm_user_set_quote',    array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
 	
-	register_setting( 'feedingmap_options_group', 'feedingmap_google_api' );  // google api key
-	register_setting( 'feedingmap_options_group', 'feedingmap_centre_lat' );  // centre point, latitude
-	register_setting( 'feedingmap_options_group', 'feedingmap_centre_long' ); // centre point, latitude
-	register_setting( 'feedingmap_options_group', 'feedingmap_zoom' );        // zoom
-	register_setting( 'feedingmap_options_group', 'feedingmap_map_type' );    // map type
+	register_setting( 'feedingmap_options_group', 'feedingmap_google_api',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );  // google api key
+	register_setting( 'feedingmap_options_group', 'feedingmap_centre_lat',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') );  // centre point, latitude
+	register_setting( 'feedingmap_options_group', 'feedingmap_centre_long',   array('type'=>'string', 'sanitize_callback'=>'sanitize_hex_color') ); // centre point, latitude
+	register_setting( 'feedingmap_options_group', 'feedingmap_zoom',       array('type'=>'number', 'sanitize_callback'=>'sanitize_text_field') );        // zoom
+	register_setting( 'feedingmap_options_group', 'feedingmap_map_type',   array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );    // map type
 
 	// PAGE LINKS
 	
-	register_setting( 'vtm_links_group', 'vtm_link_editCharSheet' );
-	register_setting( 'vtm_links_group', 'vtm_link_viewCharSheet' );
-	register_setting( 'vtm_links_group', 'vtm_link_printCharSheet' );
-	register_setting( 'vtm_links_group', 'vtm_link_viewCustom' );
-	register_setting( 'vtm_links_group', 'vtm_link_viewProfile' );
-	register_setting( 'vtm_links_group', 'vtm_link_viewXPSpend' );
-	register_setting( 'vtm_links_group', 'vtm_link_viewExtBackgrnd' );
-	register_setting( 'vtm_links_group', 'vtm_link_viewCharGen' );
+	register_setting( 'vtm_links_group', 'vtm_link_editCharSheet',   array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCharSheet',   array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_printCharSheet',  array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCustom',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewProfile',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewXPSpend',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewExtBackgrnd', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCharGen',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_editConsent',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
 
 	add_settings_section(
 		'vtmpagelinks',
@@ -271,6 +274,15 @@ function vtm_register_character_settings() {
 			'label_for'         => 'vtm_link_viewCustom',
 			'newpagename'       => 'My Character'
 		)
+	);		
+	add_settings_field(
+		'vtm_link_editConsent',
+		'Consent Page',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_editConsent',
+			'newpagename'       => 'Consent Form'
+		)
 	);	
 	
 }
@@ -284,42 +296,31 @@ add_filter( 'pre_update_option_vtm_link_viewXPSpend',     'pre_update_vtm_link_c
 add_filter( 'pre_update_option_vtm_link_viewProfile',     'pre_update_vtm_link_cb', 10, 3);
 add_filter( 'pre_update_option_vtm_link_printCharSheet',  'pre_update_vtm_link_cb', 10, 3);
 add_filter( 'pre_update_option_vtm_link_viewCharSheet',   'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_editConsent',     'pre_update_vtm_link_cb', 10, 3);
 
-/* function vtm_gvcharacter_options_validate($input) {
-
-	global $wp_roles;
-
-	$options = get_option('vtm_plugin_options');
-	
-	$options['title'] = trim($input['title']);
-	
-	
-	return $options;
-}
-*/
 
 /* ADMIN MENUS
 ----------------------------------------------------------------- */
 
 function vtm_register_character_menu() {
-	add_menu_page( "Character Plugin Options", "Characters", "manage_options", "character-plugin", "vtm_character_options");
-	add_submenu_page( "character-plugin", "Character Admin",     "Character Admin",     "manage_options", "character-plugin",    "vtm_character_options" );  
-	add_submenu_page( "character-plugin", "Character Approval",  "Character Approval",  "manage_options", "vtmcharacter-chargen","vtm_character_chargen_approval" );  
-	add_submenu_page( "character-plugin", "Player Admin",        "Player Admin",        "manage_options", "vtmcharacter-player", "vtm_character_players" );  
-	add_submenu_page( "character-plugin", "Assign XP",           "Assign XP",           "manage_options", "vtmcharacter-xpassign",  "vtm_character_xp_assign" );  
-	add_submenu_page( "character-plugin", "XP Approval",         "XP Approval",         "manage_options", "vtmcharacter-xp",     "vtm_character_experience" );  
-	add_submenu_page( "character-plugin", "Backgrounds",         "Backgrounds",         "manage_options", "vtmcharacter-bg",     "vtm_character_backgrounds" );  
-	add_submenu_page( "character-plugin", "Path Changes",        "Path Changes",        "manage_options", "vtmcharacter-paths",  "vtm_character_master_path" );  
+	add_menu_page( "Character Plugin Options", "Characters", "vtm_view_character", "character-plugin", "vtm_character_options");
+	add_submenu_page( "character-plugin", "Character Admin",     "Character Admin",     "vtm_view_character", "character-plugin",    "vtm_character_options" );  
+	add_submenu_page( "character-plugin", "Character Approval",  "Character Approval",  "vtm_edit_character", "vtmcharacter-chargen","vtm_character_chargen_approval" );  
+	add_submenu_page( "character-plugin", "Player Admin",        "Player Admin",        "vtm_view_player", "vtmcharacter-player", "vtm_character_players" );  
+	add_submenu_page( "character-plugin", "Assign XP",           "Assign XP",           "vtm_manage_xp", "vtmcharacter-xpassign",  "vtm_character_xp_assign" );  
+	add_submenu_page( "character-plugin", "XP Approval",         "XP Approval",         "vtm_manage_xp", "vtmcharacter-xp",     "vtm_character_experience" );  
+	add_submenu_page( "character-plugin", "Backgrounds",         "Backgrounds",         "vtm_edit_character", "vtmcharacter-bg",     "vtm_character_backgrounds" );  
+	add_submenu_page( "character-plugin", "Path Changes",        "Path Changes",        "vtm_edit_character", "vtmcharacter-paths",  "vtm_character_master_path" );  
 	if (get_option( 'vtm_feature_temp_stats', '0' ) == 1)
-		add_submenu_page( "character-plugin", "Stat Changes",        "Stat Changes",        "manage_options", "vtmcharacter-stats",  "vtm_character_temp_stats" );  
+		add_submenu_page( "character-plugin", "Stat Changes",        "Stat Changes",        "vtm_edit_character", "vtmcharacter-stats",  "vtm_character_temp_stats" );  
 	if (get_option( 'vtm_feature_reports', '0' ) == 1)
-		add_submenu_page( "character-plugin", "Reports",             "Reports",             "manage_options", "vtmcharacter-report", "vtm_character_reports" );  
-	add_submenu_page( "character-plugin", "Database Tables",     "Data Tables",         "manage_options", "vtmcharacter-data",   "vtm_character_datatables" );  
+		add_submenu_page( "character-plugin", "Reports",             "Reports",             "vtm_reports", "vtmcharacter-report", "vtm_character_reports" );  
+	add_submenu_page( "character-plugin", "Database Tables",     "Data Tables",         "vtm_system_config", "vtmcharacter-data",   "vtm_character_datatables" );  
 	add_submenu_page(
 		"character-plugin",
 		"Configuration",
 		"Configuration",
-		"manage_options",
+		"vtm_site_config",
 		"vtmcharacter-config",
 		"vtm_character_config"
 	);  
@@ -327,7 +328,7 @@ function vtm_register_character_menu() {
 	add_options_page(
 		"Configuration",
 		"Character Options",
-		'manage_options',
+		'vtm_site_config',
 		'vtmoptions',
 		'vtm_render_config_options'
 	);
@@ -416,7 +417,7 @@ function vtm_get_option_tablink($tab, $text, $default = ""){
 -------------------------------------------------- */
 function vtm_character_datatables() {
 	global $vtmglobal;
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_system_config' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
@@ -445,6 +446,7 @@ function vtm_character_datatables() {
 			<?php echo wp_kses(vtm_get_tablink('combo',       'Combination Disciplines'), vtm_tablink_allowedhtml()); ?>
 			<?php echo wp_kses(vtm_get_tablink('generation',  'Generation'), vtm_tablink_allowedhtml()); ?>
 			<?php echo wp_kses(vtm_get_tablink('template',    'Character Templates'), vtm_tablink_allowedhtml()); ?>
+			<?php echo wp_kses(vtm_get_tablink('consent',     'Consent Form'), vtm_tablink_allowedhtml()); ?>
 			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo wp_kses(vtm_get_tablink('mapowner', 'Map Owners'), vtm_tablink_allowedhtml()); ?>
 			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo wp_kses(vtm_get_tablink('mapdomain','Map Locations'), vtm_tablink_allowedhtml()); ?>
 		</h2>
@@ -525,6 +527,9 @@ function vtm_character_datatables() {
 				break;
 			case 'sect':
 				vtm_render_sect_page();
+				break;
+			case 'consent':
+				vtm_render_consent_page();
 				break;
 			default:
 				vtm_render_stat_page("stat");
