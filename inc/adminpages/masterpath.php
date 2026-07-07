@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_character_master_path() {
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_system_config' ) )  {
 		wp_die('You do not have sufficient permissions to access this page.' );
 	}
 	?>
@@ -222,7 +222,8 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
         $sortable = $this->get_sortable_columns();
 		
 		$sql = "SELECT ID FROM %i WHERE NAME = 'Path Change'";
-		$this->defaultreason = $wpdb->get_var($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "PATH_REASON"));
+		$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "PATH_REASON");
+		$this->defaultreason = $wpdb->get_var("$sql");
 		$this->pathreasons = vtm_listPathReasons();
 
 		/* filters */
@@ -233,11 +234,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
 					characters.name as CHARACTERNAME,
 					paths.name as PATHNAME,
 					SUM(charpaths.AMOUNT) as LEVEL
-				FROM
-					%i characters,
-					%i players,
-					%i charpaths,
-					%i paths
+				FROM %i characters, %i players, %i charpaths, %i paths
 				WHERE
 					characters.PLAYER_ID = players.ID
 					AND charpaths.CHARACTER_ID = characters.ID

@@ -952,6 +952,15 @@ class vtmclass_WP_List_Table extends WP_List_Table {
 class vtmclass_MultiPage_ListTable extends vtmclass_WP_List_Table {
 
 	protected $type;
+	var $filter_visible;
+	var $filter_multiple;
+	var $filter_group;
+	var $active_filter_visible;
+	var $active_filter_multiple;
+	var $active_filter_group;
+	var $filter_type;
+	var $filter_status;
+
       
     function column_cb($item){
         return sprintf(

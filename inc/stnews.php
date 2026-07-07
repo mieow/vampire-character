@@ -38,7 +38,8 @@ function vtm_news_post_type() {
 		'has_archive'         => true,
 		'exclude_from_search' => false,
 		'publicly_queryable'  => true,
-		'capability_type'     => 'post'
+		'capability_type'     => array('vtmnews', 'vtmnews'),
+		#'map_meta_cap'        => true
 	);
 	register_post_type( 'vtmpost', $args );
 
@@ -178,11 +179,11 @@ if (get_option( 'vtm_feature_news', '0' ) == '1') {
 
 		// Check the user's permissions.
 		if ( isset( $_POST['post_type'] ) && 'page' == $_POST['post_type'] ) {
-			if ( ! current_user_can( 'edit_page', $post_id ) ) {
+			if ( ! current_user_can( 'vtm_manage_newsletter', $post_id ) ) {
 				return;
 			}
 		} else {
-			if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			if ( ! current_user_can( 'vtm_manage_newsletter', $post_id ) ) {
 				return;
 			}
 		}

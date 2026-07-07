@@ -5,10 +5,7 @@ function vtm_count_XP4approval() {
 	global $wpdb;
 	
 	$sql = "SELECT COUNT(pxp.ID) as count
-			FROM 
-				%i pxp,
-				%i ch,
-				%i cs
+			FROM %i pxp, %i ch, %i cs
 			WHERE
 				pxp.CHARACTER_ID = ch.ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
@@ -22,10 +19,7 @@ function vtm_count_BG4approval() {
 	
 	$count = 0;	
 	$sql = "SELECT COUNT(cb.ID) as count
-			FROM 
-				%i cb,
-				%i ch,
-				%i cs
+			FROM %i cb, %i ch, %i cs
 			WHERE NOT(cb.PENDING_DETAIL = '') AND cb.DENIED_DETAIL = ''
 				AND ch.CHARGEN_STATUS_ID = cs.ID
 				AND ch.ID = cb.CHARACTER_ID
@@ -45,10 +39,7 @@ function vtm_count_BG4approval() {
 	$count += count($result) > 0 ? $result[0]->count : 0;
 	
 	$sql = "SELECT COUNT(cxb.ID) as count
-			FROM 
-				%i cxb,
-				%i ch,
-				%i cs
+			FROM %i cxb, %i ch, %i cs
 			WHERE NOT(cxb.PENDING_DETAIL = '') AND cxb.DENIED_DETAIL = ''
 				AND ch.ID = cxb.CHARACTER_ID
 				AND ch.CHARGEN_STATUS_ID = cs.ID
@@ -75,7 +66,7 @@ function vtm_count_CharGen4approval() {
 ----------------------------------------------------------------- */
 function vtm_toolbar_link_admin( $wp_admin_bar ) {
 
-	if ( current_user_can( 'manage_options' ) )  {
+	if ( current_user_can( 'vtm_view_character' ) )  {
 		$args = array(
 			'id'    => 'vtmcharacters',
 			'title' => 'Characters',
@@ -91,7 +82,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_view_character' ) )
+			$wp_admin_bar->add_node( $args );
 		
 		$args = array(
 			'id'    => 'vtmplayers',
@@ -100,7 +92,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_view_player' ) )
+			$wp_admin_bar->add_node( $args );
 		
 		$args = array(
 			'id'    => 'vtmbg',
@@ -109,7 +102,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_edit_player' ) )
+			$wp_admin_bar->add_node( $args );
 		
 		$args = array(
 			'id'    => 'vtmchargen',
@@ -118,7 +112,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_edit_player' ) )
+			$wp_admin_bar->add_node( $args );
 		
 		$args = array(
 			'id'    => 'vtmspendxp',
@@ -127,7 +122,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_manage_xp' ) )
+			$wp_admin_bar->add_node( $args );
 		
 		$args = array(
 			'id'    => 'vtmassignxp',
@@ -136,7 +132,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_manage_xp' ) )
+			$wp_admin_bar->add_node( $args );
 
 		$args = array(
 			'id'    => 'vtmdata',
@@ -145,7 +142,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		); 
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_system_config' ) )
+			$wp_admin_bar->add_node( $args );
 
 		if ( get_option( 'vtm_feature_reports', '0' ) == 1) {
 			$args = array(
@@ -155,7 +153,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 				'parent' => 'vtmcharacters',
 				'meta'  => array( 'class' => 'vtm-toolbar-page' )
 			);
-			$wp_admin_bar->add_node( $args );
+			if ( current_user_can( 'vtm_reports' ) )
+				$wp_admin_bar->add_node( $args );
 		}
 		
 		$args = array(
@@ -165,7 +164,8 @@ function vtm_toolbar_link_admin( $wp_admin_bar ) {
 			'parent' => 'vtmcharacters',
 			'meta'  => array( 'class' => 'vtm-toolbar-page' )
 		);
-		$wp_admin_bar->add_node( $args );
+		if ( current_user_can( 'vtm_site_config' ) )
+			$wp_admin_bar->add_node( $args );
 	}
 }
 add_action( 'admin_bar_menu', 'vtm_toolbar_link_admin', 999 );

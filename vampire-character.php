@@ -86,29 +86,43 @@ add_action('admin_enqueue_scripts', 'vtm_feedingmap_scripts');
 
 /* FUNCTIONS
 ------------------------------------------------------ */
-function vtm_isST() {
+function vtm_isST($capability = "") {
 	$current_user = wp_get_current_user();
 	$result = false;
-	$roles = $current_user->roles;
 
-	foreach ($roles as $current_role) {
-		if ($current_role == "administrator"
-			|| $current_role == "storyteller") {
-			$result = true;
+	// If a specific capability has not been mentioned
+	// then go by if the user is an ST or admin
+	if ($capability == "") {
+		$roles = $current_user->roles;
+
+		foreach ($roles as $current_role) {
+			if ($current_role == "administrator"
+				|| $current_role == "storyteller") {
+				$result = true;
+			}
 		}
+
+	} else {
+		$result = current_user_can($capability);
 	}
+
 	return $result;
 }
 
-function vtm_establishCharacter($character) {
-	global $vtmglobal;
+function vtm_establishCharacter($character, $capability = "vtm_view_character") {
+	global $vtmglobal, $wpdb;
 	$current_user = wp_get_current_user();
-	if (vtm_isST()) {
+	if (vtm_isST($capability)) {
 		if (isset($_POST['VTM_CHARACTER'])) {
 			$character = $_POST['VTM_CHARACTER'];
 		}
 		elseif (isset($_GET['CHARACTER'])) {
 			$character = $_GET['CHARACTER'];
+		}
+		elseif (isset($_GET['characterID'])) {
+			$sql = "SELECT wordpress_id FROM %i WHERE ID = %s";
+			$sql = $wpdb->prepare($sql, $wpdb->prefix . "vtm_CHARACTER", $_GET['characterID']);
+			$character = $wpdb->get_var("$sql");
 		}
 		elseif ($character == null || $character == "null" || $character == "") {
 			$character = $current_user->user_login;
@@ -152,14 +166,18 @@ function vtm_role_caps() {
 	$role->add_cap( 'vtm_view_player', true );
 	$role->add_cap( 'vtm_edit_player', true );
 	$role->add_cap( 'vtm_manage_xp', true );
-	$role->add_cap( 'vtm_character_reports', true );
-	$role->add_cap( 'vtm_player_reports', true );
+	$role->add_cap( 'vtm_reports', true );
 	$role->add_cap( 'vtm_system_config', true );
 	$role->add_cap( 'vtm_site_config', true );
 	$role->add_cap( 'vtm_manage_admin', true );
-	$role->add_cap( 'vtm_manage_newsletter', true );
 	$role->add_cap( 'vtm_manage_pms', true );
 	$role->add_cap( 'vtm_manage_maps', true );
+	$role->add_cap( 'edit_vtmnews', true );
+	$role->add_cap( 'edit_others_vtmnews', true );
+	$role->add_cap( 'delete_vtmnews', true );
+	$role->add_cap( 'publish_vtmnews', true );
+	$role->add_cap( 'read_private_vtmnews', true );
+
 
 	$role = get_role( 'administrator' );
 	$role->add_cap( 'vtm_view_character', true );
@@ -167,14 +185,17 @@ function vtm_role_caps() {
 	$role->add_cap( 'vtm_view_player', true );
 	$role->add_cap( 'vtm_edit_player', true );
 	$role->add_cap( 'vtm_manage_xp', true );
-	$role->add_cap( 'vtm_character_reports', true );
-	$role->add_cap( 'vtm_player_reports', true );
+	$role->add_cap( 'vtm_reports', true );
 	$role->add_cap( 'vtm_system_config', true );
 	$role->add_cap( 'vtm_site_config', true );
 	$role->add_cap( 'vtm_manage_admin', true );
-	$role->add_cap( 'vtm_manage_newsletter', true );
 	$role->add_cap( 'vtm_manage_pms', true );
 	$role->add_cap( 'vtm_manage_maps', true );
+	$role->add_cap( 'edit_vtmnews', true );
+	$role->add_cap( 'edit_others_vtmnews', true );
+	$role->add_cap( 'delete_vtmnews', true );
+	$role->add_cap( 'publish_vtmnews', true );
+	$role->add_cap( 'read_private_vtmnews', true );
 }
 
 // Add simple_role capabilities, priority must be after the initial role definition.

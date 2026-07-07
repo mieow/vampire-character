@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_character_players() {
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_view_player' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
@@ -22,19 +22,21 @@ function vtm_render_player_data(){
     $testListTable = new vtmclass_admin_players_table();
 	$doaction = vtm_player_input_validation();
 	
- 	if ($doaction == "add-player") {
-		$testListTable->add($_REQUEST['player_name'], $_REQUEST['player_type'], $_REQUEST['player_active']);
-	}
-	if ($doaction == "save-player") { 
-		$testListTable->edit($_REQUEST['player_id'], $_REQUEST['player_name'], $_REQUEST['player_type'], $_REQUEST['player_active']);
-	}
-	if ($doaction == "confirm-delete-player") { 
-		vtm_player_delete($_REQUEST['player_id']);
-	}
-	if ($doaction == "delete-player") { 
-		$testListTable->deleteplayer($_REQUEST['player']);
-	} else {
-		vtm_render_player_add_form($doaction); 
+	if (current_user_can('vtm_edit_player')) {
+		if ($doaction == "add-player") {
+			$testListTable->add($_REQUEST['player_name'], $_REQUEST['player_type'], $_REQUEST['player_active']);
+		}
+		if ($doaction == "save-player") { 
+			$testListTable->edit($_REQUEST['player_id'], $_REQUEST['player_name'], $_REQUEST['player_type'], $_REQUEST['player_active']);
+		}
+		if ($doaction == "confirm-delete-player") { 
+			vtm_player_delete($_REQUEST['player_id']);
+		}
+		if ($doaction == "delete-player") { 
+			$testListTable->deleteplayer($_REQUEST['player']);
+		} else {
+			vtm_render_player_add_form($doaction); 
+		}		
 	}
 	
 	$testListTable->prepare_items();
@@ -329,7 +331,12 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 			$list = vtm_listCharactersForPlayer($item->ID);
 			$a = array();
 			foreach ($list as $char) {
-				$name = "<a href='" . vtm_get_stlink_url('editCharSheet') . "?characterID={$char->ID}'>{$char->NAME}</a>";
+				if (current_user_can('vtm_edit_character'))
+					$name = "<a href='" . vtm_get_stlink_url('editCharSheet') . "?characterID={$char->ID}'>{$char->NAME}</a>";
+				elseif (current_user_can('vtm_view_character'))
+					$name = "<a href='" . vtm_get_stlink_url('viewCharSheet') . "?characterID={$char->ID}'>{$char->NAME}</a>";
+				else
+					$name = $char->NAME;
 				if ($char->VISIBLE == 'N')
 					$name =  $name . " (hidden)";
 				
@@ -344,11 +351,14 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
  
     function column_name($item){
         
-        $actions = array(
-            'edit'      => sprintf('<a href="?page=%s&amp;action=%s&amp;player=%s">Edit</a>',$_REQUEST['page'],'edit',$item->ID),
-            'delete'    => sprintf('<a href="?page=%s&amp;action=%s&amp;player=%s">Delete</a>',$_REQUEST['page'],'delete',$item->ID),
-       );
-        
+		if (current_user_can( 'vtm_edit_player' )) {
+			$actions = array(
+				'edit'      => sprintf('<a href="?page=%s&amp;action=%s&amp;player=%s">Edit</a>',$_REQUEST['page'],'edit',$item->ID),
+				'delete'    => sprintf('<a href="?page=%s&amp;action=%s&amp;player=%s">Delete</a>',$_REQUEST['page'],'delete',$item->ID),
+			);			
+		} else {
+			$actions = [];
+		} 
         
         return sprintf('%1$s <span style="color:silver">(id:%2$s)</span>%3$s',
             esc_html($item->NAME),
@@ -381,17 +391,27 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 	
     function get_bulk_actions() {
 		global $wpdb;
-		$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
-		$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Inactive'));
-	
-        $actions = array(
-            $activeid    => 'Activate',
-			$inactiveid  => 'Deactivate'
-       );
+		if (current_user_can( 'vtm_edit_player' )) {
+			$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
+			$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Inactive'));
+		
+			$actions = array(
+				$activeid    => 'Activate',
+				$inactiveid  => 'Deactivate'
+			);			
+		} else {
+			$actions = [];
+		}
+
         return $actions;
     }
     function process_bulk_action() {
  		global $wpdb;
+
+		if (!current_user_can( 'vtm_edit_player' )) {
+			return;
+		}
+
 		$activeid   = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
 		$inactiveid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Inactive'));
        
@@ -420,21 +440,21 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 	function extra_tablenav($which) {
 		if ($which == 'top') {
 
-			echo "<div class='gvfilter'>";
+			echo "<div class='gvfilter'>\n";
 			/* Select player type */
-			echo "<label>Player Type: </label>";
+			echo "<label for='playertype_filter'>Player Type: </label>\n";
 			if ( !empty( $this->filter_type ) ) {
-				echo "<select name='playertype_filter'>";
+				echo "<select name='playertype_filter'>\n";
 				foreach( $this->filter_type as $key => $value ) {
 					echo '<option value="' . esc_attr( $key ) . '" ';
 					selected( $this->active_playertype, $key );
-					echo '>' . esc_html( $value ) . '</option>';
+					echo '>' . esc_html( $value ) . '</option>\n';
 				}
-				echo '</select>';
+				echo "</select>\n";
 			}
 			
 			/* Select player status */
-			echo "<label>Player Status:</label>";
+			echo "<label for='playerstatus_filter'>Player Status:</label>";
 			if ( !empty( $this->filter_status ) ) {
 				echo "<select name='playerstatus_filter'>";
 				foreach( $this->filter_status as $key => $value ) {

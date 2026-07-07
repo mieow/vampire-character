@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
 function vtm_character_reports () {
 
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_reports' ) )  {
 		wp_die( esc_html(__( 'You do not have sufficient permissions to access this page.', 'vampire-character' ) ));
 	}
 
@@ -29,35 +29,39 @@ function vtm_render_select_report($report) {
 	echo "<form id='select_report_form' method='post'>\n";
 	echo "<select name='report'>\n";
 	echo "<option value='0'>[Select Report]</option>\n";
-	
-	echo "<option value='meritflaw_report' ";
-	selected($report,'meritflaw_report');
-	echo ">Merits and Flaws</option>\n";
-	
-	echo "<option value='quotes_report' ";
-	selected($report,'quotes_report');
-	echo ">Profile Quotes</option>\n";
-	
-	echo "<option value='prestige_report' ";
-	selected($report,'prestige_report');
-	echo ">Clan Prestige</option>\n";
-	
-	echo "<option value='signin_report' ";
-	selected($report,'signin_report');
-	echo ">Signin Sheet</option>\n";
-	
-	echo "<option value='sect_report' ";
-	selected($report,'sect_report');
-	echo ">Affiliation List</option>\n";
 
-	echo "<option value='sector_report' ";
-	selected($report,'sector_report');
-	echo ">Sectors & Backgrounds</option>\n";
+	if (current_user_can('vtm_view_player')) {
+		echo "<option value='signin_report' ";
+		selected($report,'signin_report');
+		echo ">Signin Sheet</option>\n";
 
-	echo "<option value='activity_report' ";
-	selected($report,'activity_report');
-	echo ">Character Activity</option>\n";
+		echo "<option value='activity_report' ";
+		selected($report,'activity_report');
+		echo ">Character Activity</option>\n";
+	}
 
+	if (current_user_can('vtm_view_character')) {
+		echo "<option value='meritflaw_report' ";
+		selected($report,'meritflaw_report');
+		echo ">Merits and Flaws</option>\n";
+
+		echo "<option value='quotes_report' ";
+		selected($report,'quotes_report');
+		echo ">Profile Quotes</option>\n";
+		
+		echo "<option value='prestige_report' ";
+		selected($report,'prestige_report');
+		echo ">Clan Prestige</option>\n";
+
+		echo "<option value='sect_report' ";
+		selected($report,'sect_report');
+		echo ">Affiliation List</option>\n";
+
+		echo "<option value='sector_report' ";
+		selected($report,'sector_report');
+		echo ">Sectors & Backgrounds</option>\n";
+	}
+	
 	echo "</select>\n";
 	echo "<input type='submit' name='submit_report' class='button-primary' value='Display Report' />\n";
 	echo "</form>\n";

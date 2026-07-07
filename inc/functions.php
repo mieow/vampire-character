@@ -1,5 +1,8 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+if(!function_exists('wp_get_current_user')) {
+    include(ABSPATH . "wp-includes/pluggable.php"); 
+}
 
 /* FUNCTIONS
 ----------------------------------------------------------------- */
@@ -959,7 +962,7 @@ function vtm_get_character_email($characterID) {
     }
 
 
-    function vtm_establishCharacterID($character = '') {
+    function vtm_establishCharacterID($character = '', $capability = "vtm_view_character") {
         global $wpdb;
 		global $vtmglobal;
 
@@ -1842,5 +1845,19 @@ function iso8859_1_to_utf8(string $s): string {
     }
 
     return substr($s, 0, $j);
+}
+
+function vtm_canDo($character, $capability = 'vtm_view_character') {
+	global $vtmglobal;
+
+	$current_user = wp_get_current_user();
+	$loggedincharacter = $current_user->user_login;
+
+	if ($loggedincharacter == $character || current_user_can($capability)) {
+		return true;
+	} else {
+		return false;
+	}
+
 }
 ?>

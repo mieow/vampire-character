@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 function vtm_character_config() {
 	global $wpdb;
 
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_site_config' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
@@ -1416,11 +1416,11 @@ function vtm_listDeletedCharacters() {
 
 function vtm_render_config_options() {	
 	// check user capabilities
-	if ( ! current_user_can( 'manage_options' ) ) {
+	if ( ! current_user_can( 'vtm_site_config' ) ) {
 		return;
 	}
 
-	$active_tab = 'general';
+	$active_tab = 'pagelinks';
 	if( isset( $_GET[ 'tab' ] ) ) {
 		$active_tab = $_GET[ 'tab' ];
 	} // end if

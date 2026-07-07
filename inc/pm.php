@@ -102,7 +102,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$cols['vtmfrom']     =  __( 'From', 'vampire-character' );
 		$cols['vtmto']       =  __( 'To', 'vampire-character' );
 		
-		if (vtm_isST())
+		if (vtm_isST('vtm_manage_pms'))
 			$cols['author'] =  __( 'Actually From', 'vampire-character' );
 	  return $cols;
 	}
@@ -352,7 +352,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		$poststatus = get_post_field( 'post_status', $post->ID );
 		if ($poststatus == 'new' || $poststatus == 'auto-draft') {
 			$from = "";
-			if (!vtm_isST()) {
+			if (!vtm_isST('vtm_manage_pms')) {
 				$defaultaddr = vtm_get_default_address($vtmglobal['characterID']);
 				if (isset($defaultaddr)) {
 					$from = esc_attr($vtmglobal['characterID'] . ":" . 
@@ -448,7 +448,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 		
 		foreach ($myaddresses as $address) {
 			$title = "";
-			if (vtm_isST()) {
+			if (vtm_isST('vtm_manage_pms')) {
 				$title .= vtm_pm_getchfromid($address->CHARACTER_ID) . ": ";
 			}
 			
@@ -627,7 +627,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 	function vtmpm_submenus() {
 		
 		// STs don't need an addressbook to see addresses
-		if (!vtm_isST()) {
+		if (!vtm_isST('vtm_manage_pms')) {
 			add_submenu_page( 'edit.php?post_type=vtmpm', "Address Book", 
 				"Address Book", "read", 'vtmpm_addresses',
 				"vtmpm_render_address_book" );
@@ -698,7 +698,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		<p>These contact details are also needed for sending messages.  For example, if you are phoning another
 		character, you will need to call them from another phone number to do so.</p>
 		<?php	
-		if ($vtmglobal['characterID'] > 0 || vtm_isST()) {
+		if ($vtmglobal['characterID'] > 0 || vtm_isST('vtm_manage_pms')) {
 			$testListTable = new vtmclass_pm_address_table();
 			$doaction = vtm_pm_address_input_validation('address');
 			
@@ -775,7 +775,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		}
 
 		// override character ID if this is a logged in character
-		if (!vtm_isST()) {
+		if (!vtm_isST('vtm_manage_pms')) {
 			$characterID = $vtmglobal['characterID'];
 		}
 		
@@ -788,7 +788,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			<input type="hidden" name="characterID" value="<?php print esc_html($characterID); ?>" />
 			<table>
 			<?php
-			if (vtm_isST()) {
+			if (vtm_isST('vtm_manage_pms')) {
 			?><tr>
 				<td>Character Name:</td>
 				<td colspan=3>
@@ -1080,7 +1080,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$output = "";
 		}
 		// sending anonymously? (unless you are an ST)
-		elseif ($fromtype == 0 && !vtm_isST()) {
+		elseif ($fromtype == 0 && !vtm_isST('vtm_manage_pms')) {
 			// Yes
 			$allow = $wpdb->get_var($wpdb->prepare(
 				"SELECT ISANONYMOUS FROM %i
@@ -1183,7 +1183,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			
 			// Actually trash the message if user is an ST 
 			// or it was a draft post
-			if (!vtm_isST() && $old_status != 'draft') {
+			if (!vtm_isST('vtm_manage_pms') && $old_status != 'draft') {
 				$current_user = wp_get_current_user();
 				$msg = "Trashed!?";
 				// was this a message the logged in user sent?
@@ -1238,7 +1238,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 	// Don;t show trash undo message for players as it won't work
 	// because we don't really trash the message
 	function vtm_pm_style() {
-		if (!vtm_isST() && is_admin() && get_query_var('post_type') == 'vtmpm') {
+		if (!vtm_isST('vtm_manage_pms') && is_admin() && get_query_var('post_type') == 'vtmpm') {
 			wp_enqueue_style('vtmpm-style', plugins_url('css/style-hidemessage.css',dirname(__FILE__)));
 		}
 	}
@@ -1253,7 +1253,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		} else {
 			$type = 'post';
 		}
-		if ( 'vtmpm' == $type && !vtm_isST() && $query->is_main_query() ) {
+		if ( 'vtmpm' == $type && !vtm_isST('vtm_manage_pms') && $query->is_main_query() ) {
 			$current_user = wp_get_current_user();
 			$chid = vtm_pm_getchidfromauthid($current_user->ID);
 			
@@ -1359,7 +1359,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 	// And set the counts/categories at the top
 	function vtm_pm_get_posts_count( $views ) {
 		
-		if (vtm_isST())
+		if (vtm_isST('vtm_manage_pms'))
 			return $views;
 		
 		$current_user = wp_get_current_user();
@@ -1678,7 +1678,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			return true;
 		}
 
-		if (vtm_isST()) {
+		if (vtm_isST('vtm_manage_pms')) {
 			return true;
 		}
 
@@ -1824,7 +1824,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$readok = 1;
 		}
 		
-		if ($readok || vtm_isST()) {
+		if ($readok || vtm_isST('vtm_manage_pms')) {
 			
 			if ($chid == get_post_meta( $postID, '_vtmpm_to_characterID', true )) {
 				// mark post as read 
@@ -1921,7 +1921,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 		
 		if ($fromchid == 'anonymous') {
 			// STs get full information
-			if (vtm_isST()) {
+			if (vtm_isST('vtm_manage_pms')) {
 				$fromfull = "Anonymous ($authorch) ";
 			}
 			// if you sent it, you also get full information
@@ -1939,7 +1939,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$fromfull = "$wordpressid ($fromaddr)";
 		}
 		// don't have an address link for your own posts
-		elseif ($ispmowner || vtm_isST()) {
+		elseif ($ispmowner || vtm_isST('vtm_manage_pms')) {
 			$fromfull = "$fromch ($fromaddr)";
 		}
 		// otherwise
@@ -1981,7 +1981,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			unset( $actions['mine'] );
 			unset( $actions['inline hide-if-no-js'] );
 			
-			if (!vtm_isST()) {
+			if (!vtm_isST('vtm_manage_pms')) {
 				unset( $actions['edit'] );
 			
 				$current_user = wp_get_current_user();
@@ -2131,7 +2131,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		$wpdb->show_errors();
 		
-		if (vtm_isST()) {
+		if (vtm_isST('vtm_manage_pms')) {
 			$characterID = $_REQUEST['address_charid'];
 		} else {
 			$characterID = $_REQUEST['characterID'];
@@ -2184,7 +2184,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		$wpdb->show_errors();
 		
-		if (vtm_isST()) {
+		if (vtm_isST('vtm_manage_pms')) {
 			$characterID = $_REQUEST['address_charid'];
 		} else {
 			$characterID = $_REQUEST['characterID'];
@@ -2273,7 +2273,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 
    function column_name($item){
         
-		if (vtm_isST()) {
+		if (vtm_isST('vtm_manage_pms')) {
 			return esc_html($item->NAME);
 		} else {
 			$actions = array(
@@ -2310,7 +2310,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
 
     function get_columns(){
 		$columns['cb']          = '<input type="checkbox" />';
-		if (vtm_isST()) {
+		if (vtm_isST('vtm_manage_pms')) {
 			$columns['CHARACTERNAME'] = 'Character';
 		}
 		$columns['NAME']        = 'Name';

@@ -48,7 +48,7 @@ function vtm_get_profile_content() {
 	$observerClanPriv = isset($result->privclan) ? $result->privclan : '';
 	
 	// Show full character details to STs and if you are viewing your own profile
-	if (vtm_isST() || $character == $currentCharacter)
+	if (vtm_isST('vtm_view_character') || $character == $currentCharacter)
 		$showAll = true;
 
 	$sql = "SELECT ID 
@@ -65,8 +65,7 @@ function vtm_get_profile_content() {
 	$mycharacter->load($characterID);
 	$emailAddress = $mycharacter->email;
 
-	if (vtm_isST() || $currentCharacter == $character) {
-		
+	if (vtm_isST('vtm_edit_character') || $currentCharacter == $character) {
 		// Update display name
 		$user = get_user_by('login', $character);
 		$displayName = isset($user->display_name) ? $user->display_name : $mycharacter->name;
@@ -285,7 +284,7 @@ function vtm_get_profile_content() {
 	}
 	
 	// Title, with link to view character for STs
-	$characterDisplayName = vtm_isST() ? 
+	$characterDisplayName = vtm_isST('vtm_view_character') ? 
 							"<a href='" . vtm_get_stlink_url('viewCharSheet') . "?CHARACTER=" . urlencode($character) . "'>" . esc_html($displayName) . "</a>" 
 							: esc_html($displayName);
 	$output .= "<h1>" . $characterDisplayName . "</h1>";
@@ -423,7 +422,7 @@ function vtm_get_profile_content() {
 	
 	
 	// change password and display name form
-	if (vtm_isST() || $currentCharacter == $character) {
+	if (vtm_isST('vtm_edit_character') || $currentCharacter == $character) {
 		$user = get_user_by('login', $character);
 		$displayName = isset($user->display_name) ? $user->display_name : $mycharacter->name;
 		$userID = isset($user->ID) ? $user->ID : 0;

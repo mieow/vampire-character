@@ -17,10 +17,14 @@ add_filter( 'the_content', 'vtm_extended_background_content_filter' );
 
 
 function vtm_get_extbackgrounds_content() {
+	global $cando;
 
 	$character = vtm_establishCharacter('');
 	$characterID = vtm_establishCharacterID($character);
-		
+
+	$cando = vtm_canDo($character, 'vtm_edit_character');
+
+	
 	$content = "<div class='wrap'>
 		<script type='text/javascript'>
 			function vtm_tabSwitch(tab) {
@@ -98,7 +102,7 @@ function vtm_get_tabdisplay($tab, $default="backgrounds") {
 }
 
 function vtm_get_editbackgrounds_tab($characterID) {
-	global $wpdb;
+	global $wpdb, $cando;
 
 	$character = vtm_establishCharacter("");
 	$characterID = vtm_establishCharacterID($character);
@@ -106,7 +110,7 @@ function vtm_get_editbackgrounds_tab($characterID) {
 	$content = "";
 	
 	/* Save backgrounds */
-	if (isset($_REQUEST['save_bgform'])) {
+	if ($cando && isset($_REQUEST['save_bgform'])) {
 	
 		$bgids     = $_REQUEST['charbgID'];
 		$sectors   = $_REQUEST['sectorid'];
@@ -216,7 +220,8 @@ function vtm_get_editbackgrounds_tab($characterID) {
 			$content .= "</textarea></td></tr>";
 		}
 		
-		$content .= "<tr><td><input type='submit' name='save_bgform[$i]' value='Save " . vtm_formatOutput($background->NAME) . "' /></td></tr>\n";
+		if ($cando)
+			$content .= "<tr><td><input type='submit' name='save_bgform[$i]' value='Save " . vtm_formatOutput($background->NAME) . "' /></td></tr>\n";
 		$content .= "</table></div>\n";
 		$i++;
 	}
@@ -229,7 +234,7 @@ function vtm_get_editbackgrounds_tab($characterID) {
 }
 
 function vtm_get_editmerits_tab($characterID) {
-	global $wpdb;
+	global $wpdb, $cando;
 
 	$character = vtm_establishCharacter("");
 	$characterID = vtm_establishCharacterID($character);
@@ -237,7 +242,7 @@ function vtm_get_editmerits_tab($characterID) {
 	$content = "";
 	
 	/* Save Merits and Flaws */
-	if (isset($_REQUEST['save_meritform'])) {
+	if ($cando && isset($_REQUEST['save_meritform'])) {
 	
 		$meritids = $_REQUEST['meritID'];
 		$pendingmerit = $_REQUEST['pendingmerit'];
@@ -305,8 +310,8 @@ function vtm_get_editmerits_tab($characterID) {
 				$content .= vtm_formatOutput($merit->PENDING_DETAIL, 1);
 		$content .= "</textarea></td></tr>";
 
-		
-		$content .= "<tr><td><input type='submit' name='save_meritform[$i]' value='Save " . vtm_formatOutput($merit->NAME) . "' /></td></tr>\n";
+		if ($cando)
+			$content .= "<tr><td><input type='submit' name='save_meritform[$i]' value='Save " . vtm_formatOutput($merit->NAME) . "' /></td></tr>\n";
 		$content .= "</table></div>\n";
 		$i++;
 	}
@@ -321,7 +326,7 @@ function vtm_get_editmerits_tab($characterID) {
 }
 
 function vtm_get_editmisc_tab($characterID) {
-	global $wpdb;
+	global $wpdb, $cando;
 
 	$character = vtm_establishCharacter("");
 	$characterID = vtm_establishCharacterID($character);
@@ -335,7 +340,7 @@ function vtm_get_editmisc_tab($characterID) {
 	$namesmisc    = isset($_REQUEST['charmiscTitle']) ? $_REQUEST['charmiscTitle'] : array();
 	
 	/* Save Misc Extended Background Answers */
-	if (isset($_REQUEST['miscID'])) {
+	if ($cando && isset($_REQUEST['miscID'])) {
 	
 		foreach ($_REQUEST['save_miscform'] as $id => $buttontext) {
 			if ($miscids[$id] == "") {
@@ -432,8 +437,8 @@ function vtm_get_editmisc_tab($characterID) {
 				$content .= vtm_formatOutput($question->PENDING_DETAIL, 1);
 		$content .= "</textarea></td></tr>";
 
-		
-		$content .= "<tr><td><input type='submit' name='save_miscform[$i]' value='Save " . vtm_formatOutput($question->TITLE) . "' /></td></tr>\n";
+		if ($cando)
+			$content .= "<tr><td><input type='submit' name='save_miscform[$i]' value='Save " . vtm_formatOutput($question->TITLE) . "' /></td></tr>\n";
 		$content .= "</table></div>\n";
 		$i++;
 	}
@@ -447,7 +452,7 @@ function vtm_get_editmisc_tab($characterID) {
 }
 
 function vtm_get_editcontact_tab($characterID) {
-	global $wpdb;
+	global $wpdb, $cando;
 
 	$character = vtm_establishCharacter("");
 	$characterID = vtm_establishCharacterID($character);
@@ -543,7 +548,8 @@ function vtm_get_editcontact_tab($characterID) {
 		$content .= vtm_formatOutput($phonenum->PM_CODE);
 		$content .= " <a href='?tab=contact&amp;delcontact={$phonenum->ID}&amp;characterID=$characterID'>[X]</a></li>\n";
 	}
-	$content .= "<li><a href='?tab=contact&amp;addcontact=mobile&amp;characterID=$characterID'>Add new mobile number</a></li>";
+	if ($cando)
+		$content .= "<li><a href='?tab=contact&amp;addcontact=mobile&amp;characterID=$characterID'>Add new mobile number</a></li>";
 	$content .= "</ul>";
 	$content .= "</div>\n";
 
@@ -569,7 +575,8 @@ function vtm_get_editcontact_tab($characterID) {
 		$content .= vtm_formatOutput($phonenum->PM_CODE);
 		$content .= " <a href='?tab=contact&amp;delcontact={$phonenum->ID}&amp;characterID=$characterID'>[X]</a></li>\n";
 	}
-	$content .= "<li><a href='?tab=contact&amp;addcontact=landline&amp;characterID=$characterID'>Add new phone number</a></li>";
+	if ($cando)
+		$content .= "<li><a href='?tab=contact&amp;addcontact=landline&amp;characterID=$characterID'>Add new phone number</a></li>";
 	$content .= "</ul>";
 	$content .= "</div>\n";
 
