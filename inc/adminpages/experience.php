@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ------------------------------------------------------------------- */
 
 function vtm_character_experience() {
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_manage_xp' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
@@ -902,7 +902,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 ------------------------------------------------------------------- */
 
 function vtm_character_xp_assign() {
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_manage_xp' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	?>
@@ -917,9 +917,9 @@ function vtm_character_xp_assign() {
 function vtm_addPlayerXP($player, $character, $xpReason, $value, $comment) {
 	global $wpdb;
 	$table_prefix = VTM_TABLE_PREFIX;
-	$sql = "INSERT INTO " . $table_prefix . "PLAYER_XP (player_id, amount, character_id, xp_reason_id, comment, awarded)
+	$sql = "INSERT INTO %i (player_id, amount, character_id, xp_reason_id, comment, awarded)
 					VALUES (%d, %d, %d, %d, %s, SYSDATE())";
-	$wpdb->query($wpdb->prepare("$sql", $player, ((int) $value), $character, $xpReason, $comment));
+	$wpdb->query($wpdb->prepare("$sql", $table_prefix . "PLAYER_XP", $player, ((int) $value), $character, $xpReason, $comment));
 	
 	vtm_touch_last_updated($character);
 }
@@ -994,16 +994,14 @@ function vtm_render_xp_by_player() {
 	$sql = "SELECT
 				player.ID,
 				SUM(xp.amount) as PLAYER_XP
-			FROM
-				" . VTM_TABLE_PREFIX . "PLAYER_XP xp,
-				" . VTM_TABLE_PREFIX . "PLAYER player,
-				" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus
+			FROM %i xp, %i player, %i pstatus
 			WHERE
 				pstatus.ID = player.PLAYER_STATUS_ID
 				AND xp.PLAYER_ID = player.ID
 				AND pstatus.NAME = 'Active'
 				AND player.DELETED = 'N'
 			GROUP BY player.ID";
+	$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "PLAYER_XP", VTM_TABLE_PREFIX . "PLAYER", VTM_TABLE_PREFIX . "PLAYER_STATUS");
 	//echo "<p>SQL1: $sql</p>";
 	$player_xp = $wpdb->get_results("$sql", OBJECT_K);
 	
