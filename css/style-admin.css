@@ -92,6 +92,10 @@ nav {
 	border-top-left-radius: 5px;
 	border-top-right-radius: 5px;}
 
+.tablenav .gvfilter > select {
+	float: none;
+}
+
 /* =Feeding Map
 -------------------------------------------------------------- */
 #map-canvas { height: 100% }
