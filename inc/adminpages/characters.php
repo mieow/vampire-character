@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 function vtm_character_options() {
 	global $wpdb;
 
-	if ( !current_user_can( 'manage_options' ) )  {
+	if ( !current_user_can( 'vtm_view_character' ) )  {
 		wp_die( 'You do not have sufficient permissions to access this page.' );
 	}
 	
@@ -242,12 +242,6 @@ function vtm_character_options() {
 				echo ">\n";
 				echo "<th>";
 				
-				//if ($character->chargen_status != 'Approved')
-				//	echo $name . " [" . esc_html($character->template) . "]";
-				//elseif (!empty($character->wordpress_id))
-				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?CHARACTER='. urlencode($character->wordpress_id) . '">' . $name . '</a>';
-				//else
-				//	echo '<a href="' . get_page_link(vtm_get_stlink_page('viewCharSheet')) . '?characterID='. urlencode($character->ID) . '">' . $name . '</a>';
 				if ($character->chargen_status != 'Approved')
 					echo esc_html(stripslashes($character->charactername)) . " [" . esc_html($character->template) . "]";
 				elseif (!empty($character->wordpress_id))
@@ -257,18 +251,17 @@ function vtm_character_options() {
 				
 				echo "</th><td>";
 				echo '<div>';
-				if ($character->chargen_status == 'Approved')
-					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('editCharSheet'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit'),vtm_page_icon_allowedhtml());
-				else
-					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewCharGen'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit'),vtm_page_icon_allowedhtml());
-				//	echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('editCharSheet')) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
-				//	echo '&nbsp;<a href="' . get_page_link($stlinks['viewCharGen']->WP_PAGE_ID) . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'edit.png" alt="Edit" title="Edit Character" /></a>';
+				if (current_user_can( 'vtm_edit_character' )) {
+					if ($character->chargen_status == 'Approved')
+						echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('editCharSheet'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit'),vtm_page_icon_allowedhtml());
+					else
+						echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewCharGen'), $character->ID, 'characterID', 'edit.png', 'Edit Character', 'Edit'),vtm_page_icon_allowedhtml());
+					$delete_url = add_query_arg('action', 'delete', $current_url);
+					$delete_url = add_query_arg('characterID', $character->ID, $delete_url);
+					$delete_url = add_query_arg('characterName', urlencode($character->wordpress_id), $delete_url);
+					echo '&nbsp;<a href="' . esc_url($delete_url) . '"><img src="' . esc_url($iconurl) . 'delete.png" alt="Delete" title="Delete Character" /></a>';
+				}
 
-				$delete_url = add_query_arg('action', 'delete', $current_url);
-				$delete_url = add_query_arg('characterID', $character->ID, $delete_url);
-				$delete_url = add_query_arg('characterName', urlencode($character->wordpress_id), $delete_url);
-				echo '&nbsp;<a href="' . esc_url($delete_url) . '"><img src="' . esc_url($iconurl) . 'delete.png" alt="Delete" title="Delete Character" /></a>';
-				//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('printCharSheet'))  . '?characterID=' . urlencode($character->ID) . '"><img src="' . $iconurl . 'print.png" alt="Print" title="Print Character" /></a>';
 				echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('printCharSheet'), $character->ID, 'characterID', 'print.png', 'Print Character', 'Print'),vtm_page_icon_allowedhtml());
 				
 				if (!empty($character->wordpress_id) && $character->chargen_status == 'Approved') {
@@ -276,10 +269,6 @@ function vtm_character_options() {
 					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewXPSpend'), $character->wordpress_id, 'CHARACTER', 'spendxp.png', 'Spend Experience', 'XP Spend'),vtm_page_icon_allowedhtml());
 					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewExtBackgrnd'), $character->wordpress_id, 'CHARACTER', 'background.png', 'Extended Background', 'Background'),vtm_page_icon_allowedhtml());
 					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewCustom'), $character->wordpress_id, 'CHARACTER', 'custom.png', 'View Custom Page as Character', 'Custom'),vtm_page_icon_allowedhtml());
-					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewProfile'))     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'profile.png" alt="Profile" title="View Profile" /></a>';
-					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewXPSpend'))     . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'spendxp.png" alt="XP Spend" title="Spend Experience" /></a>';
-					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewExtBackgrnd')) . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'background.png" alt="Background" title="Extended Background" /></a>';
-					//echo '&nbsp;<a href="' . get_page_link(vtm_get_stlink_page('viewCustom'))      . '?CHARACTER='. urlencode($character->wordpress_id) . '"><img src="' . $iconurl . 'custom.png" alt="Custom" title="View Custom Page as Character" /></a>';
 				}
 				echo "</div></td>";
 				echo "<td>" . esc_html($character->clan) . "</td>";
@@ -3039,7 +3028,7 @@ function vtm_log_change($characterID, $playerID, $storyteller, $comment) {
 	global $wpdb;
 
 	// truncate comment to 160 chars
-	$comment = substr($comment, 0, vtm_get_field_length('PLAYER_XP', 'COMMENT'));
+	$comment = substr($comment, 0, vtm_get_field_length(VTM_TABLE_PREFIX . 'PLAYER_XP', 'COMMENT'));
 
 	$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "XP_REASON WHERE NAME LIKE 'Misc%'";
 	$result = $wpdb->get_results("$sql");
@@ -3069,8 +3058,7 @@ function vtm_log_change($characterID, $playerID, $storyteller, $comment) {
 					)
 				);
 	if ($wpdb->insert_id  == 0) {
-		$comment_escaped = vtm_formatOutput("$comment");
-		echo "<p style='color:red'><b>Error:</b> Character change '". $comment_escaped . "' not logged";
+		echo "<p style='color:red'><b>Error:</b> Character change '". esc_html("$comment") . "' not logged";
 		echo esc_html($wpdb->print_error());
 		echo "</p>";
 		return 1;
