@@ -146,9 +146,9 @@ function vtm_render_select_spends($character) {
 	$xp_total      = vtm_get_total_xp($playerID, $characterID);
 	$xp_pending    = vtm_get_pending_xp($playerID, $characterID);
 	$xp_avail      = $xp_total - $xp_pending;
-	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
-	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
+	$fulldoturl    = vtm_get_skin_icon_url('dot1full');
+	$emptydoturl   = vtm_get_skin_icon_url('dot1empty');
+	$pendingdoturl = vtm_get_skin_icon_url('dot2');
 	
 	$sectioncontent = array();
 	$sectionheading = array();
@@ -908,9 +908,9 @@ function vtm_render_skills_row($type, $rownum, $max2display, $maxRating, $dataro
 	global $cando;
 
 
-	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
-	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
+	$fulldoturl    = vtm_get_skin_icon_url('dot1full');
+	$emptydoturl   = vtm_get_skin_icon_url('dot1empty');
+	$pendingdoturl = vtm_get_skin_icon_url('dot2');
 
 	$datarow->comment = vtm_formatOutput($datarow->comment);
 	$datarow->name    = vtm_formatOutput($datarow->name);
@@ -1618,9 +1618,9 @@ function vtm_render_spend_table($type, $sqlfunction, $characterID, $maxRating, $
 	global $vtmglobal, $cando;
 	global $wpdb;
 	
-	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
-	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
+	$fulldoturl    = vtm_get_skin_icon_url('dot1full');
+	$emptydoturl   = vtm_get_skin_icon_url('dot1empty');
+	$pendingdoturl = vtm_get_skin_icon_url('dot2');
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 
 	if ($type == 'path' || $type == 'combo' || $type == 'ritual' || $type == 'merit') {
@@ -1968,9 +1968,9 @@ function vtm_render_skill_spend_table($type, $list, $allxpdata, $maxRating, $col
 
 function vtm_render_ritual_spend_table($type, $allxpdata, $columns, $xp_avail) {
 
-	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
-	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
+	$fulldoturl    = vtm_get_skin_icon_url('dot1full');
+	$emptydoturl   = vtm_get_skin_icon_url('dot1empty');
+	$pendingdoturl = vtm_get_skin_icon_url('dot2');
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 	
 	//$colclass = $columns == 3 ? 'vtm_colnarrow' : 'vtm_colfull';
@@ -2073,9 +2073,9 @@ function vtm_render_ritual_spend_table($type, $allxpdata, $columns, $xp_avail) {
 }
 function vtm_render_combo_spend_table($type, $allxpdata, $xp_avail) {
 
-	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
-	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
+	$fulldoturl    = vtm_get_skin_icon_url('dot1full');
+	$emptydoturl   = vtm_get_skin_icon_url('dot1empty');
+	$pendingdoturl = vtm_get_skin_icon_url('dot2');
 	$levelsdata    = isset($_REQUEST[$type . '_level']) ? $_REQUEST[$type . '_level'] : array();
 
 	//$colclass = $columns == 3 ? 'vtm_colnarrow' : 'vtm_colfull';
@@ -2222,9 +2222,9 @@ function vtm_render_merit_spend_table($type, $list, $allxpdata, $columns, $xp_av
 
 function vtm_render_merits_row($type, $id, $xpdata, $levelsdata, $xp_avail) {
 
-	$fulldoturl    = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$emptydoturl   = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
-	$pendingdoturl = VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT;
+	$fulldoturl    = vtm_get_skin_icon_url('dot1full');
+	$emptydoturl   = vtm_get_skin_icon_url('dot1empty');
+	$pendingdoturl = vtm_get_skin_icon_url('dot2');
 
 	$rowoutput = "";
 	
