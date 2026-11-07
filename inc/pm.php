@@ -753,7 +753,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$data =$wpdb->get_row("$sql");
 			
 			$name       = $data->NAME;
-			$desc       = $data->DESCRIPTION;
+			$desc       = stripslashes($data->DESCRIPTION);
 			$visible    = $data->VISIBLE;
 			$code       = $data->PM_CODE;
 			$pm_type_id = $data->PM_TYPE_ID;
@@ -876,7 +876,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 			$data =$wpdb->get_row("$sql");
 			
 			$name       = $data->NAME;
-			$desc       = $data->DESCRIPTION;
+			$desc       = stripslashes($data->DESCRIPTION);
 			$code       = $data->PM_CODE;
 			$tableID 	= $data->ID;
 			
@@ -1741,8 +1741,8 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					<header class="entry-header">
 					<<?php echo esc_html($subjecthtag); ?> class="entry-title"><?php echo esc_html($title); ?></<?php echo esc_html($subjecthtag); ?>>
 					<div class="vtm_pmhead">
-						<span class="vtm_pmhead_to">To: <?php echo esc_html($info['ToFull']); ?></span>
-						<span class="vtm_pmhead_from">From: <?php echo esc_html($info['FromFull']); ?></span>
+						<span class="vtm_pmhead_to">To: <?php echo wp_kses($info['ToFull'], vtm_output_allowedhtml()); ?></span>
+						<span class="vtm_pmhead_from">From: <?php echo wp_kses($info['FromFull'], vtm_output_allowedhtml()); ?></span>
 						<span class="vtm_pmhead_sent">Sent: <?php echo esc_html(get_the_time( get_option( 'date_format' ), $postID) ); ?></span>
 						<span class="vtm_pmhead_subject">Subject: <?php echo esc_html($title); ?></span>
 					</div>
@@ -2264,7 +2264,7 @@ class vtmclass_pm_address_table extends vtmclass_MultiPage_ListTable {
             case 'ISDEFAULT':
                 return esc_html($item->$column_name);
             case 'DESCRIPTION':
-                return esc_html($item->$column_name);
+                return esc_html(stripslashes($item->$column_name));
             default:
                 return print_r($item,true); 
         }
@@ -2469,7 +2469,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
     function column_default($item, $column_name){
         switch($column_name){
             case 'DESCRIPTION':
-                return esc_html($item->$column_name);
+                return esc_html(stripslashes($item->$column_name));
             default:
                 return print_r($item,true); 
         }
@@ -2534,13 +2534,13 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
     }
    function column_description($item){
 		if ($item->ADDRESSBOOK == 'Public') {
-			return esc_html($item->NAME);
+			return esc_html(stripslashes($item->NAME));
 		} 
 		elseif ($item->ADDRESSBOOK == 'Private') {
-			return esc_html($item->NAME . " : " . $item->DESCRIPTION);
+			return esc_html(stripslashes($item->NAME . " : " . $item->DESCRIPTION));
 		} 
 		else {
-			return esc_html($item->DESCRIPTION);
+			return esc_html(stripslashes($item->DESCRIPTION));
 		}
     }
     function column_pm_code($item){
@@ -2594,7 +2594,7 @@ class vtmclass_pm_addressbook_table extends vtmclass_MultiPage_ListTable {
 		);
 		
 		$sql = "SELECT ID, NAME FROM %i";
-		$this->filter_address_type = vtm_make_filter($wpdb->get_results("$sql", VTM_TABLE_PREFIX. "PM_TYPE"));
+		$this->filter_address_type = vtm_make_filter($wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX. "PM_TYPE")));
 		$this->filter_address_type['0'] = 'Post Office';
 		
 		/* set active filters */
