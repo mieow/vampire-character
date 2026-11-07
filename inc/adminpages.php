@@ -23,7 +23,7 @@ require_once VTM_CHARACTER_URL . 'inc/adminpages/tempstats.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/chargentemplates.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/sects.php';
 require_once VTM_CHARACTER_URL . 'inc/adminpages/skill_types.php';
-require_once VTM_CHARACTER_URL . 'inc/adminpages/consent.php';
+require_once VTM_CHARACTER_URL . 'inc/adminpages/polls.php';
 
 if(!class_exists('WP_List_Table')){
     require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
@@ -78,6 +78,12 @@ function vtm_register_character_settings() {
 	register_setting( 'vtm_features_group', 'vtm_feature_email',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
 	register_setting( 'vtm_features_group', 'vtm_feature_news',       array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
 	register_setting( 'vtm_features_group', 'vtm_feature_pm',         array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_consent',    array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_features_group', 'vtm_feature_polls',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+
+	register_setting( 'vtm_feature_consent', 'vtm_consent_pvp',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_feature_consent', 'vtm_consent_url',      array('type'=>'string', 'sanitize_callback'=>'esc_url_raw') );
+
 	add_settings_section(
 		'vtmfeatures',
 		"Plugin Features",
@@ -136,9 +142,53 @@ function vtm_register_character_settings() {
 		array(
 			'label_for'         => 'vtm_feature_pm',
 			'description'		=> 'Enable inter-character private communication'
+		)	
+	);
+	add_settings_field(
+		'vtm_feature_consent',
+		'Consent Form',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_consent',
+			'description'		=> 'Enable player consent form'
 		)
 	);	
-	
+	add_settings_field(
+		'vtm_feature_polls',
+		'Polling',
+		'vtm_checkbox_cb', 'vtm_features_group', 'vtmfeatures',
+		array(
+			'label_for'         => 'vtm_feature_polls',
+			'description'		=> 'Enable polls/voting'
+		)
+	);		
+
+	add_settings_section(
+		'vtmconsent',
+		"Consent Options",
+		"vtm_render_config_consent",
+		'vtm_feature_consent',
+	);
+	add_settings_field(
+		'vtm_consent_pvp',
+		'Game has PvP',
+		'vtm_checkbox_cb', 'vtm_feature_consent', 'vtmconsent',
+		array(
+			'label_for'         => 'vtm_consent_pvp',
+			'description'		=> 'This game has Player-vs-Player (pvp)'
+		)
+	);	
+	add_settings_field(
+		'vtm_consent_url',
+		'Reference URL',
+		'vtm_textbox', 'vtm_feature_consent', 'vtmconsent',
+		array(
+			'label_for'         => 'vtm_consent_url',
+			'description'		=> 'URL with consent info for players'
+		)
+	);	
+
+
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_mustbeloggedin',     array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_showsecondaries',    array('type'=>'string', 'sanitize_callback'=>'sanitize_text_field') ); //checkbox
 	register_setting( 'vtm_chargen_options_group', 'vtm_chargen_humanity',           array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
@@ -187,15 +237,16 @@ function vtm_register_character_settings() {
 
 	// PAGE LINKS
 	
-	register_setting( 'vtm_links_group', 'vtm_link_editCharSheet',   array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_viewCharSheet',   array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_printCharSheet',  array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_viewCustom',      array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_viewProfile',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_viewXPSpend',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_viewExtBackgrnd', array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_viewCharGen',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
-	register_setting( 'vtm_links_group', 'vtm_link_editConsent',     array('type'=>'string', 'sanitize_callback'=>'sanitize_key') );
+	register_setting( 'vtm_links_group', 'vtm_link_editCharSheet',   array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCharSheet',   array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_printCharSheet',  array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCustom',      array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewProfile',     array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewXPSpend',     array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewExtBackgrnd', array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_viewCharGen',     array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_editConsent',     array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
+	register_setting( 'vtm_links_group', 'vtm_link_editPolls',       array('type'=>'array', 'sanitize_callback'=>'vtm_sanitize_link_array') );
 
 	add_settings_section(
 		'vtmpagelinks',
@@ -283,6 +334,15 @@ function vtm_register_character_settings() {
 			'label_for'         => 'vtm_link_editConsent',
 			'newpagename'       => 'Consent Form'
 		)
+	);		
+	add_settings_field(
+		'vtm_link_editPolls',
+		'Polls',
+		'vtm_link_cb', 'vtm_links_group', 'vtmpagelinks',
+		array(
+			'label_for'         => 'vtm_link_editPolls',
+			'newpagename'       => 'Polls'
+		)
 	);	
 	
 }
@@ -297,6 +357,7 @@ add_filter( 'pre_update_option_vtm_link_viewProfile',     'pre_update_vtm_link_c
 add_filter( 'pre_update_option_vtm_link_printCharSheet',  'pre_update_vtm_link_cb', 10, 3);
 add_filter( 'pre_update_option_vtm_link_viewCharSheet',   'pre_update_vtm_link_cb', 10, 3);
 add_filter( 'pre_update_option_vtm_link_editConsent',     'pre_update_vtm_link_cb', 10, 3);
+add_filter( 'pre_update_option_vtm_link_editPolls',       'pre_update_vtm_link_cb', 10, 3);
 
 
 /* ADMIN MENUS
@@ -316,6 +377,7 @@ function vtm_register_character_menu() {
 	if (get_option( 'vtm_feature_reports', '0' ) == 1)
 		add_submenu_page( "character-plugin", "Reports",             "Reports",             "vtm_reports", "vtmcharacter-report", "vtm_character_reports" );  
 	add_submenu_page( "character-plugin", "Database Tables",     "Data Tables",         "vtm_system_config", "vtmcharacter-data",   "vtm_character_datatables" );  
+	add_submenu_page( "character-plugin", "Admin Tables",     "Admin Tables",         "vtm_manage_admin", "vtmcharacter-admin",   "vtm_character_admintables" );  
 	add_submenu_page(
 		"character-plugin",
 		"Configuration",
@@ -446,9 +508,8 @@ function vtm_character_datatables() {
 			<?php echo wp_kses(vtm_get_tablink('combo',       'Combination Disciplines'), vtm_tablink_allowedhtml()); ?>
 			<?php echo wp_kses(vtm_get_tablink('generation',  'Generation'), vtm_tablink_allowedhtml()); ?>
 			<?php echo wp_kses(vtm_get_tablink('template',    'Character Templates'), vtm_tablink_allowedhtml()); ?>
-			<?php echo wp_kses(vtm_get_tablink('consent',     'Consent Form'), vtm_tablink_allowedhtml()); ?>
-			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo wp_kses(vtm_get_tablink('mapowner', 'Map Owners'), vtm_tablink_allowedhtml()); ?>
-			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1) echo wp_kses(vtm_get_tablink('mapdomain','Map Locations'), vtm_tablink_allowedhtml()); ?>
+			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1)    echo wp_kses(vtm_get_tablink('mapowner', 'Map Owners'), vtm_tablink_allowedhtml()); ?>
+			<?php if (get_option( 'vtm_feature_maps', '0' ) == 1)    echo wp_kses(vtm_get_tablink('mapdomain','Map Locations'), vtm_tablink_allowedhtml()); ?>
 		</h2>
 		<div class="gvadmin_content">
 		<?php
@@ -528,11 +589,39 @@ function vtm_character_datatables() {
 			case 'sect':
 				vtm_render_sect_page();
 				break;
-			case 'consent':
-				vtm_render_consent_page();
-				break;
 			default:
 				vtm_render_stat_page("stat");
+		}
+		
+		?>
+		</div>
+	</div>
+	
+	<?php
+}
+
+function vtm_character_admintables() {
+	global $vtmglobal;
+	if ( !current_user_can( 'vtm_system_config' ) )  {
+		wp_die( 'You do not have sufficient permissions to access this page.' );
+	}
+	?>
+	<div class="wrap">
+		<h2>Database Tables</h2>
+		<h2 class="nav-tab-wrapper">
+			<?php if (get_option( 'vtm_feature_polls', '0' ) == 1)   echo wp_kses(vtm_get_tablink('polls',    'Polls'), vtm_tablink_allowedhtml()); ?>
+		</h2>
+		<div class="gvadmin_content">
+		<?php
+		
+		$tabselect = isset($_REQUEST['tab']) ? $_REQUEST['tab'] : '';
+		
+		switch ($tabselect) {
+			case 'polls':
+				vtm_render_polls_page();
+				break;
+			default:
+				vtm_render_consent_page();
 		}
 		
 		?>
