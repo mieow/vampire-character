@@ -2,9 +2,6 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 // NO TABS IN TABLE DECLARATIONS
 
-# Add new tables for consent form items
-# Add default for new consent page link
-
 
 register_activation_hook(__FILE__, "vtm_character_install");
 register_activation_hook( __FILE__, 'vtm_character_install_data' );
@@ -12,7 +9,7 @@ register_activation_hook( __FILE__, 'vtm_character_install_data' );
 global $vtm_character_version;
 global $vtm_character_db_version;
 $vtm_character_version = "2.13"; 
-$vtm_character_db_version = "86"; 
+$vtm_character_db_version = "90"; 
 
 function vtm_update_db_check() {
     global $vtm_character_version;
@@ -22,8 +19,8 @@ function vtm_update_db_check() {
     if (get_option( 'vtm_character_db_version' ) != $vtm_character_db_version ||
 		get_option( 'vtm_character_version' ) != $vtm_character_version) {
 
-		$text =  "<p>Vampire Character Manager updated from version " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
-		$text .= " to $vtm_character_version.$vtm_character_db_version</p>";
+		$text =  "Vampire Character Manager updated from version " . get_option( 'vtm_character_version' ) . "." . get_option( 'vtm_character_db_version' );
+		$text .= " to $vtm_character_version.$vtm_character_db_version.";
 		vtm_add_admin_notice($text);
   
         $errors = vtm_character_update('before');
@@ -33,9 +30,9 @@ function vtm_update_db_check() {
 		
 		$count = $wpdb->get_var("SELECT COUNT(ID) FROM " . $wpdb->prefix . "vtm_CHARACTER");
 		if ($count == 0) {
-			$text = "<p>Go to the Vampire Character Manager Configuration page to 
+			$text = "Go to the Vampire Character Manager Configuration page to 
 					load advanced initial data into the plugin database tables
-					from an external website.</p>";
+					from an external website.";
 			vtm_add_admin_notice($text);
 		}
 				
@@ -334,6 +331,39 @@ function vtm_character_install($action = "") {
 	$for_update = dbDelta($sql);
 	vtm_save_install_errors($current_table_name,  $for_update);
 
+	$current_table_name = $table_prefix . "POLL_PERMISSION_TYPE";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL   AUTO_INCREMENT,
+				NAME varchar(60) NOT NULL,
+				DESCRIPTION tinytext NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+
+	$current_table_name = $table_prefix . "POLL_ANSWER_TYPE";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL   AUTO_INCREMENT,
+				NAME varchar(60) NOT NULL,
+				DESCRIPTION tinytext NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+
+	$current_table_name = $table_prefix . "POLL";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL   AUTO_INCREMENT,
+				NAME varchar(60) NOT NULL,
+				DESCRIPTION tinytext NOT NULL,
+				ACTIVE varchar(1) NOT NULL,
+				START timestamp NOT NULL,
+				END timestamp NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+
 	// LEVEL 2 TABLES - TABLES WITH A FOREIGN KEY CONSTRAINT TO A LEVEL 1 TABLE
 	
 	$current_table_name = $table_prefix . "CHARGEN_TEMPLATE_OPTIONS";
@@ -576,8 +606,31 @@ function vtm_character_install($action = "") {
 	vtm_save_install_errors($current_table_name,  $for_update);
 	$for_update = vtm_add_constraint($current_table_name, "mapdomain_constraint_1", "OWNER_ID", "MAPOWNER(ID)", $action);
 	vtm_save_install_errors($current_table_name,  $for_update);
+
+	$current_table_name = $table_prefix . "POLL_QUESTION";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL   AUTO_INCREMENT,
+				NAME varchar(60) NOT NULL,
+				QUESTION tinytext NOT NULL,
+				POLL_ID mediumint(9) NOT NULL,
+				PERMISSION_TYPE_ID mediumint(9) NOT NULL,
+				DESCRIPTION tinytext NOT NULL,
+				CAN_CHANGE_VOTE varchar(1) NOT NULL,
+				ANSWER_TYPE_ID mediumint(9) NOT NULL,
+				REQUIRED varchar(1) NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+	$for_update = vtm_add_constraint($current_table_name, "pollq_constraint_1", "PERMISSION_TYPE_ID", "POLL_PERMISSION_TYPE(ID)", $action);
+	vtm_save_install_errors($current_table_name,  $for_update);
+	$for_update = vtm_add_constraint($current_table_name, "pollq_constraint_2", "ANSWER_TYPE_ID", "POLL_ANSWER_TYPE(ID)", $action);
+	vtm_save_install_errors($current_table_name,  $for_update);
+	$for_update = vtm_add_constraint($current_table_name, "pollq_constraint_3", "POLL_ID", "POLL(ID)", $action);
+	vtm_save_install_errors($current_table_name,  $for_update);
 	
 	// LEVEL 3 TABLES - TABLES WITH A FOREIGN KEY CONSTRAINT TO A LEVEL 2 TABLE
+
 
 	$current_table_name = $table_prefix . "ROAD_OR_PATH";
 	$sql = "CREATE TABLE " . $current_table_name . " (
@@ -696,6 +749,56 @@ function vtm_character_install($action = "") {
 	vtm_save_install_errors($current_table_name,  $for_update);
 	$for_update = vtm_add_constraint($current_table_name, "char_combo_pre_constraint_2", "DISCIPLINE_ID", "DISCIPLINE(ID)", $action);
 	vtm_save_install_errors($current_table_name,  $for_update);
+
+	$current_table_name = $table_prefix . "POLL_OPTIONS";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL AUTO_INCREMENT,
+				POLL_QUESTION_ID mediumint(9) NOT NULL,
+				DESCRIPTION tinytext NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+	$for_update = vtm_add_constraint($current_table_name, "pollopt_constraint_1", "POLL_QUESTION_ID", "POLL_QUESTION(ID)", $action);
+
+	$current_table_name = $table_prefix . "PLAYER_POLL_ANSWERS";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL AUTO_INCREMENT,
+				POLL_QUESTION_ID mediumint(9) NOT NULL,
+				DESCRIPTION tinytext NOT NULL,
+				ANSWER tinytext NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+	$for_update = vtm_add_constraint($current_table_name, "pollans_constraint_1", "POLL_QUESTION_ID", "POLL_QUESTION(ID)", $action);
+
+// Add new tables for consent form items
+// id
+// playerid
+// PVPOK - Y/N
+// PVPMOREINFO - Y/N
+// THEMEOK - Y/N
+// CONSENTOK - Y/N
+// BOUNDOK - Y/N
+// REDFLAG - text
+// ORANGEFLAG - text
+	$current_table_name = $table_prefix . "PLAYER_CONSENT";
+	$sql = "CREATE TABLE " . $current_table_name . " (
+				ID mediumint(9) NOT NULL AUTO_INCREMENT,
+				PLAYER_ID mediumint(9) NOT NULL,
+				PVPOK varchar(1) NOT NULL,
+				PVPMOREINFO varchar(1) NOT NULL,
+				THEMEOK varchar(1) NOT NULL,
+				CONSENTOK varchar(1) NOT NULL,
+				BOUNDOK varchar(1) NOT NULL,
+				REDFLAG text NOT NULL,
+				ORANGEFLAG text NOT NULL,
+				PRIMARY KEY  (ID)
+				) ENGINE=INNODB;";
+	$for_update = dbDelta($sql);
+	vtm_save_install_errors($current_table_name,  $for_update);
+	$for_update = vtm_add_constraint($current_table_name, "consent_constraint_1", "PLAYER_ID", "PLAYER(ID)", $action);
 
 	// LEVEL 4 TABLES - TABLES WITH A FOREIGN KEY CONSTRAINT TO A LEVEL 3 TABLE
 
@@ -1986,13 +2089,13 @@ function vtm_install_notice() {
 		// Display admin notices
 		$notices = get_option('vtm_admin_notices');
 		if (isset($notices) && $notices != "") {
-			echo "<div class='updated'>" . esc_html($notices) . " | <a href='?vtm_ignore_notice'>Dismiss</a></p></div>";
+			echo "<div class='updated'>" . esc_html($notices) . " | <a href='" . esc_url(add_query_arg('vtm_ignore_notice', '1')) . "'>Dismiss</a></p></div>";
 		}
 		
 		// Display plugin activation errors 
 		$activation_output = get_option('vtm_plugin_error');
 		if (isset($activation_output) && $activation_output != "") {
-			echo "<div class='error'><p>" . esc_html($activation_output) . " | <a href='?vtm_ignore_activation_output'>Dismiss</a></p></div>";
+			echo "<div class='error'><p>" . wp_kses($activation_output, array('p' => array(), 'br' => array())) . " | <a href='" . esc_url(add_query_arg('vtm_ignore_activation_output', '1')) . ">Dismiss</a></p></div>";
 		}
 		
 	}
@@ -2103,6 +2206,7 @@ function vtm_define_tables() {
 		'DISCIPLINE_POWER',
 		'PATH',
 		'ROAD_OR_PATH',
+		'PLAYER_CONSENT'
 	);
 	// level 2 tables
 	$tables[] = array(
