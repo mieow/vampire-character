@@ -432,6 +432,32 @@ function vtm_render_printable($characterID) {
 				$pdf->FullWidthText($discipline);
 			}
 		}
+
+		/* Consent */
+		if (get_option('vtm_feature_consent', '0') == '1') {
+			$pdf->Divider('Consent');
+
+			$consentOptions = array();
+			if (get_option('vtm_consent_pvp', '') != '') {
+				$consentOptions['PVPOK'] = 'Accepts the risk of PvP';
+				$consentOptions['PVPMOREINFO'] = 'Would like to discuss the consent form';
+			}
+			$consentOptions['THEMEOK'] = 'Accepts the themes of the game';
+			$consentOptions['CONSENTOK'] = 'Accepts consequences of own actions';
+			$consentOptions['BOUNDOK'] = 'Has recorded personal boundaries';
+
+			foreach ($consentOptions as $field => $label) {
+				$value = $mycharacter->consent->$field ?? null;
+				$value = $value === 'Y' ? 'Yes' : ($value === 'N' ? 'No' : '[Form not filled in]');
+				$pdf->FullWidthText($label . ': ' . $value);
+			}
+
+			$pdf->FullWidthText('Do Not Include', 'B');
+			$pdf->FullWidthText($mycharacter->consent->REDFLAG ?? '[Form not filled in]');
+			$pdf->FullWidthText('Handle Carefully', 'B');
+			$pdf->FullWidthText($mycharacter->consent->ORANGEFLAG ?? '[Form not filled in]');
+		}
+
 		
 		/* Extended backgrounds - backgrounds with full details */
 		$pdf->Divider('Extended Backgrounds');
@@ -689,11 +715,11 @@ class vtmclass_PDFcsheet extends FPDF
 		for ($i=1;$i<=$max;$i++) {
 			$x = $xorig + $padding + ($i - 1) * ($dotwidth ? $dotwidth : $dotheight);
 			if ($i <= $level)
-				$this->Image(VTM_CHARACTER_URL . "images/fulldot.jpg", $x, $y + $yoffset, $dotwidth, $dotheight);
+				$this->Image(vtm_get_skin_icon_path('fulldot', false), $x, $y + $yoffset, $dotwidth, $dotheight);
 			elseif ($pending > 0 && $i <= $pending)
-				$this->Image(VTM_CHARACTER_URL . "images/pdfxpdot.jpg", $x, $y + $yoffset, $dotwidth, $dotheight);
+				$this->Image(vtm_get_skin_icon_path('pdfxpdot', false), $x, $y + $yoffset, $dotwidth, $dotheight);
 			else
-				$this->Image(VTM_CHARACTER_URL . "images/emptydot.jpg", $x, $y + $yoffset, $dotwidth, $dotheight);
+				$this->Image(vtm_get_skin_icon_path('emptydot', false), $x, $y + $yoffset, $dotwidth, $dotheight);
 		}
 	}
 	
@@ -721,7 +747,7 @@ class vtmclass_PDFcsheet extends FPDF
 		$xoffset = 0;
 		$y = $this->GetY();
 		for ($i=1;$i<=$bloodpool;$i++) {
-			$this->Image(VTM_CHARACTER_URL . "images/box.jpg", $x + $xoffset, $y, $boxwidth, $boxheight);
+			$this->Image(vtm_get_skin_icon_path('box', false), $x + $xoffset, $y, $boxwidth, $boxheight);
 			if ( ($i % 10) == 0) {
 				$xoffset = 0;
 				$y = $y + $boxheight;
@@ -766,9 +792,9 @@ class vtmclass_PDFcsheet extends FPDF
 		$y = $this->GetY();
 		for ($i=1;$i<=10;$i++) {
 			if ($i > $current && $i <= $max)
-				$this->Image(VTM_CHARACTER_URL . "images/boxcross2.jpg", $x1 + $padding + $xoffset, $y, $dotheight, $dotheight);
+				$this->Image(vtm_get_skin_icon_path('boxcross2', false), $x1 + $padding + $xoffset, $y, $dotheight, $dotheight);
 			else
-				$this->Image(VTM_CHARACTER_URL . "images/box.jpg", $x1 + $padding + $xoffset, $y, $dotheight, $dotheight);
+				$this->Image(vtm_get_skin_icon_path('box', false), $x1 + $padding + $xoffset, $y, $dotheight, $dotheight);
 			$xoffset = $i * $dotheight;
 		}
 		
@@ -917,7 +943,7 @@ class vtmclass_PDFcsheet extends FPDF
 			$this->SetX($x1);
 			$this->Cell($colwidths[0], $boxheight, $item[0],  0,   0, 'R');
 			$this->Cell($colwidths[1], $boxheight, $item[1],  0,   0, 'C');
-			$this->Image(VTM_CHARACTER_URL . "images/box.jpg", $this->GetX(), $this->GetY(), 0, $boxheight);
+			$this->Image(vtm_get_skin_icon_path('box', false), $this->GetX(), $this->GetY(), 0, $boxheight);
 			$this->Ln();
 		}
 
