@@ -142,7 +142,7 @@ function vtm_get_stlink_page($stlinkvalue) {
 
 	$linkname = "vtm_link_" . $stlinkvalue;
 	$option = get_option( $linkname,'0' );
-	$pageid = $option[$linkname];
+	$pageid = $option[$linkname] ?? 0;
 	
 	return $pageid;
 
@@ -623,7 +623,7 @@ function vtm_get_character_email($characterID) {
         $table_prefix = VTM_TABLE_PREFIX;
 		$table = $table_prefix . "CHARACTER";
 		
-		$sql = "SELECT ID,NAME,VISIBLE FROM $table WHERE PLAYER_ID = %s AND DELETED = 'N'";
+		$sql = "SELECT ID,NAME,VISIBLE,WORDPRESS_ID FROM $table WHERE PLAYER_ID = %s AND DELETED = 'N'";
         $results = $wpdb->get_results($wpdb->prepare("$sql", $playerID));
 		
 		return $results;
@@ -1159,10 +1159,41 @@ function vtm_get_character_email($characterID) {
         vtm_handleGVLarpForm();
     }
 
+function vtm_get_skin_icon_dir($create = true) {
+    $upload = wp_upload_dir();
+    $skin_dir = trailingslashit($upload['basedir']) . 'vampire-character-icons';
+    if ($create && ! wp_mkdir_p($skin_dir) && ! is_dir($skin_dir)) {
+        return trailingslashit($upload['basedir']);
+    }
+    return $skin_dir;
+}
+
+function vtm_get_skin_icon_url($name) {
+    $upload = wp_upload_dir();
+    $skin_path = vtm_get_skin_icon_dir(false) . '/' . $name . '.' . VTM_ICON_FORMAT;
+    if (file_exists($skin_path)) {
+        return trailingslashit($upload['baseurl']) . 'vampire-character-icons/' . $name . '.' . VTM_ICON_FORMAT;
+    }
+    return VTM_PLUGIN_URL . '/images/' . $name . '.' . VTM_ICON_FORMAT;
+}
+
+function vtm_get_skin_icon_path($name, $create = true) {
+    $path = trailingslashit(vtm_get_skin_icon_dir($create)) . $name . '.' . VTM_ICON_FORMAT;
+
+    if (! $create) {
+        if (file_exists($path)) {
+            return $path;
+        }
+        return VTM_CHARACTER_URL . 'images/' . $name . '.' . VTM_ICON_FORMAT;
+    }
+
+    return $path;
+}
+
 function vtm_numberToDots($base, $input) {
 	$number = (int) $input;
-	$full  = VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT;
-	$empty = VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT;
+	$full  = vtm_get_skin_icon_url('dot1full');
+	$empty = vtm_get_skin_icon_url('dot1empty');
 	
 	$output = "";
 	
@@ -1177,8 +1208,8 @@ function vtm_numberToDots($base, $input) {
 }
 function vtm_numberToBoxes($base, $input) {
 	$number = (int) $input;
-	$full  = VTM_PLUGIN_URL . '/images/crossclear.' . VTM_ICON_FORMAT;
-	$empty = VTM_PLUGIN_URL . '/images/webbox.' . VTM_ICON_FORMAT;
+	$full  = vtm_get_skin_icon_url('crossclear');
+	$empty = vtm_get_skin_icon_url('webbox');
 	
 	$output = "";
 	
@@ -1569,7 +1600,7 @@ function vtm_pm_link($linktext, $args) {
 		$linkurl = add_query_arg('characterID',$characterID,$linkurl);
 		$linkurl = add_query_arg('type',$type,$linkurl);
 		
-		$imgurl = VTM_PLUGIN_URL . '/images/mail.' . VTM_ICON_FORMAT;
+		$imgurl = vtm_get_skin_icon_url('mail');
 		
 		// output link
 		$linktext .= " <a href='$linkurl'><img class='vtmpm_icon' src='$imgurl' alt='(contact)'></a>";
@@ -1858,6 +1889,38 @@ function vtm_canDo($character, $capability = 'vtm_view_character') {
 	} else {
 		return false;
 	}
+
+}
+
+function vtm_sanitize_link_array( $value ) {
+    if ( ! is_array( $value ) ) {
+        return array();
+    }
+
+    $sanitized = array();
+
+    foreach ( $value as $key => $item ) {
+        if ( strpos( $key, '_newpage' ) !== false ) {
+            $sanitized[ $key ] = sanitize_text_field( $item );
+        } else {
+            $sanitized[ $key ] = absint( $item );
+        }
+    }
+
+    return $sanitized;
+}
+
+function vtm_convertYNtoCheckboxImg($value) {
+	$imgurl_Y = vtm_get_skin_icon_url('check');
+	$imgurl_N = vtm_get_skin_icon_url('webbox');
+
+	if ($value == 'Y') {
+		return "<img alt='X' src='$imgurl_Y'>";
+	}
+	elseif ($value == 'N') {
+		return "<img alt='*' src='$imgurl_N'>";
+	}
+	return "";
 
 }
 ?>
