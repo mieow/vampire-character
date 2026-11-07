@@ -221,8 +221,7 @@ class vtmclass_master_path extends vtmclass_Report_ListTable {
         $hidden = array();
         $sortable = $this->get_sortable_columns();
 		
-		$sql = "SELECT ID FROM %i WHERE NAME = 'Path Change'";
-		$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "PATH_REASON");
+		$sql = $wpdb->prepare("SELECT ID FROM %i WHERE NAME = 'Path Change'", VTM_TABLE_PREFIX . "PATH_REASON");
 		$this->defaultreason = $wpdb->get_var("$sql");
 		$this->pathreasons = vtm_listPathReasons();
 

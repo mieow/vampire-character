@@ -234,10 +234,8 @@ class vtmclass_admin_skill_type_table extends vtmclass_MultiPage_ListTable {
 			return;
 			
 		} else {
-		
-			$sql = "delete from " . VTM_TABLE_PREFIX . "SKILL_TYPE where ID = %d;";
-			
-			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+					
+			$result = $wpdb->get_results($wpdb->prepare("delete from %i where ID = %d;", VTM_TABLE_PREFIX . "SKILL_TYPE", $selectedID));
 		
 			echo "<p style='color:green'>Deleted Ability Category " . esc_html($selectedID) . "</p>";
 		}
@@ -328,25 +326,27 @@ class vtmclass_admin_skill_type_table extends vtmclass_MultiPage_ListTable {
         
         $this->process_bulk_action();
 		
+		$orderby = $_REQUEST['orderby'] ?? "NAME";
+		$order = $_REQUEST['order'] ?? "ASC";
+		$orderby_sql = sanitize_sql_orderby("$orderby $order" );
 		
+		$args = array(
+			VTM_TABLE_PREFIX . "SKILL_TYPE",
+			VTM_TABLE_PREFIX . "SKILL_TYPE"
+		);
+
 		/* Get the data from the database */
-		$sql = "SELECT types.ID, types.NAME, types.DESCRIPTION, 
+		
+		$data =$wpdb->get_results($wpdb->prepare("SELECT types.ID, types.NAME, types.DESCRIPTION, 
 					parenttypes.NAME as PARENT, types.ORDERING
 				FROM 
-					" . VTM_TABLE_PREFIX . "SKILL_TYPE types
+					%i types
 					LEFT JOIN (
 						SELECT ID, NAME
-						FROM " . VTM_TABLE_PREFIX . "SKILL_TYPE
+						FROM %i
 					) parenttypes
-					ON parenttypes.ID = types.PARENT_ID";
-							
-		/* order the data according to sort columns */
-		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
-				
-		//echo "<p>SQL: $sql</p>";
-		
-		$data =$wpdb->get_results("$sql");
+					ON parenttypes.ID = types.PARENT_ID
+				ORDER BY {$orderby_sql}", $args));
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

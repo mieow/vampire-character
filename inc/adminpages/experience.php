@@ -125,10 +125,7 @@ function vtm_render_costmodel_page($type){
 					$ok = 1;
 					
 					/* clans */
-					$sql = "SELECT clans.NAME FROM %i clans
-							WHERE	clans.CLAN_COST_MODEL_ID = %s
-									OR clans.NONCLAN_COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CLAN", $id, $id));
+					$isused = $wpdb->get_results($wpdb->prepare("SELECT clans.NAME FROM %i clans WHERE clans.CLAN_COST_MODEL_ID = %s OR clans.NONCLAN_COST_MODEL_ID = %s", VTM_TABLE_PREFIX . "CLAN", $id, $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following clans:";
 						echo "<ul>";
@@ -138,9 +135,7 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* stats */
-					$sql = "SELECT stats.NAME FROM %i stats
-							WHERE stats.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "STAT",$id));
+					$isused = $wpdb->get_results($wpdb->prepare("SELECT stats.NAME FROM %i stats WHERE stats.COST_MODEL_ID = %s", VTM_TABLE_PREFIX . "STAT",$id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following attributes:";
 						echo "<ul>";
@@ -150,9 +145,7 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* skills */
-					$sql = "SELECT skills.NAME FROM %i skills
-							WHERE skills.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SKILL", $id));
+					$isused = $wpdb->get_results($wpdb->prepare("SELECT skills.NAME FROM %i skills WHERE skills.COST_MODEL_ID = %s", VTM_TABLE_PREFIX . "SKILL", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following abilities:";
 						echo "<ul>";
@@ -162,9 +155,7 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* backgrounds */
-					$sql = "SELECT bgdnds.NAME FROM %i bgdnds
-							WHERE bgdnds.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "BACKGROUND", $id));
+					$isused = $wpdb->get_results($wpdb->prepare("SELECT bgdnds.NAME FROM %i bgdnds WHERE bgdnds.COST_MODEL_ID = %s", VTM_TABLE_PREFIX . "BACKGROUND", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following backgrounds:";
 						echo "<ul>";
@@ -174,14 +165,7 @@ function vtm_render_costmodel_page($type){
 						$ok = 0;
 					}
 					/* path */
-					$sql = "SELECT paths.NAME, disciplines.NAME as DISCIPLINE
-							FROM 
-								" . VTM_TABLE_PREFIX . "PATH paths,
-								" . VTM_TABLE_PREFIX . "DISCIPLINE disciplines
-							WHERE 
-								paths.DISCIPLINE_ID = disciplines.ID
-								AND paths.COST_MODEL_ID = %s";
-					$isused = $wpdb->get_results($wpdb->prepare("$sql", $id));
+					$isused = $wpdb->get_results($wpdb->prepare("SELECT paths.NAME, disciplines.NAME as DISCIPLINE FROM %i paths, %i disciplines WHERE paths.DISCIPLINE_ID = disciplines.ID AND paths.COST_MODEL_ID = %s", VTM_TABLE_PREFIX . "PATH", VTM_TABLE_PREFIX . "DISCIPLINE", $id));
 					if ($isused) {
 						echo "<p style='color:red'>Cannot delete as this cost model is being used in the following paths:";
 						echo "<ul>";
@@ -192,14 +176,11 @@ function vtm_render_costmodel_page($type){
 					}
 					if ($ok) {
 						/* delete _step */
-						$sql = "delete from " . VTM_TABLE_PREFIX . "COST_MODEL_STEP where COST_MODEL_ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
+						$result = $wpdb->get_results($wpdb->prepare("delete from %i where COST_MODEL_ID = %d;", VTM_TABLE_PREFIX . "COST_MODEL_STEP", $id));
 						/* delete cost model */
-						$sql = "delete from " . VTM_TABLE_PREFIX . "COST_MODEL where ID = %d;";
-						$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
+						$result = $wpdb->get_results($wpdb->prepare("delete from %i where ID = %d;", VTM_TABLE_PREFIX . "COST_MODEL", $id));
 						echo "<p style='color:green'>Deleted cost model " . esc_html($_REQUEST['costmodel_name']) . "</p>";
 					}
-					
 					
 					$id = 0;
 				}
@@ -273,13 +254,11 @@ function vtm_render_costmodel_page($type){
 	
 	if ($id > 0) {
 		
-		$sql = "SELECT NAME, DESCRIPTION FROM " . VTM_TABLE_PREFIX . "COST_MODEL WHERE ID = %s";
-		$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
+		$result = $wpdb->get_results($wpdb->prepare("SELECT NAME, DESCRIPTION FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "COST_MODEL", $id));
 		$name        = $result[0]->NAME;
 		$description = $result[0]->DESCRIPTION;
 		
-		$sql = "SELECT * FROM " . VTM_TABLE_PREFIX . "COST_MODEL_STEP WHERE COST_MODEL_ID = %s ORDER BY SEQUENCE ASC";
-		$result = $wpdb->get_results($wpdb->prepare("$sql", $id));
+		$result = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i WHERE COST_MODEL_ID = %s ORDER BY SEQUENCE ASC", VTM_TABLE_PREFIX . "COST_MODEL_STEP", $id));
 			
 	} else {
 		$result = array();
@@ -402,14 +381,10 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			if ($data[0]->ITEMTABLE_ID == 15) {
 				$statID = 1; //Willpower
 				
-				$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "TEMPORARY_STAT_REASON WHERE NAME = %s";
-				$reasonID = $wpdb->get_var($wpdb->prepare("$sql", 'Game spend'));
-				$sql = "SELECT LEVEL FROM " . VTM_TABLE_PREFIX . "CHARACTER_STAT WHERE CHARACTER_ID = %s AND STAT_ID = '15'" ;
-				$max = $wpdb->get_var($wpdb->prepare("$sql", $data[0]->CHARACTER_ID));
-				$sql = "SELECT SUM(AMOUNT) FROM " . VTM_TABLE_PREFIX . "CHARACTER_TEMPORARY_STAT WHERE CHARACTER_ID = %s AND TEMPORARY_STAT_ID = %s" ;
-				$current = $wpdb->get_var($wpdb->prepare("$sql", $data[0]->CHARACTER_ID, $statID));
-				$sql = "SELECT NAME FROM " . VTM_TABLE_PREFIX . "CHARACTER WHERE ID = %s" ;
-				$char = $wpdb->get_var($wpdb->prepare("$sql", $data[0]->CHARACTER_ID));
+				$reasonID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s", VTM_TABLE_PREFIX . "TEMPORARY_STAT_REASON", 'Game spend'));
+				$max = $wpdb->get_var($wpdb->prepare("SELECT LEVEL FROM %i WHERE CHARACTER_ID = %s AND STAT_ID = '15'", VTM_TABLE_PREFIX . "CHARACTER_STAT", $data[0]->CHARACTER_ID));
+				$current = $wpdb->get_var($wpdb->prepare("SELECT SUM(AMOUNT) FROM %i WHERE CHARACTER_ID = %s AND TEMPORARY_STAT_ID = %s", VTM_TABLE_PREFIX . "CHARACTER_TEMPORARY_STAT", $data[0]->CHARACTER_ID, $statID));
+				$char = $wpdb->get_var($wpdb->prepare("SELECT NAME FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "CHARACTER", $data[0]->CHARACTER_ID));
 
 				vtm_update_temp_stat(
 					$data[0]->CHARACTER_ID, 
@@ -452,8 +427,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		
 		if ($approvalok) {
 			/* update current XP */
-			$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "XP_REASON WHERE NAME = 'XP Spend'";
-			$result = $wpdb->get_results("$sql");
+			$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM %i WHERE NAME = 'XP Spend'", VTM_TABLE_PREFIX . "XP_REASON"));
 			
 			//$specialisation = $data[0]->SPECIALISATION ? ("(" . $data[0]->SPECIALISATION . ") ") : "";
 			vtm_touch_last_updated($data[0]->CHARACTER_ID);
@@ -682,8 +656,7 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 			vtm_touch_last_updated($data2update->CHARACTER_ID);
 		}
 		elseif ($data2update->CHARTABLE_ID != 0 && $data2update->CHARTABLE_LEVEL < 0) { /* remove flaw */
-			$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "CHARACTER_MERIT where ID = %d;";
-			$result = $wpdb->get_results($wpdb->prepare("$sql", $data2update->CHARTABLE_ID));
+			$result = $wpdb->get_results($wpdb->prepare("DELETE FROM %i where ID = %d;", VTM_TABLE_PREFIX . "CHARACTER_MERIT", $data2update->CHARTABLE_ID));
 			$result = 1;
 		} 
 		else {
@@ -722,11 +695,8 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 	}
 	
 	function delete_pending($selectedID) {
-		global $wpdb;
-		$sql = "DELETE FROM " . VTM_TABLE_PREFIX . "PENDING_XP_SPEND
-				WHERE ID = %d";
-		
-		$sql = $wpdb->prepare("$sql", $selectedID);
+		global $wpdb;		
+		$sql = $wpdb->prepare("DELETE FROM %i WHERE ID = %d", VTM_TABLE_PREFIX . "PENDING_XP_SPEND", $selectedID);
 		/* echo "<p>SQL: $sql</p>"; */
 		$result = $wpdb->get_results("$sql");
 		
@@ -857,28 +827,35 @@ class vtmclass_admin_xpapproval_table extends vtmclass_MultiPage_ListTable {
 		$this->type = $type;
 		
         $this->process_bulk_action();
-		
+
+		$orderby = $_REQUEST['orderby'] ?? "CHARACTERNAME";
+		$order = $_REQUEST['order'] ?? "ASC";
+		$orderby_sql = sanitize_sql_orderby("$orderby $order" );
+
 		/* get table data */
-		$sql = "SELECT pending.ID, pending.PLAYER_ID, pending.CHARACTER_ID, 
+		$args = array(
+			VTM_TABLE_PREFIX . "PLAYER",
+			VTM_TABLE_PREFIX . "CHARACTER",
+			VTM_TABLE_PREFIX . "PENDING_XP_SPEND",
+			VTM_TABLE_PREFIX . "CHARGEN_STATUS"
+		);
+		
+		$data =$wpdb->get_results($wpdb->prepare("SELECT pending.ID, pending.PLAYER_ID, pending.CHARACTER_ID, 
 					players.NAME as PLAYER,  characters.NAME as CHARACTERNAME, 
 					pending.CHARTABLE, pending.CHARTABLE_ID, pending.CHARTABLE_LEVEL,
 					pending.AMOUNT, pending.COMMENT, pending.SPECIALISATION,
 					pending.TRAINING_NOTE
 				FROM
-					" . VTM_TABLE_PREFIX . "PLAYER players,
-					" . VTM_TABLE_PREFIX . "CHARACTER characters,
-					" . VTM_TABLE_PREFIX . "PENDING_XP_SPEND pending,
-					" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+					%i players,
+					%i characters,
+					%i pending,
+					%i cgstatus
 				WHERE
 					players.ID = pending.PLAYER_ID
 					AND characters.ID = pending.CHARACTER_ID
 					AND cgstatus.ID = characters.CHARGEN_STATUS_ID
-					AND cgstatus.NAME = 'Approved'";
-		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
-		
-		/* echo "<p>SQL: $sql</p>"; */
-		$data =$wpdb->get_results("$sql");
+					AND cgstatus.NAME = 'Approved'
+				ORDER BY {$orderby_sql}", $args));
 		$this->items = $data;
         
 
@@ -917,9 +894,7 @@ function vtm_character_xp_assign() {
 function vtm_addPlayerXP($player, $character, $xpReason, $value, $comment) {
 	global $wpdb;
 	$table_prefix = VTM_TABLE_PREFIX;
-	$sql = "INSERT INTO %i (player_id, amount, character_id, xp_reason_id, comment, awarded)
-					VALUES (%d, %d, %d, %d, %s, SYSDATE())";
-	$wpdb->query($wpdb->prepare("$sql", $table_prefix . "PLAYER_XP", $player, ((int) $value), $character, $xpReason, $comment));
+	$wpdb->query($wpdb->prepare("INSERT INTO %i (player_id, amount, character_id, xp_reason_id, comment, awarded) VALUES (%d, %d, %d, %d, %s, SYSDATE())", $table_prefix . "PLAYER_XP", $player, ((int) $value), $character, $xpReason, $comment));
 	
 	vtm_touch_last_updated($character);
 }
@@ -1076,7 +1051,18 @@ function vtm_render_xp_by_player() {
 function vtm_render_xp_by_character () {
 	global $wpdb;
 
-	$sql = "SELECT
+	$args = array(
+		VTM_TABLE_PREFIX . "CHARACTER",
+		VTM_TABLE_PREFIX . "PLAYER",
+		VTM_TABLE_PREFIX . "PLAYER_STATUS",
+		VTM_TABLE_PREFIX . "CHARACTER_STATUS",
+		VTM_TABLE_PREFIX . "CHARACTER_TYPE",
+		VTM_TABLE_PREFIX . "PLAYER_XP",
+		VTM_TABLE_PREFIX . "CHARGEN_STATUS"
+	);
+	
+	//echo "<p>SQL: $sql</p>";
+	$results = $wpdb->get_results($wpdb->prepare("SELECT
 				chara.ID as ID,
 				chara.name as CHARACTERNAME,
 				player.name as PLAYER,
@@ -1084,13 +1070,13 @@ function vtm_render_xp_by_character () {
 				cstatus.name as CSTATUS,
 				SUM(xp.amount) as CHARACTER_XP
 			FROM
-				" . VTM_TABLE_PREFIX . "CHARACTER chara,
-				" . VTM_TABLE_PREFIX . "PLAYER player,
-				" . VTM_TABLE_PREFIX . "PLAYER_STATUS pstatus,
-				" . VTM_TABLE_PREFIX . "CHARACTER_STATUS cstatus,
-				" . VTM_TABLE_PREFIX . "CHARACTER_TYPE ctype,
-				" . VTM_TABLE_PREFIX . "PLAYER_XP xp,
-				" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus
+				%i chara,
+				%i player,
+				%i pstatus,
+				%i cstatus,
+				%i ctype,
+				%i xp,
+				%i cgstatus
 			WHERE
 				chara.PLAYER_ID = player.ID
 				AND pstatus.ID = player.PLAYER_STATUS_ID
@@ -1106,10 +1092,7 @@ function vtm_render_xp_by_character () {
 				AND chara.VISIBLE = 'Y'
 				AND cgstatus.NAME = 'Approved'
 			GROUP BY chara.ID
-			ORDER BY PLAYER, CHARACTERNAME, cstatus.ID, CHARACTER_XP";
-	
-	//echo "<p>SQL: $sql</p>";
-	$results = $wpdb->get_results("$sql");
+			ORDER BY PLAYER, CHARACTERNAME, cstatus.ID, CHARACTER_XP", $args));
 	//print_r ($results);
 	
 	$output = "";

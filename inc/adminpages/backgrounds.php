@@ -444,8 +444,7 @@ function vtm_render_question_add_form($addaction) {
 		
 	} else {
 	
-		$sql = "select * from " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND;";
-		$order = count($wpdb->get_results("$sql")) + 1;
+		$order = count($wpdb->get_results($wpdb->prepare("select * from %i;", VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND"))) + 1;
 	
 		/* defaults */
 		$title   = "";
@@ -836,14 +835,20 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 			$row++;
 		}
 
+		$args = array(
+			VTM_TABLE_PREFIX . "MERIT",
+			VTM_TABLE_PREFIX . "CHARACTER",
+			VTM_TABLE_PREFIX . "CHARGEN_STATUS",
+			VTM_TABLE_PREFIX . "CHARACTER_MERIT"
+		);
 		/* Get the data from the database - merits and flaws */
 		$sql = "select characters.ID charID, charmerit.ID charmeritID, characters.NAME charname, 
 					merits.NAME merit, charmerit.COMMENT,
 					charmerit.PENDING_DETAIL, charmerit.DENIED_DETAIL, charmerit.APPROVED_DETAIL
-				from	" . VTM_TABLE_PREFIX . "MERIT merits,
-						" . VTM_TABLE_PREFIX . "CHARACTER characters,
-						" . VTM_TABLE_PREFIX . "CHARGEN_STATUS cgstatus,
-						" . VTM_TABLE_PREFIX . "CHARACTER_MERIT charmerit
+				from	%i merits,
+						%i characters,
+						%i cgstatus,
+						%i charmerit
 				where	merits.ID = charmerit.MERIT_ID
 					and characters.ID = charmerit.CHARACTER_ID
 					and cgstatus.ID = characters.CHARGEN_STATUS_ID
@@ -854,7 +859,7 @@ class vtmclass_admin_extbgapproval_table extends vtmclass_MultiPage_ListTable {
 				order by charmerit.ID;";
 				
 		
-		$tempdata =$wpdb->get_results("$sql");
+		$tempdata =$wpdb->get_results($wpdb->prepare("$sql", $args));
 		//echo "<p>SQL: $sql</p>";
 		//print_r($tempdata);
 		foreach ($tempdata as $tablerow) {

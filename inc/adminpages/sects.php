@@ -45,9 +45,8 @@ function vtm_render_sect_add_form($type, $addaction) {
 		$nextaction = $_REQUEST['action'];
 
 	} elseif ('edit-' . $type == $addaction) {
-		$sql = "SELECT * FROM %i WHERE ID = %s";
-		$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $id);
-		$data = $wpdb->get_row($sql);
+		$sql = $wpdb->prepare("SELECT * FROM %i WHERE ID = %s", VTM_TABLE_PREFIX . "SECT", $id);
+		$data = $wpdb->get_row("$sql");
 		/* echo "<p>SQL: $sql</p>";
 		print_r($data); */
 		
@@ -202,13 +201,8 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		
 		/* Check if question in use */
-		$sql = "select characters.NAME
-				from %i characters, %i sects
-				where 
-					characters.SECT_ID = sects.ID 
-					and sects.ID = %d;";
-		$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "SECT", $selectedID);
-		$isused = $wpdb->get_results($sql);
+		$sql = $wpdb->prepare("select characters.NAME from %i characters, %i sects where characters.SECT_ID = sects.ID and sects.ID = %d;", VTM_TABLE_PREFIX . "CHARACTER", VTM_TABLE_PREFIX . "SECT", $selectedID);
+		$isused = $wpdb->get_results("$sql");
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this affiliation has been use for the following characters:";
 			echo "<ul>";
@@ -221,7 +215,7 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
 		
 			$sql = "delete from %i where ID = %d;";
 			$sql = $wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT", $selectedID);
-			$result = $wpdb->get_results($sql);
+			$result = $wpdb->get_results("$sql");
 		
 			echo "<p style='color:green'>Deleted affiliation " . esc_html($selectedID) . "</p>";
 		}
@@ -309,17 +303,14 @@ class vtmclass_admin_sect_table extends vtmclass_MultiPage_ListTable {
         
         $this->process_bulk_action();
 		
+		$orderby = $_REQUEST['orderby'] ?? "NAME";
+		$order = $_REQUEST['order'] ?? "ASC";
+		$orderby_sql = sanitize_sql_orderby("$orderby $order" );
 		
 		/* Get the data from the database */
-		$sql = "SELECT * FROM %i sects";
-							
-		/* order the data according to sort columns */
-		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
-				
-		//echo "<p>SQL: $sql</p>";
-		
-		$data =$wpdb->get_results($wpdb->prepare("$sql", VTM_TABLE_PREFIX . "SECT"));
+		$args = array(VTM_TABLE_PREFIX . "SECT");
+						
+		$data = $wpdb->get_results($wpdb->prepare("SELECT * FROM %i sects ORDER BY {$orderby_sql}", $args));
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);

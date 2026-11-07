@@ -131,17 +131,14 @@ function vtm_render_meritflaw_add_form($type, $addaction) {
 		/* Get values from database */
 		$id   = $_REQUEST['merit'];
 		
-		$sql = "select merit.ID, merit.NAME as NAME, merit.DESCRIPTION as DESCRIPTION, merit.GROUPING as GROUPING,
-						merit.COST as COST, merit.XP_COST as XP_COST, merit.MULTIPLE as MULTIPLE,
-						books.ID as SOURCEBOOK, merit.PAGE_NUMBER as PAGE_NUMBER,
-						merit.VISIBLE as VISIBLE, merit.BACKGROUND_QUESTION, merit.HAS_SPECIALISATION,
-						merit.PROFILE_DISPLAY_ID
-						from " . VTM_TABLE_PREFIX . "MERIT merit, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books 
-						where merit.ID = %d and books.ID = merit.SOURCE_BOOK_ID;";
-		
-		/* echo "<p>$sql</p>"; */
-		
-		$data =$wpdb->get_results($wpdb->prepare("$sql", $id));
+		$data =$wpdb->get_results($wpdb->prepare("select merit.ID, merit.NAME as NAME, merit.DESCRIPTION as DESCRIPTION, merit.GROUPING as GROUPING,
+                        merit.COST as COST, merit.XP_COST as XP_COST, merit.MULTIPLE as MULTIPLE,
+                        books.ID as SOURCEBOOK, merit.PAGE_NUMBER as PAGE_NUMBER,
+                        merit.VISIBLE as VISIBLE, merit.BACKGROUND_QUESTION, merit.HAS_SPECIALISATION,
+                        merit.PROFILE_DISPLAY_ID
+                        from %i merit, %i books 
+                        where merit.ID = %d and books.ID = merit.SOURCE_BOOK_ID;"
+						, VTM_TABLE_PREFIX . "MERIT", VTM_TABLE_PREFIX . "SOURCE_BOOK", $id));
 		
 		/* print_r($data); */
 		
@@ -690,10 +687,8 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 			foreach ($isused as $character)
 				echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 			echo "</ul></p>";
-		} else {
-			$sql = "delete from " . VTM_TABLE_PREFIX . "MERIT where ID = %d;";
-			
-			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		} else {			
+			$result = $wpdb->get_results($wpdb->prepare("delete from %i where ID = %d;", VTM_TABLE_PREFIX . "MERIT", $selectedID));
 		
 			/* print_r($result); */
 			echo "<p style='color:green'>Deleted item " . esc_html($selectedID) . "</p>";
@@ -1020,7 +1015,7 @@ class vtmclass_admin_meritsflaws_table extends vtmclass_MultiPage_ListTable {
 				'n'  => 'No',
 			);
 			
-		$sql = "SELECT DISTINCT GROUPING FROM " . VTM_TABLE_PREFIX . "MERIT merit;";
+		$sql = $wpdb->prepare("SELECT DISTINCT GROUPING FROM %i merit;", VTM_TABLE_PREFIX . "MERIT");
 		$groups =$wpdb->get_results("$sql");
 		$this->filter_group = vtm_make_filter($groups);
 			
@@ -1124,10 +1119,10 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		
 		/* Check if ritual id in use */
-		$sql = "select characters.NAME
-					from " . VTM_TABLE_PREFIX . "CHARACTER_RITUAL charrituals, " . VTM_TABLE_PREFIX . "CHARACTER characters
-					where charrituals.RITUAL_ID = %d and charrituals.CHARACTER_ID = characters.ID;";
-		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("select characters.NAME
+					from %i charrituals, %i characters
+					where charrituals.RITUAL_ID = %d and charrituals.CHARACTER_ID = characters.ID;", 
+					VTM_TABLE_PREFIX . "CHARACTER_RITUAL", VTM_TABLE_PREFIX . "CHARACTER", $selectedID));
 		
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this ritual is being used in the following characters:";
@@ -1135,11 +1130,8 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 			foreach ($isused as $character)
 				echo "<li style='color:red'>" . esc_html($character->NAME) . "</li>";
 			echo "</ul></p>";
-		} else {
-		
-			$sql = "delete from " . VTM_TABLE_PREFIX . "RITUAL where ID = %d;";
-			
-			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		} else {			
+			$result = $wpdb->get_results($wpdb->prepare("delete from %i where ID = %d;", VTM_TABLE_PREFIX . "RITUAL", $selectedID));
 		
 			/* print_r($result); */
 			echo "<p style='color:green'>Deleted ritual " . esc_html($selectedID) . "</p>";
@@ -1371,21 +1363,21 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 		$type = "ritual";
         
 		/* setup filters here */
-		$sql = "SELECT DISTINCT disciplines.ID as ID, disciplines.NAME as NAME
-				FROM " . VTM_TABLE_PREFIX . "RITUAL rituals, " . VTM_TABLE_PREFIX . "DISCIPLINE disciplines
-				WHERE disciplines.ID = rituals.DISCIPLINE_ID;";
+		$sql = $wpdb->prepare("SELECT DISTINCT disciplines.ID as ID, disciplines.NAME as NAME
+				FROM %i rituals, %i disciplines
+				WHERE disciplines.ID = rituals.DISCIPLINE_ID;", VTM_TABLE_PREFIX . "RITUAL", VTM_TABLE_PREFIX . "DISCIPLINE");
 		$disciplines = $wpdb->get_results("$sql");
 		$this->filter_discipline = vtm_make_filter($disciplines);
 		
 		/* Ritual Level filter */
-		$sql = "SELECT DISTINCT LEVEL FROM " . VTM_TABLE_PREFIX . "RITUAL;";
+		$sql = $wpdb->prepare("SELECT DISTINCT LEVEL FROM %i;", VTM_TABLE_PREFIX . "RITUAL");
 		$levels = $wpdb->get_results("$sql");
 		$this->filter_level = vtm_make_filter($levels);
 			
 		/* Book filter */
-		$sql = "SELECT DISTINCT books.ID, books.NAME 
-				FROM " . VTM_TABLE_PREFIX . "RITUAL rituals, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books
-				WHERE rituals.SOURCE_BOOK_ID = books.ID;";
+		$sql = $spdb->prepare("SELECT DISTINCT books.ID, books.NAME 
+				FROM %i rituals, %i books
+				WHERE rituals.SOURCE_BOOK_ID = books.ID;", VTM_TABLE_PREFIX . "RITUAL", VTM_TABLE_PREFIX . "SOURCE_BOOK");
 		$books = $wpdb->get_results("$sql");
 		$this->filter_book = vtm_make_filter($books);
 						
@@ -1475,10 +1467,9 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 		global $wpdb;
 		
 		/* Check if book in use in MERITS and FLAWS */
-		$sql = "select merits.NAME
-				from " . VTM_TABLE_PREFIX . "MERIT merits, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books
-				where books.ID = merits.SOURCE_BOOK_ID and merits.SOURCE_BOOK_ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("select merits.NAME
+				from %i merits, %i books
+				where books.ID = merits.SOURCE_BOOK_ID and merits.SOURCE_BOOK_ID = %d;", VTM_TABLE_PREFIX . "MERIT", VTM_TABLE_PREFIX . "SOURCE_BOOK", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this book is being used in the Merits and Flaws list:";
 			echo "<ul>";
@@ -1489,10 +1480,9 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 		}
 		
 		/* Check if book in use in RITUALS */
-		$sql = "select rituals.NAME
-				from " . VTM_TABLE_PREFIX . "RITUAL rituals, " . VTM_TABLE_PREFIX . "SOURCE_BOOK books
-				where books.ID = rituals.SOURCE_BOOK_ID and rituals.SOURCE_BOOK_ID = %d;";
-		$isused = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+		$isused = $wpdb->get_results($wpdb->prepare("select rituals.NAME
+				from %i rituals, %i books
+				where books.ID = rituals.SOURCE_BOOK_ID and rituals.SOURCE_BOOK_ID = %d;", VTM_TABLE_PREFIX . "RITUAL", VTM_TABLE_PREFIX . "SOURCE_BOOK", $selectedID));
 		if ($isused) {
 			echo "<p style='color:red'>Cannot delete as this book is being used in the Rituals list:";
 			echo "<ul>";
@@ -1517,10 +1507,8 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
 				echo "<li style='color:red'></li>";
 			echo "</ul></p>";
 		} else {
-		
-			$sql = "delete from " . VTM_TABLE_PREFIX . "SOURCE_BOOK where ID = %d;";
-			
-			$result = $wpdb->get_results($wpdb->prepare("$sql", $selectedID));
+					
+			$result = $wpdb->get_results($wpdb->prepare("delete from %i where ID = %d;", VTM_TABLE_PREFIX . "SOURCE_BOOK", $selectedID));
 		
 			/* print_r($result); */
 			echo "<p style='color:green'>Deleted book " . esc_html($selectedID) . "</p>";
@@ -1672,18 +1660,18 @@ class vtmclass_admin_books_table extends vtmclass_MultiPage_ListTable {
         $this->process_bulk_action();
 		
 		/* Get the data from the database */
-		$sql = "select books.ID, books.NAME, books.CODE, books.VISIBLE
-				from " . VTM_TABLE_PREFIX . "SOURCE_BOOK books";
+		$sql = "select books.ID, books.NAME, books.CODE, books.VISIBLE from %i books";
+		$args = array(VTM_TABLE_PREFIX . "SOURCE_BOOK");
 				
 		/* order the data according to sort columns */
-		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$sql .= " ORDER BY books.{$_REQUEST['orderby']} {$_REQUEST['order']}";
-		
-		$sql .= ";";
+		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order'])) {
+			$sql .= " ORDER BY %i %s";
+			array_push($args, "books.{$_REQUEST['orderby']}", $_REQUEST['order']);
+		}
 		
 		/* echo "<p>SQL: $sql</p>"; */
 		
-		$data =$wpdb->get_results("$sql");
+		$data =$wpdb->get_results($wpdb->prepare("$sql",$args));
         
         $current_page = $this->get_pagenum();
         $total_items = count($data);
