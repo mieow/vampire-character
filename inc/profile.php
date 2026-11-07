@@ -64,6 +64,7 @@ function vtm_get_profile_content() {
 	$mycharacter = new vtmclass_character();
 	$mycharacter->load($characterID);
 	$emailAddress = $mycharacter->email;
+	$playerID = $mycharacter->player_id;
 
 	if (vtm_isST('vtm_edit_character') || $currentCharacter == $character) {
 		// Update display name
@@ -411,7 +412,16 @@ function vtm_get_profile_content() {
 		$output .= "<br />";
 		$output .= "</td></tr>";
 	}
-	
+
+	// Consent Link
+	if (get_option( 'vtm_feature_consent', '0' ) == '1' && $showAll) {
+		$output .= "<tr><td class=\"gvcol_1 gvcol_key\">Consent form:</td>
+			<td class=\"gvcol_2 gvcol_val\">";
+		$output .= "<strong><a href='" . esc_url(add_query_arg('characterID', $characterID ,vtm_get_stlink_url('editConsent'))) . "'>[Link]</a></strong>";
+		$output .= "</td></tr>";
+	}
+
+
 	$output .= "</table></td><td class=\"gvcol_2 gvcol_img\">\n";
 	// Portrait
 
