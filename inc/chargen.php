@@ -318,11 +318,11 @@ function vtm_get_chargen_content() {
 	$vtmglobal['templateID']  = vtm_get_templateid();
 	$vtmglobal['settings']    = vtm_get_chargen_settings();
 	$vtmglobal['dots'] = array(
-		'dot1full'  => VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT,
-		'dot1empty' => VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT,
-		'dot3'      => VTM_PLUGIN_URL . '/images/dot3.' . VTM_ICON_FORMAT,
-		'dot2'      => VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT,
-		'spacer'    => VTM_PLUGIN_URL . '/images/spacer.' . VTM_ICON_FORMAT
+		'dot1full'  => vtm_get_skin_icon_url('dot1full'),
+		'dot1empty' => vtm_get_skin_icon_url('dot1empty'),
+		'dot3'      => vtm_get_skin_icon_url('dot3'),
+		'dot2'      => vtm_get_skin_icon_url('dot2'),
+		'spacer'    => vtm_get_skin_icon_url('spacer')
 	);
 	$vtmglobal['charGenStatus'] = vtm_get_chargen_status();
 	
