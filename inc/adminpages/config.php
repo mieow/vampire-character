@@ -73,8 +73,7 @@ function vtm_render_config_general() {
 		
 			if (isset($_REQUEST['save_options'])) {
 			
-				$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX . "CONFIG ORDER BY ID";
-				$configid = $wpdb->get_var("$sql");
+				$configid = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i ORDER BY ID", VTM_TABLE_PREFIX . "CONFIG"));
 			
 				$wpdb->show_errors();
 				$dataarray = array (
@@ -110,8 +109,7 @@ function vtm_render_config_general() {
 
 			else {
 			
-			$sql = "select * from " . VTM_TABLE_PREFIX . "CONFIG;";
-			$options = $wpdb->get_results("$sql");
+			$options = $wpdb->get_results($wpdb->prepare("select * from %i;", VTM_TABLE_PREFIX . "CONFIG"));
 			
 		?>
 
@@ -237,6 +235,8 @@ function pre_update_vtm_link_cb($value, $old_value, $option) {
 		);
 	}
 	
+
+
 	return $value;
 }
 function vtm_checkbox_cb($args) {
@@ -245,6 +245,17 @@ function vtm_checkbox_cb($args) {
 
 	?>
 	<input type="checkbox" name="<?php echo esc_attr( $option_name ); ?>" value="1" <?php checked( '1', $option ); ?> />
+	</td><td>	
+	<?php
+	print(esc_html($args["description"]));
+}
+function vtm_textbox($args) {
+	$option_name = $args['label_for'];
+	$option = get_option( $option_name,'' );
+	$length = $args["length"] ?? 50;
+
+	?>
+	<input type="textbox" name="<?php echo esc_attr( $option_name ); ?>" value="<?php echo esc_html($option ); ?>" maxlength="<?php echo esc_attr( $length ); ?>" size="<?php echo esc_attr( $length ); ?>"/>
 	</td><td>	
 	<?php
 	print(esc_html($args["description"]));
@@ -620,18 +631,18 @@ function vtm_render_config_skinning() {
 		</table>
 		<table>
 		<tr>
-		<td><img alt="empty dot1" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot1empty.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="full dot1"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot1full.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="dot2"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot2.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="dot3"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot3.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="dot4"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/dot4.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="crossclear" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/crossclear.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="box"        width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/webbox.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="checked"    width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/check.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="spacer"     width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/spacer.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="fill"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/fill.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="arrow"      width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/arrowright.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="mail"       width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/mail.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="empty dot1" width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('dot1empty')); ?>'></td>
+		<td><img alt="full dot1"  width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('dot1full')); ?>'></td>
+		<td><img alt="dot2"       width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('dot2')); ?>'></td>
+		<td><img alt="dot3"       width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('dot3')); ?>'></td>
+		<td><img alt="dot4"       width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('dot4')); ?>'></td>
+		<td><img alt="crossclear" width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('crossclear')); ?>'></td>
+		<td><img alt="box"        width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('webbox')); ?>'></td>
+		<td><img alt="checked"    width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('check')); ?>'></td>
+		<td><img alt="spacer"     width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('spacer')); ?>'></td>
+		<td><img alt="fill"       width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('fill')); ?>'></td>
+		<td><img alt="arrow"      width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('arrowright')); ?>'></td>
+		<td><img alt="mail"       width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('mail')); ?>'></td>
 		</tr>
 		</table>
 		
@@ -668,13 +679,13 @@ function vtm_render_config_skinning() {
 		<?php if (class_exists('Imagick') || extension_loaded('gd')) { ?>
 		<table>
 		<tr>
-		<td><img alt="empty dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/emptydot.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="full dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/fulldot.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="xp dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/pdfxpdot.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="box dot"  width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/box.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="box2 dot" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/boxcross1.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="box3 dot" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/boxcross2.' . VTM_ICON_FORMAT); ?>'></td>
-		<td><img alt="box4 dot" width=16 src='<?php echo esc_html(VTM_PLUGIN_URL . '/images/boxcross3.' . VTM_ICON_FORMAT); ?>'></td>
+		<td><img alt="empty dot"  width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('emptydot')); ?>'></td>
+		<td><img alt="full dot"  width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('fulldot')); ?>'></td>
+		<td><img alt="xp dot"  width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('pdfxpdot')); ?>'></td>
+		<td><img alt="box dot"  width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('box')); ?>'></td>
+		<td><img alt="box2 dot" width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('boxcross1')); ?>'></td>
+		<td><img alt="box3 dot" width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('boxcross2')); ?>'></td>
+		<td><img alt="box4 dot" width=16 src='<?php echo esc_html(vtm_get_skin_icon_url('boxcross3')); ?>'></td>
 		</tr>
 		</table>
 		<?php } ?>
@@ -748,10 +759,11 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 		}
 		
 		$image->drawImage($draw);
-		if (!$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype)) {	
-			echo "<p style='color:red'>ERROR: could not save " . esc_html(VTM_CHARACTER_URL . "images/{$name}." . $imagetype) . "</p>";
+		$save_path = vtm_get_skin_icon_path($name);
+		if (!$image->writeImage($save_path)) {
+			echo "<p style='color:red'>ERROR: could not save " . esc_html($save_path) . "</p>";
 		} else {
-			//echo "<p style='color:red'>Saved '" . VTM_CHARACTER_URL . "images/{$name}." . $imagetype . "' with $drawcolour, $drawbgcolour</p>";
+			//echo "<p style='color:red'>Saved '" . $save_path . "' with $drawcolour, $drawbgcolour</p>";
 		}
 		
 
@@ -779,8 +791,8 @@ function vtm_draw_dot($name, $drawcolour, $drawbgcolour, $drawborder, $fill = 1,
 		}
 
 		switch (VTM_ICON_FORMAT) {
-			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
-			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'jpg': imagejpeg($image, vtm_get_skin_icon_path($name)); break;
+			case 'gif': imagegif($image, vtm_get_skin_icon_path($name)); break;
 		}
 		imagedestroy($image);
 	}
@@ -809,7 +821,7 @@ function vtm_draw_box($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) 
 			$draw->line( $drawborder, $drawheight/2, $drawwidth - $drawborder - 1, $drawheight / 2);
 		
 		$image->drawImage($draw);
-		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
+		$image->writeImage(vtm_get_skin_icon_path($name));
 
 		$image = "";
 	}
@@ -834,8 +846,8 @@ function vtm_draw_box($name, $drawcolour, $drawbgcolour, $drawborder, $crosses) 
 			imageline ( $image , 1, $drawheight/2, $drawwidth - 1, $drawheight/2 , $color );
 	
 		switch (VTM_ICON_FORMAT) {
-			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
-			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'jpg': imagejpeg($image, vtm_get_skin_icon_path($name)); break;
+			case 'gif': imagegif($image, vtm_get_skin_icon_path($name)); break;
 		}
 		imagedestroy($image);
 	}
@@ -862,7 +874,7 @@ function vtm_draw_mail($name, $drawcolour, $drawbgcolour, $drawborder, $crosses)
 						$drawwidth - $drawborder - 1,	$drawborder);
 		
 		$image->drawImage($draw);
-		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
+		$image->writeImage(vtm_get_skin_icon_path($name));
 
 		$image = "";
 	}
@@ -883,8 +895,8 @@ function vtm_draw_mail($name, $drawcolour, $drawbgcolour, $drawborder, $crosses)
 		imageline ( $image , $drawwidth/2, $drawheight/2, $drawwidth - $drawborder - 1,	$drawborder , $color );
 	
 		switch (VTM_ICON_FORMAT) {
-			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
-			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'jpg': imagejpeg($image, vtm_get_skin_icon_path($name)); break;
+			case 'gif': imagegif($image, vtm_get_skin_icon_path($name)); break;
 		}
 		imagedestroy($image);
 	}
@@ -918,7 +930,7 @@ function vtm_draw_check($name, $drawcolour, $drawbgcolour, $drawborder) {
 		$draw->line($MIDx, $By - $gap,		$Rx - $gap, $Ty + $gap);
 		
 		$image->drawImage($draw);
-		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
+		$image->writeImage(vtm_get_skin_icon_path($name));
 
 		$image = "";
 	}
@@ -938,8 +950,8 @@ function vtm_draw_check($name, $drawcolour, $drawbgcolour, $drawborder) {
 		imageline ( $image , $MIDx, $By - $gap,	$Rx - $gap, $Ty + $gap, $color );
 		
 		switch (VTM_ICON_FORMAT) {
-			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
-			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'jpg': imagejpeg($image, vtm_get_skin_icon_path($name)); break;
+			case 'gif': imagegif($image, vtm_get_skin_icon_path($name)); break;
 		}
 		imagedestroy($image);
 	}
@@ -971,7 +983,7 @@ function vtm_draw_arrow($name, $drawcolour, $drawbgcolour, $drawborder) {
 		$draw->line($MIDx, $By, $Rx, $MIDy);
 		
 		$image->drawImage($draw);
-		$image->writeImage(VTM_CHARACTER_URL . "images/{$name}." . $imagetype);
+		$image->writeImage(vtm_get_skin_icon_path($name));
 
 		$image = "";
 	}
@@ -989,8 +1001,8 @@ function vtm_draw_arrow($name, $drawcolour, $drawbgcolour, $drawborder) {
 		imageline ( $image , $MIDx, $By, $Rx, $MIDy, $color );
 		
 		switch (VTM_ICON_FORMAT) {
-			case 'jpg': imagejpeg($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
-			case 'gif': imagegif($image, VTM_CHARACTER_URL . "images/{$name}." . $imagetype); break;
+			case 'jpg': imagejpeg($image, vtm_get_skin_icon_path($name)); break;
+			case 'gif': imagegif($image, vtm_get_skin_icon_path($name)); break;
 		}
 		imagedestroy($image);
 	}
@@ -1002,6 +1014,15 @@ function vtm_render_config_features() {
 	
 	?>
 			<p>You can hide or show the various plugin features.</p>
+	<?php
+	
+}
+
+function vtm_render_config_consent() {	
+	global $wpdb;
+	
+	?>
+			<p>These are options for the player consent form.</p>
 	<?php
 	
 }
@@ -1438,6 +1459,8 @@ function vtm_render_config_options() {
 	<h2 class="nav-tab-wrapper">
 		<?php echo wp_kses(vtm_get_option_tablink('pagelinks', 'Page Links', 'pagelinks'),vtm_tablink_allowedhtml()) ; ?>
 		<?php echo wp_kses(vtm_get_option_tablink('features',  'Features'),vtm_tablink_allowedhtml()); ?>
+		<?php if (get_option( 'vtm_feature_consent', '0' ) == 1)
+				echo wp_kses(vtm_get_option_tablink('consent',  'Consent Form'),vtm_tablink_allowedhtml()); ?>
 	</h2>
 	<?php
 
@@ -1455,7 +1478,13 @@ function vtm_render_config_options() {
 				settings_fields( 'vtm_features_group' );
 				do_settings_sections( 'vtm_features_group' );
 			} 
+			elseif ((get_option( 'vtm_feature_consent', '0' ) == 1) && $active_tab == 'consent') {
+				settings_fields( 'vtm_feature_consent' );
+				do_settings_sections( 'vtm_feature_consent' );
+			} 
 			else {
+				settings_fields( 'vtm_links_group' );
+				do_settings_sections( 'vtm_links_group' );
 			}
 			// output save settings button
 			submit_button( 'Save Settings' );
