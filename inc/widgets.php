@@ -17,6 +17,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 	public function __construct() {
 		parent::__construct(
 	 		'vtmplugin_widget', // Base ID
+  			'Character Login Widget',
 			array(
 				'description' => __( 'For login/logout and useful links', 'vampire-character' ),
 				'customize_selective_refresh' => true,
@@ -100,7 +101,13 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 					<li><a href="<?php echo esc_url(admin_url('edit.php?post_type=vtmpm&amp;page=vtmpm_mydetails')); ?>">Contact Details</a></li>
 					<?php 
 				}
-			}?>
+			}
+			if ( get_option( 'vtm_feature_consent', '0' ) == 1 ) {
+				if ( isset( $instance[ 'consent_link' ] ) ) { ?>
+				<li><a href="<?php echo esc_url(vtm_get_stlink_url('editConsent')); ?>">Consent Form</a></li>
+				<?php }
+			}
+			?>
  			<li><a href="<?php echo esc_url(wp_logout_url( home_url() )); ?>" title="Logout">Logout</a></li>
 			</ul>
 			<?php
@@ -127,6 +134,7 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		$instance['inbox_link']       = $new_instance['inbox_link'];
 		$instance['addresses_link']   = $new_instance['addresses_link'];
 		$instance['addressbook_link'] = $new_instance['addressbook_link'];
+		$instance['consent_link']     = $new_instance['consent_link'];
 		$instance['dl_category'] = wp_strip_all_tags( $new_instance['dl_category'] );
 		return $instance;
 	}
@@ -146,32 +154,39 @@ class vtmclass_Plugin_Widget extends WP_Widget {
 		$inbox_link       = isset( $instance[ 'inbox_link' ] );
 		$addresses_link   = isset( $instance[ 'addresses_link' ] );
 		$addressbook_link = isset( $instance[ 'addressbook_link' ] );
+		$consent_link     = isset( $instance[ 'consent_link' ] );
 
 		?>
 		<p>
-		<label for="<?php echo esc_html($this->get_field_id( 'charsheet_link' )); ?>"><?php esc_html( 'Show Character Sheet Link:' ); ?></label>
+		<label for="<?php echo esc_html($this->get_field_id( 'charsheet_link' )); ?>"><?php echo esc_html( 'Show Character Sheet Link:' ); ?></label>
  		<input id="<?php echo esc_html($this->get_field_id( 'charsheet_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'charsheet_link' )); ?>" type="checkbox" <?php echo checked( $charsheet_link, true ); ?> />
  		</p><p>
-		<label for="<?php echo esc_html($this->get_field_id( 'profile_link' )); ?>"><?php esc_html( 'Show Profile Link:' ); ?></label>
+		<label for="<?php echo esc_html($this->get_field_id( 'profile_link' )); ?>"><?php echo esc_html( 'Show Profile Link:' ); ?></label>
  		<input id="<?php echo esc_html($this->get_field_id( 'profile_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'profile_link' )); ?>" type="checkbox" <?php echo checked( $profile_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo esc_html($this->get_field_id( 'spendxp_link' )); ?>"><?php esc_html( 'Show Spend XP Link:' ); ?></label>
+		<label for="<?php echo esc_html($this->get_field_id( 'spendxp_link' )); ?>"><?php echo esc_html( 'Show Spend XP Link:' ); ?></label>
  		<input id="<?php echo esc_html($this->get_field_id( 'spendxp_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'spendxp_link' )); ?>" type="checkbox" <?php echo checked( $spendxp_link, true ); ?> />
 		</p><?php
 		if (get_option( 'vtm_feature_pm', '0' ) == 1) {
 		?><p>
-		<label for="<?php echo esc_html($this->get_field_id( 'inbox_link' )); ?>"><?php esc_html( 'Inbox Link:' ); ?></label>
+		<label for="<?php echo esc_html($this->get_field_id( 'inbox_link' )); ?>"><?php echo esc_html( 'Inbox Link:' ); ?></label>
  		<input id="<?php echo esc_html($this->get_field_id( 'inbox_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'inbox_link' )); ?>" type="checkbox" <?php echo checked( $inbox_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo esc_html($this->get_field_id( 'addresses_link' )); ?>"><?php esc_html( 'My Addresses Link:' ); ?></label>
+		<label for="<?php echo esc_html($this->get_field_id( 'addresses_link' )); ?>"><?php echo esc_html( 'My Addresses Link:' ); ?></label>
  		<input id="<?php echo esc_html($this->get_field_id( 'addresses_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'addresses_link' )); ?>" type="checkbox" <?php echo checked( $addresses_link, true ); ?> />
 		</p><p>
-		<label for="<?php echo esc_html($this->get_field_id( 'addressbook_link' )); ?>"><?php esc_html( 'Addressbook Link:' ); ?></label>
+		<label for="<?php echo esc_html($this->get_field_id( 'addressbook_link' )); ?>"><?php echo esc_html( 'Addressbook Link:' ); ?></label>
  		<input id="<?php echo esc_html($this->get_field_id( 'addressbook_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'addressbook_link' )); ?>" type="checkbox" <?php echo checked( $addressbook_link, true ); ?> />
 		</p>
 		<?php
 		}
-		
+		if (get_option( 'vtm_feature_consent', '0' ) == 1) {
+		?><p>
+		<label for="<?php echo esc_html($this->get_field_id( 'consent_link' )); ?>"><?php echo esc_html( 'Consent Form Link:' ); ?></label>
+ 		<input id="<?php echo esc_html($this->get_field_id( 'consent_link' )); ?>" name="<?php echo esc_html($this->get_field_name( 'consent_link' )); ?>" type="checkbox" <?php echo checked( $consent_link, true ); ?> />
+		</p>
+		<?php
+		}
 	}
 }
  // class Foo_Widget
