@@ -269,6 +269,8 @@ function vtm_character_options() {
 					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewXPSpend'), $character->wordpress_id, 'CHARACTER', 'spendxp.png', 'Spend Experience', 'XP Spend'),vtm_page_icon_allowedhtml());
 					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewExtBackgrnd'), $character->wordpress_id, 'CHARACTER', 'background.png', 'Extended Background', 'Background'),vtm_page_icon_allowedhtml());
 					echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('viewCustom'), $character->wordpress_id, 'CHARACTER', 'custom.png', 'View Custom Page as Character', 'Custom'),vtm_page_icon_allowedhtml());
+					if (get_option( 'vtm_feature_consent', '0' ) == 1)
+						echo wp_kses(vtm_get_page_icon(vtm_get_stlink_page('editConsent'), $character->wordpress_id, 'CHARACTER', 'consent.png', 'View Consent Form', 'Consent'),vtm_page_icon_allowedhtml());
 				}
 				echo "</div></td>";
 				echo "<td>" . esc_html($character->clan) . "</td>";
@@ -2965,23 +2967,41 @@ function vtm_purge_character($characterID, $name) {
 	$sql = "SELECT COUNT(ID) FROM " . $wpdb->prefix . "vtm_CHARACTER WHERE PLAYER_ID = %s";
 	$numcharacters = $wpdb->get_var($wpdb->prepare("$sql", $playerid));
 	if ($numcharacters == 0) {
-		$result = $wpdb->delete( $wpdb->prefix . "vtm_PLAYER", 
-			array ("ID" => $playerid), 
-			array ('%d')
+		$tables_player = array(
+			'PLAYER_CONSENT',
+			'PLAYER'
 		);
-		if ($result) {
-			echo "<li>Also deleted the player as they have no characters assigned</li>";
+
+		$done = 0;
+		$ok = 1;
+		while(!$done && $ok) {
+		
+			if (count($tables_player) == 0) {
+				$done = 1;
+			} else {
+				$table = array_shift($tables);
+				$column = $table == 'PLAYER' ? 'ID' : 'PLAYER_ID';
+				$ok = vtm_purge_table($playerid, $table, $column);
+			}
 		}
-		elseif ($result === 0) {
-			echo "<li>Delete failed (0) for player ". esc_html($playerid) . "</li>";
-			$ok = 0;
-			$wpdb->show_errors();
-			$wpdb->print_error();
-		}
-		else {
-			echo "<li>Delete failed for player ". esc_html($playerid) . "</li>";
-			$ok = 0;
-		}
+
+		// $result = $wpdb->delete( $wpdb->prefix . "vtm_PLAYER", 
+		// 	array ("ID" => $playerid), 
+		// 	array ('%d')
+		// );
+		// if ($result) {
+		// 	echo "<li>Also deleted the player as they have no characters assigned</li>";
+		// }
+		// elseif ($result === 0) {
+		// 	echo "<li>Delete failed (0) for player ". esc_html($playerid) . "</li>";
+		// 	$ok = 0;
+		// 	$wpdb->show_errors();
+		// 	$wpdb->print_error();
+		// }
+		// else {
+		// 	echo "<li>Delete failed for player ". esc_html($playerid) . "</li>";
+		// 	$ok = 0;
+		// }
 
 	}
 	
