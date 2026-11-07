@@ -1043,4 +1043,116 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
 	}
 }
 
+
+// SELECT c.NAME, pxp.`AWARDED`, pxp.`XP_REASON_ID`, xpr.NAME 
+// FROM `wp_vtm_PLAYER_XP`AS pxp, wp_vtm_CHARACTER as c, wp_vtm_XP_REASON as xpr 
+// WHERE pxp.`CHARACTER_ID` = c.ID and xpr.ID = pxp.XP_REASON_id 
+// 	and pxp.AWARDED >= DATE_SUB(NOW(),INTERVAL 1 YEAR) order by AWARDED DESC
+
+class vtmclass_report_xp extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+
+    function column_default($item, $column_name){
+        switch($column_name){
+            default:
+                return esc_html($item->$column_name); 
+        }
+    }
+
+    function get_columns(){
+        $columns = array(
+            'PLAYERNAME'    => 'Player',
+            'CHARACTERNAME' => 'Character',
+            'XP_REASON'     => 'XP Change Reason',
+			'AWARDED'       => 'Date Awarded',
+			'AMOUNT'        => 'Amount Awarded'
+        );
+        return $columns;
+	}
+		
+   function get_sortable_columns() {
+        $sortable_columns = array(
+            'CHARACTERNAME' => array('CHARACTERNAME',false),
+            'PLAYERNAME'    => array('PLAYERNAME',false),
+            'XP_REASON'  => array('XP_REASON',false),
+            'AWARDED'  => array('AWARDED',true)
+        );
+        return $sortable_columns;
+    }
+
+	function prepare_items() {
+        global $wpdb; 
+        
+        $columns  = $this->get_columns();
+        $hidden   = array();
+        $sortable = $this->get_sortable_columns();
+
+		$orderby = $_REQUEST['orderby'] ?? "AWARDED";
+		$order = $_REQUEST['order'] ?? "ASC";
+		$orderby_sql = sanitize_sql_orderby("$orderby $order" );
+
+		/* filters */
+		$this->load_filters();
+
+		$args = array(
+			VTM_TABLE_PREFIX. "PLAYER",
+			VTM_TABLE_PREFIX. "CHARACTER",
+			VTM_TABLE_PREFIX. "CHARGEN_STATUS",
+			VTM_TABLE_PREFIX. "PLAYER_XP",
+			VTM_TABLE_PREFIX. "XP_REASON"
+		);
+		
+		$sql = "SELECT players.NAME as PLAYERNAME,
+					IF(cgstatus.NAME = 'Approved', characters.NAME, CONCAT(characters.NAME, ' (being generated)')) as CHARACTERNAME,
+					xpreason.NAME as XP_REASON,
+					pxp.AWARDED as AWARDED,
+					pxp.AMOUNT as AMOUNT
+				FROM 
+					%i players, 
+					%i characters,
+					%i cgstatus,
+					%i pxp,
+					%i xpreason
+				WHERE 
+					players.ID = characters.PLAYER_ID
+					AND cgstatus.ID = characters.CHARGEN_STATUS_ID
+					AND characters.DELETED = 'N' 
+					AND pxp.CHARACTER_ID = characters.ID
+					AND xpreason.ID = pxp.XP_REASON_ID
+					AND pxp.AWARDED >= DATE_SUB(NOW(),INTERVAL 1 YEAR)
+				";
+					
+		$filterinfo = $this->get_filter_sql();
+		$args = array_merge($args, $filterinfo[1]);
+		
+		$sql .= $filterinfo[0];
+		$sql .= " ORDER BY {$orderby_sql}";
+
+		$this->_column_headers = array($columns, $hidden, $sortable);
+        $this->process_bulk_action();
+		
+		/* run query */
+		$data = $wpdb->get_results($wpdb->prepare("$sql",$args));
+ 		
+        $current_page = $this->get_pagenum();
+        $total_items = count($data);
+
+        $this->items = $data;
+		
+		//$this->output_report("Character Activity", 'P');
+		//$this->output_csv();
+        
+        $this->set_pagination_args( array(
+            'total_items' => $total_items,                  
+            'per_page'    => $total_items,                  
+            'total_pages' => 1
+        ) );
+	}
+}
 ?>

@@ -38,6 +38,10 @@ function vtm_render_select_report($report) {
 		echo "<option value='activity_report' ";
 		selected($report,'activity_report');
 		echo ">Character Activity</option>\n";
+
+		echo "<option value='xp_report' ";
+		selected($report,'xp_report');
+		echo ">XP Activity</option>\n";
 	}
 
 	if (current_user_can('vtm_view_character')) {
@@ -145,6 +149,11 @@ function vtm_report_switch($report) {
 		case 'sector_report':
 			$reportclass = new vtmclass_report_sector();
 			$reportclass->pdftitle = "Sector and Background";
+			$reportclass->pdforientation = 'P';
+			break;
+		case 'xp_report':
+			$reportclass = new vtmclass_report_xp();
+			$reportclass->pdftitle = "Experience (1 year)";
 			$reportclass->pdforientation = 'P';
 			break;
 	
