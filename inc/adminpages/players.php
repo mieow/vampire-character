@@ -337,6 +337,8 @@ class vtmclass_admin_players_table extends vtmclass_MultiPage_ListTable {
 					$name = "<a href='" . vtm_get_stlink_url('viewCharSheet') . "?characterID={$char->ID}'>{$char->NAME}</a>";
 				else
 					$name = $char->NAME;
+				if (get_option( 'vtm_feature_consent', '0' ) == 1 && !empty($char->WORDPRESS_ID))
+					$name .= vtm_get_page_icon(vtm_get_stlink_page('editConsent'), $char->WORDPRESS_ID, 'CHARACTER', 'consent.png', 'View Consent Form', 'Consent');
 				if ($char->VISIBLE == 'N')
 					$name =  $name . " (hidden)";
 				
