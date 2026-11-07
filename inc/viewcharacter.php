@@ -393,20 +393,62 @@ function vtm_get_viewcharacter_content() {
 	$c_tableright .= "</tr></table></div>\n";
 	
 
-	/*if ($vtmglobal['config']->WEB_COLUMNS == 3) {
-		$content .= "
-			<tr>
-			<td class='vtm_colwide' colspan = 2>$c_tableleft</td>
-			<td class='vtm_colnarrow'>$c_tableright</td>
-			</tr>";
-	} else {
-		$content .= "
-			<tr><td class='vtm_colfull'>$c_tableleft</td></tr>$divder
-			<tr><td class='vtm_colfull'>$c_tableright</td></tr>";
-	}*/
+
 	$content .= "<div class='vtmsection'>\n";
 	$content .= "$c_tableleft\n$c_tableright\n";
 	$content .= "</div><!-- end section -->\n";
+
+	// Consent
+	if (get_option( 'vtm_feature_consent', '0' ) == '1') {
+		$content .= $divder;
+		
+		$pvpok = $mycharacter->consent->PVPOK ?? 'N/A';
+		$pvpmore = $mycharacter->consent->PVPMOREINFO ?? 'N/A';
+		$themeok = $mycharacter->consent->THEMEOK ?? 'N/A';
+		$consentok = $mycharacter->consent->CONSENTOK ?? 'N/A';
+		$boundok = $mycharacter->consent->BOUNDOK ?? 'N/A';
+
+		$redFlag = $mycharacter->consent->REDFLAG ?? '[Form not filled in]';
+		$orangeFlag = $mycharacter->consent->ORANGEFLAG ?? '[Form not filled in]';
+
+
+		$c_tableleft = "<div class='vtmsubsection_wide'>\n";
+		$c_tableleft .= "<table>\n";
+		$c_tableleft .= "<tr><td><h4>Personal content boundaries</h4></td></tr>\n";
+		//Do Not Include
+		$c_tableleft .= "<tr><td><strong>Do Not Include</strong></td></tr>\n";
+		$c_tableleft .= "<tr><td class='vtmtext'>" . wpautop(esc_html($redFlag)) . "</td></tr>\n";
+		//Handle Carefully
+		$c_tableleft .= "<tr><td><strong>Handle Carefully</strong></td></tr>\n";
+		$c_tableleft .= "<tr><td class='vtmtext'>" . wpautop(esc_html($orangeFlag)) . "</td></tr>\n";
+		$c_tableleft .= "</table></div>\n";
+
+		$c_tableright = "<div class='vtmsubsection'><table><tr><td><h4>Options</h4></td></tr>";
+		
+		if (get_option( 'vtm_feature_consent', '0' ) == '1') {
+			$c_tableright .= "<tr><td class='vtmdot_cb'>";
+			$c_tableright .= vtm_convertYNtoCheckboxImg($pvpok);
+			$c_tableright .= "</td><td>Accepts the risk of PvP</td></tr>\n";
+			$c_tableright .= "<tr><td class='vtmdot_cb'>";
+			$c_tableright .= vtm_convertYNtoCheckboxImg($pvpmore);
+			$c_tableright .= "</td><td>Would like to discuss the consent form</td></tr>\n";
+		}
+		$c_tableright .= "<tr><td class='vtmdot_cb'>";
+		$c_tableright .= vtm_convertYNtoCheckboxImg($themeok);
+		$c_tableright .= "</td><td>Accepts the themes of the game</td></tr>\n";
+		$c_tableright .= "<tr><td class='vtmdot_cb'>";
+		$c_tableright .= vtm_convertYNtoCheckboxImg($consentok);
+		$c_tableright .= "</td><td>Accepts consequences of own actions</td></tr>\n";
+		$c_tableright .= "<tr><td class='vtmdot_cb'>";
+		$c_tableright .= vtm_convertYNtoCheckboxImg($boundok);
+		$c_tableright .= "</td><td>I have recorded my boundaries</td></tr>\n";
+		$c_tableright .= "</table></div>\n";
+		$content .= "<div class='vtmsection'>\n";
+		$content .= "$c_tableleft\n$c_tableright\n";
+		$content .= "</div><!-- end section -->\n";
+	}
+
+
 
 	//$content .= "</table>"; */
 	$content .= "</div>\n";

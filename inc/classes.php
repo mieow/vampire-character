@@ -64,6 +64,7 @@ class vtmclass_character {
 	var $primary_paths;
 	var $secondary_paths;
 	var $meritsandflaws;
+	var $consent;
 	
 	function load ($characterID){
 		global $wpdb;
@@ -901,6 +902,23 @@ class vtmclass_character {
 		$sql =  $wpdb->prepare("$sql", $characterID);
 		$this->addresses = $wpdb->get_results("$sql");
 		
+		// CONSENT Form
+		$this->consent = null;
+		if (get_option('vtm_feature_consent', '0') == '1' && !empty($this->player_id)) {
+			$consentFields = array('THEMEOK', 'CONSENTOK', 'BOUNDOK', 'REDFLAG', 'ORANGEFLAG');
+			if (get_option('vtm_consent_pvp', '') != '') {
+				array_unshift($consentFields, 'PVPOK', 'PVPMOREINFO');
+			}
+
+			$consentFieldsSql = implode(', ', array_fill(0, count($consentFields), '%i'));
+			$consentQuery = "SELECT $consentFieldsSql FROM %i WHERE PLAYER_ID = %d";
+			$consentArguments = array_merge(
+				$consentFields,
+				array(VTM_TABLE_PREFIX . 'PLAYER_CONSENT', $this->player_id)
+			);
+			$this->consent = $wpdb->get_row($wpdb->prepare($consentQuery, $consentArguments));
+		}
+
 	}
 	function getAttributes($group = "") {
 		$result = array();

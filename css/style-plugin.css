@@ -69,6 +69,10 @@ div.vtm_error ul {list-style: none;}
     height:1.2em;
 	width:1.2em;
 }
+.vtmpage_medium .vtmdot_cb img {
+    height:1.2em;
+	width:1.2em;
+}
 .vtmpage_medium .vtmdot_5 img {
     height:1.2em;
 	width:1.2em;
@@ -103,6 +107,10 @@ div.vtm_error ul {list-style: none;}
 	line-height: 1.6em;
 }
 .vtmpage_narrow .vtmdot_1 img {
+    height:1.2em;
+	width:1.2em;
+}
+.vtmpage_narrow .vtmdot_cb img {
     height:1.2em;
 	width:1.2em;
 }
@@ -171,6 +179,11 @@ div#csheet {
 
 #csheet div.vtmsection table {
 	border: none;
+}
+
+#csheet div.vtmsection td.vtmtext {
+	padding-top: 10px;
+	padding-bottom: 10px;
 }
 
 @media (min-width:480px)  { 
