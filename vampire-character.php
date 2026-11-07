@@ -31,6 +31,7 @@ require_once VTM_CHARACTER_URL . 'inc/email.php';
 require_once VTM_CHARACTER_URL . 'inc/stnews.php';
 require_once VTM_CHARACTER_URL . 'inc/pm.php';
 require_once VTM_CHARACTER_URL . 'inc/portrait_image.php';
+require_once VTM_CHARACTER_URL . 'inc/consent.php';
 
 // Only load code for admin pages if we are trying to look at them
 if (is_admin()) {
@@ -121,7 +122,7 @@ function vtm_establishCharacter($character, $capability = "vtm_view_character") 
 		}
 		elseif (isset($_GET['characterID'])) {
 			$sql = "SELECT wordpress_id FROM %i WHERE ID = %s";
-			$sql = $wpdb->prepare($sql, $wpdb->prefix . "vtm_CHARACTER", $_GET['characterID']);
+			$sql = $wpdb->prepare("$sql", $wpdb->prefix . "vtm_CHARACTER", $_GET['characterID']);
 			$character = $wpdb->get_var("$sql");
 		}
 		elseif ($character == null || $character == "null" || $character == "") {
