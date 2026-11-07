@@ -1743,7 +1743,7 @@ if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0
 					<div class="vtm_pmhead">
 						<span class="vtm_pmhead_to">To: <?php echo esc_html($info['ToFull']); ?></span>
 						<span class="vtm_pmhead_from">From: <?php echo esc_html($info['FromFull']); ?></span>
-						<span class="vtm_pmhead_sent">Sent: <?php echo esc_html(get_the_time( get_option( 'date_format' )) ); ?></span>
+						<span class="vtm_pmhead_sent">Sent: <?php echo esc_html(get_the_time( get_option( 'date_format' ), $postID) ); ?></span>
 						<span class="vtm_pmhead_subject">Subject: <?php echo esc_html($title); ?></span>
 					</div>
 					</header>
