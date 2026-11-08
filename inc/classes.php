@@ -1499,12 +1499,15 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 		header("Pragma: no-cache"); // HTTP 1.0
 		header("Expires: 0"); // Proxies		
 		
-		/* open file */
-		//$file = fopen(VTM_CHARACTER_URL . "tmp/report.csv","w");
-		$file = fopen("php://output","w");
 		/* write headings */
 		$columns = $this->get_columns();
-		fputcsv($file, array_values($columns), ',', '"', '');
+		$write_csv_row = function ($values) {
+			$values = array_map(function ($value) {
+				return '"' . str_replace('"', '""', (string) $value) . '"';
+			}, $values);
+			echo implode(',', $values) . "\r\n";
+		};
+		$write_csv_row(array_values($columns));
 		
 		/* write data */
 		if (count($this->items) > 0) {
@@ -1514,14 +1517,9 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 					$raw = isset($datarow->$columnname) ? $datarow->$columnname : '';
 					array_push($data, $this->PrepareCSVText($raw));
 				}
-				fputcsv($file, $data, ',', '"', '');
+				$write_csv_row($data);
 			}
 		}
-		
-		/* close file */
-		// phpcs:disable
-		fclose($file);
-		// phpcs:enable
 	}
 	
 	function PrepareCSVText($text) {
