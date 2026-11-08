@@ -121,8 +121,7 @@ function vtm_establishCharacter($character, $capability = "vtm_view_character") 
 			$character = $_GET['CHARACTER'];
 		}
 		elseif (isset($_GET['characterID'])) {
-			$sql = "SELECT wordpress_id FROM %i WHERE ID = %s";
-			$sql = $wpdb->prepare("$sql", $wpdb->prefix . "vtm_CHARACTER", $_GET['characterID']);
+			$sql = $wpdb->prepare("SELECT wordpress_id FROM %i WHERE ID = %s", $wpdb->prefix . "vtm_CHARACTER", $_GET['characterID']);
 			$character = $wpdb->get_var("$sql");
 		}
 		elseif ($character == null || $character == "null" || $character == "") {

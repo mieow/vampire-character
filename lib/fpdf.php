@@ -1024,7 +1024,7 @@ function Output($dest='', $name='', $isUTF8=false)
 			break;
 		case 'F':
 			// Save to local file
-			if(!file_put_contents($name,$this->buffer))
+			if(!$this->_put_file_contents($name,$this->buffer))
 				$this->Error('Unable to create output file: '.$name);
 			break;
 		case 'S':
@@ -1245,7 +1245,8 @@ protected function _dounderline($x, $y, $txt)
 protected function _parsejpg($file)
 {
 	// Extract info from a JPEG file
-	$a = getimagesize($file);
+	$data = $this->_get_file_contents($file);
+	$a = getimagesizefromstring($data);
 	if(!$a)
 		$this->Error('Missing or incorrect image file: '.$file);
 	if($a[2]!=2)
@@ -1257,37 +1258,62 @@ protected function _parsejpg($file)
 	else
 		$colspace = 'DeviceGray';
 	$bpc = isset($a['bits']) ? $a['bits'] : 8;
-	$data = file_get_contents($file);
 	return array('w'=>$a[0], 'h'=>$a[1], 'cs'=>$colspace, 'bpc'=>$bpc, 'f'=>'DCTDecode', 'data'=>$data);
+}
+
+protected function _get_file_contents($file)
+{
+	if(filter_var($file,FILTER_VALIDATE_URL)!==false)
+	{
+		$response = wp_safe_remote_get($file);
+		if(is_wp_error($response) || wp_remote_retrieve_response_code($response)!=200)
+			$this->Error('Unable to read file: '.$file);
+		return wp_remote_retrieve_body($response);
+	}
+
+	require_once(ABSPATH . 'wp-admin/includes/file.php');
+	global $wp_filesystem;
+	if(!WP_Filesystem())
+		$this->Error('Unable to initialize filesystem');
+	$data = $wp_filesystem->get_contents($file);
+	if($data===false)
+		$this->Error('Unable to read file: '.$file);
+	return $data;
+}
+
+protected function _put_file_contents($file, $contents)
+{
+	require_once(ABSPATH . 'wp-admin/includes/file.php');
+	global $wp_filesystem;
+	if(!WP_Filesystem())
+		return false;
+	return $wp_filesystem->put_contents($file,$contents,FS_CHMOD_FILE);
 }
 
 protected function _parsepng($file)
 {
 	// Extract info from a PNG file
-	$f = fopen($file,'rb');
-	if(!$f)
-		$this->Error('Can\'t open image file: '.$file);
-	$info = $this->_parsepngstream($f,$file);
-	fclose($f);
-	return $info;
+	$pngdata = $this->_get_file_contents($file);
+	return $this->_parsepngstream($pngdata,$file);
 }
 
-protected function _parsepngstream($f, $file)
+protected function _parsepngstream($pngdata, $file)
 {
+	$offset = 0;
 	// Check signature
-	if($this->_readstream($f,8)!=chr(137).'PNG'.chr(13).chr(10).chr(26).chr(10))
+	if($this->_readstream($pngdata,$offset,8)!=chr(137).'PNG'.chr(13).chr(10).chr(26).chr(10))
 		$this->Error('Not a PNG file: '.$file);
 
 	// Read header chunk
-	$this->_readstream($f,4);
-	if($this->_readstream($f,4)!='IHDR')
+	$this->_readstream($pngdata,$offset,4);
+	if($this->_readstream($pngdata,$offset,4)!='IHDR')
 		$this->Error('Incorrect PNG file: '.$file);
-	$w = $this->_readint($f);
-	$h = $this->_readint($f);
-	$bpc = ord($this->_readstream($f,1));
+	$w = $this->_readint($pngdata,$offset);
+	$h = $this->_readint($pngdata,$offset);
+	$bpc = ord($this->_readstream($pngdata,$offset,1));
 	if($bpc>8)
 		$this->Error('16-bit depth not supported: '.$file);
-	$ct = ord($this->_readstream($f,1));
+	$ct = ord($this->_readstream($pngdata,$offset,1));
 	if($ct==0 || $ct==4)
 		$colspace = 'DeviceGray';
 	elseif($ct==2 || $ct==6)
@@ -1296,13 +1322,13 @@ protected function _parsepngstream($f, $file)
 		$colspace = 'Indexed';
 	else
 		$this->Error('Unknown color type: '.$file);
-	if(ord($this->_readstream($f,1))!=0)
+	if(ord($this->_readstream($pngdata,$offset,1))!=0)
 		$this->Error('Unknown compression method: '.$file);
-	if(ord($this->_readstream($f,1))!=0)
+	if(ord($this->_readstream($pngdata,$offset,1))!=0)
 		$this->Error('Unknown filter method: '.$file);
-	if(ord($this->_readstream($f,1))!=0)
+	if(ord($this->_readstream($pngdata,$offset,1))!=0)
 		$this->Error('Interlacing not supported: '.$file);
-	$this->_readstream($f,4);
+	$this->_readstream($pngdata,$offset,4);
 	$dp = '/Predictor 15 /Colors '.($colspace=='DeviceRGB' ? 3 : 1).' /BitsPerComponent '.$bpc.' /Columns '.$w;
 
 	// Scan chunks looking for palette, transparency and image data
@@ -1311,18 +1337,18 @@ protected function _parsepngstream($f, $file)
 	$data = '';
 	do
 	{
-		$n = $this->_readint($f);
-		$type = $this->_readstream($f,4);
+		$n = $this->_readint($pngdata,$offset);
+		$type = $this->_readstream($pngdata,$offset,4);
 		if($type=='PLTE')
 		{
 			// Read palette
-			$pal = $this->_readstream($f,$n);
-			$this->_readstream($f,4);
+			$pal = $this->_readstream($pngdata,$offset,$n);
+			$this->_readstream($pngdata,$offset,4);
 		}
 		elseif($type=='tRNS')
 		{
 			// Read transparency info
-			$t = $this->_readstream($f,$n);
+			$t = $this->_readstream($pngdata,$offset,$n);
 			if($ct==0)
 				$trns = array(ord(substr($t,1,1)));
 			elseif($ct==2)
@@ -1333,18 +1359,18 @@ protected function _parsepngstream($f, $file)
 				if($pos!==false)
 					$trns = array($pos);
 			}
-			$this->_readstream($f,4);
+			$this->_readstream($pngdata,$offset,4);
 		}
 		elseif($type=='IDAT')
 		{
 			// Read image data block
-			$data .= $this->_readstream($f,$n);
-			$this->_readstream($f,4);
+			$data .= $this->_readstream($pngdata,$offset,$n);
+			$this->_readstream($pngdata,$offset,4);
 		}
 		elseif($type=='IEND')
 			break;
 		else
-			$this->_readstream($f,$n+4);
+			$this->_readstream($pngdata,$offset,$n+4);
 	}
 	while($n);
 
@@ -1398,27 +1424,28 @@ protected function _parsepngstream($f, $file)
 	return $info;
 }
 
-protected function _readstream($f, $n)
+protected function _readstream(&$data, &$offset, $n)
 {
-	// Read n bytes from stream
+	// Read n bytes from image data
 	$res = '';
-	while($n>0 && !feof($f))
+	while($n>0)
 	{
-		$s = fread($f,$n);
-		if($s===false)
-			$this->Error('Error while reading stream');
+		$s = substr($data,$offset,$n);
+		$offset += strlen($s);
 		$n -= strlen($s);
 		$res .= $s;
+		if($s==='')
+			break;
 	}
 	if($n>0)
-		$this->Error('Unexpected end of stream');
+		$this->Error('Unexpected end of image data');
 	return $res;
 }
 
-protected function _readint($f)
+protected function _readint(&$data, &$offset)
 {
-	// Read a 4-byte integer from stream
-	$a = unpack('Ni',$this->_readstream($f,4));
+	// Read a 4-byte integer from image data
+	$a = unpack('Ni',$this->_readstream($data,$offset,4));
 	return $a['i'];
 }
 
@@ -1429,7 +1456,7 @@ protected function _parsegif($file)
 		$this->Error('GD extension is required for GIF support');
 	if(!function_exists('imagecreatefromgif'))
 		$this->Error('GD has no GIF read support');
-	$im = imagecreatefromgif($file);
+	$im = imagecreatefromstring($this->_get_file_contents($file));
 	if(!$im)
 		$this->Error('Missing or incorrect image file: '.$file);
 	imageinterlace($im,0);
@@ -1437,14 +1464,7 @@ protected function _parsegif($file)
 	imagepng($im);
 	$data = ob_get_clean();
 	imagedestroy($im);
-	$f = fopen('php://temp','rb+');
-	if(!$f)
-		$this->Error('Unable to create memory stream');
-	fwrite($f,$data);
-	rewind($f);
-	$info = $this->_parsepngstream($f,$file);
-	fclose($f);
-	return $info;
+	return $this->_parsepngstream($data,$file);
 }
 
 protected function _out($s)
@@ -1581,7 +1601,7 @@ protected function _putfonts()
 		// Font file embedding
 		$this->_newobj();
 		$this->FontFiles[$file]['n'] = $this->n;
-		$font = file_get_contents($this->fontpath.$file,true);
+		$font = $this->_get_file_contents($this->fontpath.$file);
 		if(!$font)
 			$this->Error('Font file not found: '.$file);
 		$compressed = (substr($file,-2)=='.z');
