@@ -1155,4 +1155,112 @@ class vtmclass_report_xp extends vtmclass_Report_ListTable {
         ) );
 	}
 }
+
+class vtmclass_report_consent extends vtmclass_Report_ListTable {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+	function column_default($item, $column_name) {
+		$value = $item->$column_name ?? '';
+
+		if (in_array($column_name, array('PVPOK', 'PVPMOREINFO', 'THEMEOK', 'CONSENTOK', 'BOUNDOK'), true)) {
+			if ($value === 'Y') {
+				return 'Yes';
+			}
+			if ($value === 'N') {
+				return 'No';
+			}
+		}
+
+		return wpautop(esc_html($value));
+	}
+
+	function get_columns() {
+		return array(
+			'PLAYERNAME'  => 'Player',
+			'PVPOK'       => 'Player Character Conflict',
+			'PVPMOREINFO' => 'Discuss Restrictions',
+			'THEMEOK'     => 'Game Themes',
+			'CONSENTOK'   => 'In-character Consequences',
+			'BOUNDOK'     => 'Boundaries Acknowledged',
+			'REDFLAG'     => 'Do Not Include',
+			'ORANGEFLAG'  => 'Handle Carefully',
+		);
+	}
+
+	function get_sortable_columns() {
+		return array(
+			'PLAYERNAME' => array('PLAYERNAME', false),
+		);
+	}
+
+	function filter_tablenav() {
+		echo "<label>Player Status: </label>";
+		if (!empty($this->filter_player_status)) {
+			echo "<select name='player_status'>";
+			foreach ($this->filter_player_status as $key => $value) {
+				echo '<option value="' . esc_attr($key) . '" ';
+				selected($this->active_filter_player_status, $key);
+				echo '>' . esc_html($value) . '</option>';
+			}
+			echo '</select>';
+		}
+
+		submit_button('Filter', 'secondary', 'do_filter_tablenav', false);
+		echo "<label>Download: </label>";
+		$current_url = set_url_scheme('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+		$current_url = add_query_arg('report', $_REQUEST['report'], $current_url);
+		$pdf_url = wp_nonce_url(add_query_arg('format', 'pdf', $current_url), 'vtm_run_report');
+		$csv_url = wp_nonce_url(add_query_arg('format', 'csv', $current_url), 'vtm_run_report');
+		echo "<a class='button-primary' href='" . esc_url($pdf_url) . "'>PDF</a>";
+		echo "<a class='button-primary' href='" . esc_url($csv_url) . "'>CSV</a>";
+	}
+
+	function prepare_items() {
+		global $wpdb;
+
+		$columns = $this->get_columns();
+		$hidden = array();
+		$sortable = $this->get_sortable_columns();
+		$order = isset($_REQUEST['order']) && is_string($_REQUEST['order']) && strtoupper($_REQUEST['order']) === 'DESC' ? 'DESC' : 'ASC';
+
+		$this->load_filters();
+
+		$sql = "SELECT players.NAME AS PLAYERNAME,
+					consent.PVPOK,
+					consent.PVPMOREINFO,
+					consent.THEMEOK,
+					consent.CONSENTOK,
+					consent.BOUNDOK,
+					consent.REDFLAG,
+					consent.ORANGEFLAG
+				FROM %i consent
+				INNER JOIN %i players ON players.ID = consent.PLAYER_ID";
+		$args = array(
+			VTM_TABLE_PREFIX . 'PLAYER_CONSENT',
+			VTM_TABLE_PREFIX . 'PLAYER',
+		);
+		if ($this->active_filter_player_status !== 'all') {
+			$sql .= " WHERE players.PLAYER_STATUS_ID = %d";
+			$args[] = $this->active_filter_player_status;
+		}
+		$sql .= " ORDER BY PLAYERNAME {$order}";
+
+		$this->_column_headers = array($columns, $hidden, $sortable);
+		$this->process_bulk_action();
+		$data = $wpdb->get_results($wpdb->prepare("$sql", $args));
+
+		$total_items = count($data);
+		$this->items = $data;
+		$this->set_pagination_args(array(
+			'total_items' => $total_items,
+			'per_page' => $total_items,
+			'total_pages' => 1,
+		));
+	}
+}
 ?>

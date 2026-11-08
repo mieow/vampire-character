@@ -1,6 +1,8 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
+require_once VTM_CHARACTER_URL . 'inc/adminpages/reportclasses.php';
+
 function vtm_character_reports () {
 
 	if ( !current_user_can( 'vtm_reports' ) )  {
@@ -11,7 +13,18 @@ function vtm_character_reports () {
 	<div class="wrap">
 		<h2>Reports</h2>
 	<?php
-	$report = isset($_REQUEST['report']) ? $_REQUEST['report'] : '';
+	$report = '';
+	if (isset($_POST['submit_report'])) {
+		check_admin_referer('vtm_select_report');
+		if (isset($_POST['report']) && is_string($_POST['report'])) {
+			$report = sanitize_key(wp_unslash($_POST['report']));
+		}
+	} elseif (isset($_GET['report'])) {
+		check_admin_referer('vtm_run_report');
+		if (is_string($_GET['report'])) {
+			$report = sanitize_key(wp_unslash($_GET['report']));
+		}
+	}
 	
 	vtm_render_select_report($report);
 	vtm_render_report(vtm_report_switch($report));
@@ -27,6 +40,7 @@ function vtm_render_select_report($report) {
 
 	echo "<h3>Select Report</h3>";
 	echo "<form id='select_report_form' method='post'>\n";
+	wp_nonce_field('vtm_select_report');
 	echo "<select name='report'>\n";
 	echo "<option value='0'>[Select Report]</option>\n";
 
@@ -42,6 +56,11 @@ function vtm_render_select_report($report) {
 		echo "<option value='xp_report' ";
 		selected($report,'xp_report');
 		echo ">XP Activity</option>\n";
+
+		echo "<option value='consent_report' ";
+		selected($report,'consent_report');
+		echo ">Consent</option>\n";
+
 	}
 
 	if (current_user_can('vtm_view_character')) {
@@ -80,10 +99,12 @@ function vtm_render_report($reporttable) {
 	
 	$reporttable->prepare_items(); 
 	$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
+	$current_url = remove_query_arg('_wpnonce', $current_url);
 	?>
 	<form id="<?php print esc_html($_REQUEST['report']) ?>" method="get" action='<?php print esc_url($current_url); ?>'>
 		<input type="hidden" name="page"   value="<?php print esc_html($_REQUEST['page']) ?>" />
 		<input type="hidden" name="report" value="<?php print esc_html($_REQUEST['report']) ?>" />
+		<?php wp_nonce_field('vtm_run_report'); ?>
 		<?php $reporttable->display(); ?>
 	</form>
 	
@@ -93,8 +114,19 @@ function vtm_render_report($reporttable) {
 function vtm_report_redirect()
 {
     if (isset($_REQUEST['report']) && isset($_REQUEST['format'])) {
+		if (!current_user_can('vtm_reports')) {
+			wp_die(esc_html(__('You do not have sufficient permissions to access this page.', 'vampire-character')));
+		}
+		check_admin_referer('vtm_run_report');
+		if (!is_string($_REQUEST['report'])) {
+			wp_die(esc_html(__('Invalid report.', 'vampire-character')));
+		}
+		$report = sanitize_key(wp_unslash($_REQUEST['report']));
 		
-		$reporttable = vtm_report_switch($_REQUEST['report']);
+		$reporttable = vtm_report_switch($report);
+		if (!is_object($reporttable)) {
+			wp_die(esc_html(__('Invalid report.', 'vampire-character')));
+		}
 		$reporttable->prepare_items(); 
 		
 		switch($_REQUEST['format']) {
@@ -154,6 +186,11 @@ function vtm_report_switch($report) {
 		case 'xp_report':
 			$reportclass = new vtmclass_report_xp();
 			$reportclass->pdftitle = "Experience (1 year)";
+			$reportclass->pdforientation = 'P';
+			break;
+		case 'consent_report':
+			$reportclass = new vtmclass_report_consent();
+			$reportclass->pdftitle = "Consent Form Information";
 			$reportclass->pdforientation = 'P';
 			break;
 	
