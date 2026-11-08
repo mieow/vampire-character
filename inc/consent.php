@@ -44,19 +44,20 @@ function vtm_get_consent_content() {
 	if (!$cando && !current_user_can('vtm_edit_player')) 
 		return "You do not have permission to view this page\n";
 
+	$nonce = $_POST['vtm_consent_nonce'] ?? null;
+
 	$message = '';
 	if (isset($_POST['save_consent'])) {
 		if (
-			isset($_POST['vtm_consent_nonce'])
-			&& is_string($_POST['vtm_consent_nonce'])
-			&& wp_verify_nonce(wp_unslash($_POST['vtm_consent_nonce']), 'vtm_consent')
+			is_string($nonce)
+			&& wp_verify_nonce(sanitize_text_field(wp_unslash($nonce)), 'vtm_consent')
 		) {
 			$consentData = array(
-				'PVPOK' => ($_POST['vtmcbpvpok'] ?? '') === 'on' ? 'Y' : 'N',
-				'PVPMOREINFO' => ($_POST['vtmcbpvpmore'] ?? '') === 'on' ? 'Y' : 'N',
-				'THEMEOK' => ($_POST['vtmcbtheme'] ?? '') === 'on' ? 'Y' : 'N',
-				'CONSENTOK' => ($_POST['vtmcbconseq'] ?? '') === 'on' ? 'Y' : 'N',
-				'BOUNDOK' => ($_POST['vtmcbbound'] ?? '') === 'on' ? 'Y' : 'N',
+				'PVPOK' => is_string($_POST['vtmcbpvpok'] ?? null) && sanitize_text_field(wp_unslash($_POST['vtmcbpvpok'])) === 'on' ? 'Y' : 'N',
+				'PVPMOREINFO' => is_string($_POST['vtmcbpvpmore'] ?? null) && sanitize_text_field(wp_unslash($_POST['vtmcbpvpmore'])) === 'on' ? 'Y' : 'N',
+				'THEMEOK' => is_string($_POST['vtmcbtheme'] ?? null) && sanitize_text_field(wp_unslash($_POST['vtmcbtheme'])) === 'on' ? 'Y' : 'N',
+				'CONSENTOK' => is_string($_POST['vtmcbconseq'] ?? null) && sanitize_text_field(wp_unslash($_POST['vtmcbconseq'])) === 'on' ? 'Y' : 'N',
+				'BOUNDOK' => is_string($_POST['vtmcbbound'] ?? null) && sanitize_text_field(wp_unslash($_POST['vtmcbbound'])) === 'on' ? 'Y' : 'N',
 				'REDFLAG' => is_string($_POST['vtmredflag'] ?? null) ? sanitize_textarea_field(wp_unslash($_POST['vtmredflag'])) : '',
 				'ORANGEFLAG' => is_string($_POST['vtmorangeflag'] ?? null) ? sanitize_textarea_field(wp_unslash($_POST['vtmorangeflag'])) : '',
 			);

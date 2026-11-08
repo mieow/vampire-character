@@ -911,12 +911,12 @@ class vtmclass_character {
 			}
 
 			$consentFieldsSql = implode(', ', array_fill(0, count($consentFields), '%i'));
-			$consentQuery = "SELECT $consentFieldsSql FROM %i WHERE PLAYER_ID = %d";
+			//$consentQuery = "SELECT $consentFieldsSql FROM %i WHERE PLAYER_ID = %d";
 			$consentArguments = array_merge(
 				$consentFields,
 				array(VTM_TABLE_PREFIX . 'PLAYER_CONSENT', $this->player_id)
 			);
-			$this->consent = $wpdb->get_row($wpdb->prepare($consentQuery, $consentArguments));
+			$this->consent = $wpdb->get_row($wpdb->prepare("SELECT $consentFieldsSql FROM %i WHERE PLAYER_ID = %d", $consentArguments));
 		}
 
 	}
@@ -1228,8 +1228,8 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 			
 			$current_url = set_url_scheme( 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] );
 			$current_url = add_query_arg('report', $_REQUEST['report'], $current_url);
-			$pdf_url = add_query_arg('format', 'pdf', $current_url);
-			$csv_url = add_query_arg('format', 'csv', $current_url);
+			$pdf_url = wp_nonce_url(add_query_arg('format', 'pdf', $current_url), 'vtm_run_report');
+			$csv_url = wp_nonce_url(add_query_arg('format', 'csv', $current_url), 'vtm_run_report');
 			
 			echo "<a class='button-primary' href='" . esc_url($pdf_url) . "'>PDF</a>";
 			echo "<a class='button-primary' href='" . esc_url($csv_url) . "'>CSV</a>";
@@ -1504,7 +1504,7 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 		$file = fopen("php://output","w");
 		/* write headings */
 		$columns = $this->get_columns();
-		fputcsv($file, array_values($columns));
+		fputcsv($file, array_values($columns), ',', '"', '');
 		
 		/* write data */
 		if (count($this->items) > 0) {
@@ -1514,7 +1514,7 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 					$raw = isset($datarow->$columnname) ? $datarow->$columnname : '';
 					array_push($data, $this->PrepareCSVText($raw));
 				}
-				fputcsv($file, $data);
+				fputcsv($file, $data, ',', '"', '');
 			}
 		}
 		
