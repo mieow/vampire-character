@@ -1375,10 +1375,9 @@ class vtmclass_admin_rituals_table extends vtmclass_MultiPage_ListTable {
 		$this->filter_level = vtm_make_filter($levels);
 			
 		/* Book filter */
-		$sql = $spdb->prepare("SELECT DISTINCT books.ID, books.NAME 
+		$books = $wpdb->get_results($wpdb->prepare("SELECT DISTINCT books.ID, books.NAME 
 				FROM %i rituals, %i books
-				WHERE rituals.SOURCE_BOOK_ID = books.ID;", VTM_TABLE_PREFIX . "RITUAL", VTM_TABLE_PREFIX . "SOURCE_BOOK");
-		$books = $wpdb->get_results("$sql");
+				WHERE rituals.SOURCE_BOOK_ID = books.ID;", VTM_TABLE_PREFIX . "RITUAL", VTM_TABLE_PREFIX . "SOURCE_BOOK"));
 		$this->filter_book = vtm_make_filter($books);
 						
 		if ( isset( $_REQUEST[$type . '_discipline'] ) && array_key_exists( $_REQUEST[$type . '_discipline'], $this->filter_discipline ) ) {
