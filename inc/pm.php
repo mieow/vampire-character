@@ -183,6 +183,11 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			} else {
 				$link = get_edit_post_link($post_ID);
 			}
+			if (!$link) {
+				$linkhtml = $subject;
+			} else {
+				$linkhtml = "<a href='" . esc_url($link) . "'>$subject</a>";
+			}
 			
 			if (get_post_status( $post_ID ) == 'publish') {
 				$current_user = wp_get_current_user();
@@ -196,7 +201,7 @@ if (get_option( 'vtm_feature_pm', '0' ) == '1') {
 			}
 			
 			$pid = " <span style='color:silver'>(ID: $post_ID)</span>";
-			$title ="<span class='sub-title vtmpm_title $readclass'><a href='" . esc_url($link) . "'>$subject</a></span>$pid";
+			$title ="<span class='sub-title vtmpm_title $readclass'>$linkhtml</span>$pid";
 			
 			// add in row actions
 			//$title .= vtm_pm_render_row_actions($post);
