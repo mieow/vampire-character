@@ -978,7 +978,6 @@ class vtmclass_MultiPage_ListTable extends vtmclass_WP_List_Table {
 	var $active_filter_group;
 	var $filter_type;
 	var $filter_status;
-
       
     function column_cb($item){
         return sprintf(
@@ -1073,7 +1072,9 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 	var $row = 0;
 	var $pdftitle;
 	var $pdforientation;
-      
+
+	const PER_PAGE = 25;
+
     function __construct(){
         global $status, $page;
                 
@@ -1103,27 +1104,14 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 		/* get defaults */
 		$default_character_visible = "Y";
 		
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s";
-		$result = $wpdb->get_results($wpdb->prepare("$sql",'Active'));
-		$default_player_status = $result[0]->ID;
-		
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX. "CHARACTER_TYPE WHERE NAME = %s";
-		$result = $wpdb->get_results($wpdb->prepare("$sql",'PC'));
-		$default_character_type    = $result[0]->ID;
-		
-		$sql = "SELECT ID FROM " . VTM_TABLE_PREFIX. "CHARACTER_STATUS WHERE NAME = %s";
-		$result = $wpdb->get_results($wpdb->prepare("$sql",'Alive'));
-		$default_character_status  = $result[0]->ID;
+		$default_player_status = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s",'Active'));
+		$default_character_type = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "CHARACTER_TYPE WHERE NAME = %s",'PC'));
+		$default_character_status = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "CHARACTER_STATUS WHERE NAME = %s",'Alive'));
 		
 		/* get filter options */
-		$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS";
-		$this->filter_player_status = vtm_make_filter($wpdb->get_results("$sql"));
-		
-		$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "CHARACTER_TYPE";
-		$this->filter_character_type = vtm_make_filter($wpdb->get_results("$sql"));
-		
-		$sql = "SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "CHARACTER_STATUS";
-		$this->filter_character_status = vtm_make_filter($wpdb->get_results("$sql"));		
+		$this->filter_player_status = vtm_make_filter($wpdb->get_results("SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS"));
+		$this->filter_character_type = vtm_make_filter($wpdb->get_results("SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "CHARACTER_TYPE"));
+		$this->filter_character_status = vtm_make_filter($wpdb->get_results("SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "CHARACTER_STATUS"));		
 		
 		/* set active filters */
 		if ( isset( $_REQUEST['player_status'] ) && array_key_exists( $_REQUEST['player_status'], $this->filter_player_status ) ) {
@@ -1146,7 +1134,6 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 		} else {
 			$this->active_filter_character_visible = $default_character_visible;
 		}
-		
 	
 	}
 	
@@ -1337,7 +1324,24 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 			}
 		return $colwidths;
 	}
- 
+
+	function apply_filters($data) {
+
+		$filters = [];
+		if ($this->active_filter_player_status != 'all')
+			$filters["PLAYER_STATUS_ID"] = $this->active_filter_player_status;
+		if ($this->active_filter_character_type != 'all')
+			$filters["CHARACTER_TYPE_ID"] = $this->active_filter_character_type;
+		if ($this->active_filter_character_status != 'all')
+			$filters["CHARACTER_STATUS_ID"] = $this->active_filter_character_status;
+		if ($this->active_filter_character_visible != 'ALL')
+			$filters["VISIBLE"] = $this->active_filter_character_visible;
+
+		if ($filters)
+			$data = wp_list_filter($data, $filters);
+
+		return $data;
+	}
 	
 	function output_report () {
 		
