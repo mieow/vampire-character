@@ -121,15 +121,6 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
 
 		/* filters */
 		$this->load_filters();
-		
-		/* Character visibility */
-		$args = array(
-			VTM_TABLE_PREFIX . 'PLAYER',
-			VTM_TABLE_PREFIX . 'CHARACTER',
-			VTM_TABLE_PREFIX . 'MERIT',
-			VTM_TABLE_PREFIX . 'CHARACTER_MERIT',
-			VTM_TABLE_PREFIX . 'SOURCE_BOOK',
-		);
 
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
@@ -161,11 +152,16 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
 					AND characters.ID = charmerit.CHARACTER_ID
 					AND merits.ID = charmerit.MERIT_ID
 					AND sourcebooks.ID = merits.SOURCE_BOOK_ID
-					AND characters.DELETED = 'N'",$args));
+					AND characters.DELETED = 'N'",
+						VTM_TABLE_PREFIX . 'PLAYER',
+						VTM_TABLE_PREFIX . 'CHARACTER',
+						VTM_TABLE_PREFIX . 'MERIT',
+						VTM_TABLE_PREFIX . 'CHARACTER_MERIT',
+						VTM_TABLE_PREFIX . 'SOURCE_BOOK'));
 
 		/* Merit or Flaw */
 		if ( isset( $_REQUEST['merit_or_flaw'] )) {
-			$this->active_filter_merit_or_flaw = sanitize_key( $_REQUEST['merit_or_flaw'] );
+			$this->active_filter_merit_or_flaw = sanitize_key(wp_unslash($_REQUEST['merit_or_flaw']) );
 		} else {
 			$this->active_filter_merit_or_flaw = 'all';
 		}
@@ -178,7 +174,7 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
 			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
 
 		$total_items = count($data);
-		$perPage = $this::PER_PAGE;
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
         $currentPage = $this->get_pagenum();
 
 		$this->set_pagination_args(array(
@@ -266,13 +262,6 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
 		/* filters */
 		$this->load_filters();
 
-		$args = array(
-			VTM_TABLE_PREFIX . 'PLAYER',
-			VTM_TABLE_PREFIX . 'CHARACTER',
-			VTM_TABLE_PREFIX . 'CHARACTER_PROFILE',
-			VTM_TABLE_PREFIX . 'CLAN',
-		);
-
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
 		
@@ -294,14 +283,18 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
 					players.ID = characters.PLAYER_ID
 					AND characters.ID = profiles.CHARACTER_ID
 					AND clans.ID = characters.PUBLIC_CLAN_ID
-					AND characters.DELETED = 'N'",$args));
+					AND characters.DELETED = 'N'",
+				VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CHARACTER',
+			VTM_TABLE_PREFIX . 'CHARACTER_PROFILE',
+			VTM_TABLE_PREFIX . 'CLAN'));
  		
  		$data = $this->apply_filters($data);
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
 			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
 
 		$total_items = count($data);
-		$perPage = $this::PER_PAGE;
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
         $currentPage = $this->get_pagenum();
 
 		$this->set_pagination_args(array(
@@ -396,21 +389,6 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 		/* filters */
 		$this->load_filters();
 
-		$args = array(
-			VTM_TABLE_PREFIX . 'PLAYER',
-			VTM_TABLE_PREFIX . 'CLAN',
-			VTM_TABLE_PREFIX . 'CLAN',
-			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
-			VTM_TABLE_PREFIX . 'CHARACTER',
-			VTM_TABLE_PREFIX . 'PLAYER',
-			VTM_TABLE_PREFIX . 'CHARACTER_BACKGROUND',
-			VTM_TABLE_PREFIX . 'BACKGROUND',
-			VTM_TABLE_PREFIX . 'CLAN',
-			VTM_TABLE_PREFIX . 'CLAN',
-			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
-			VTM_TABLE_PREFIX . 'CHARACTER',
-		);
-
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
 		
@@ -460,13 +438,26 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 					AND characters.PRIVATE_CLAN_ID = privclans.ID
 					AND characters.CHARGEN_STATUS_ID = cgstatus.ID
 					AND cgstatus.NAME = 'Approved'
-					AND characters.DELETED = 'N'",$args));
+					AND characters.DELETED = 'N'",
+			VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CLAN',
+			VTM_TABLE_PREFIX . 'CLAN',
+			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
+			VTM_TABLE_PREFIX . 'CHARACTER',
+			VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CHARACTER_BACKGROUND',
+			VTM_TABLE_PREFIX . 'BACKGROUND',
+			VTM_TABLE_PREFIX . 'CLAN',
+			VTM_TABLE_PREFIX . 'CLAN',
+			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
+			VTM_TABLE_PREFIX . 'CHARACTER'
+			));
 
 		$data = $this->apply_filters($data);
 
  		/* Clan */
 		if ( isset( $_REQUEST['clanfilter'] )) {
-			$this->active_filter_clan = sanitize_key( $_REQUEST['clanfilter'] );
+			$this->active_filter_clan = sanitize_key(wp_unslash($_REQUEST['clanfilter']) );
 		} else {
 			$this->active_filter_clan = 'all';
 		}
@@ -481,7 +472,7 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
       
 		$total_items = count($data);
-		$perPage = $this::PER_PAGE;
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
         $currentPage = $this->get_pagenum();
 
 		$this->set_pagination_args(array(
@@ -497,14 +488,6 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 
 
 class vtmclass_report_signin extends vtmclass_Report_ListTable {
-	protected $filter_player_status;
-	protected $filter_character_type;
-	protected $filter_character_status;
-	protected $active_filter_player_status;
-	protected $active_filter_character_type;
-	protected $active_filter_character_status;
-	protected $active_filter_character_visible;
-	protected $active_filter_clan;
 	protected $totalqs;
 
     function column_default($item, $column_name){
@@ -595,26 +578,32 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
 
 		/* filters */
 		$this->load_filters();
+				
+		$this->totalqs = $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) as total2do FROM %i WHERE VISIBLE = 'Y'", VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND"));
+
+		$this->_column_headers = array($columns, $hidden, $sortable);
+        $this->process_bulk_action();
 		
-		$filterinfo = $this->get_filter_sql();
-		
-		$sql = "SELECT COUNT(ID) as total2do FROM " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND WHERE VISIBLE = 'Y'";
-		$this->totalqs = $wpdb->get_var("$sql");
-		
-		$sql = "SELECT characters.NAME as CHARACTERNAME, players.NAME as PLAYERNAME, \"\" as SIGNATURE,
+		/* run query */
+		$data = $wpdb->get_results($wpdb->prepare("SELECT characters.NAME as CHARACTERNAME, 
+					players.NAME as PLAYERNAME, \"\" as SIGNATURE,
 					CONCAT(FORMAT((IFNULL(SUM(bginfo.TOTALDONE),0) + IFNULL(SUM(mfinfo.TOTALDONE),0) + IFNULL(SUM(qinfo.TOTALDONE),0)) * 100 /
-					(IFNULL(SUM(bginfo.TOTAL2DO),0) + IFNULL(SUM(mfinfo.TOTAL2DO),0) + IFNULL(SUM(totalqs.TOTAL2DO),0)),0),'%%') as BACKGROUND 
+					(IFNULL(SUM(bginfo.TOTAL2DO),0) + IFNULL(SUM(mfinfo.TOTAL2DO),0) + IFNULL(SUM(totalqs.TOTAL2DO),0)),0),'%%') as BACKGROUND,
+					players.PLAYER_STATUS_ID,
+					characters.CHARACTER_TYPE_ID,
+					characters.CHARACTER_STATUS_ID,
+					characters.VISIBLE
 				FROM 
-					" . VTM_TABLE_PREFIX. "PLAYER players, 
-					" . VTM_TABLE_PREFIX. "CHARGEN_STATUS cgstatus,
-					" . VTM_TABLE_PREFIX. "CHARACTER characters
+					%i players, 
+					%i cgstatus,
+					%i characters
 					LEFT JOIN (
 						SELECT charbgs.CHARACTER_ID, 
 							COUNT(backgrounds.BACKGROUND_QUESTION) AS TOTAL2DO, 
 							COUNT(charbgs.APPROVED_DETAIL) AS TOTALDONE
 						FROM
-							" . VTM_TABLE_PREFIX . "BACKGROUND backgrounds,
-							" . VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND charbgs
+							%i backgrounds,
+							%i charbgs
 						WHERE
 							backgrounds.ID = charbgs.BACKGROUND_ID
 							and	(backgrounds.BACKGROUND_QUESTION != '' OR charbgs.SECTOR_ID > 0)
@@ -627,8 +616,8 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
 							COUNT(charmerits.APPROVED_DETAIL) as TOTALDONE, 
 							COUNT(merits.BACKGROUND_QUESTION) as TOTAL2DO
 						FROM
-							" . VTM_TABLE_PREFIX . "MERIT merits,
-							" . VTM_TABLE_PREFIX . "CHARACTER_MERIT charmerits
+							%i merits,
+							%i charmerits
 						WHERE
 							merits.ID = charmerits.MERIT_ID
 							AND	merits.BACKGROUND_QUESTION != ''
@@ -640,8 +629,8 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
 						SELECT charquest.CHARACTER_ID,
 							COUNT(questions.ID) AS TOTALDONE
 						FROM
-							" . VTM_TABLE_PREFIX . "CHARACTER_EXTENDED_BACKGROUND as charquest,
-							" . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND as questions
+							%i as charquest,
+							%i as questions
 						WHERE
 							charquest.QUESTION_ID = questions.ID
 							AND questions.VISIBLE = 'Y'
@@ -650,42 +639,50 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
 					) as qinfo
 					ON
 						characters.ID = qinfo.CHARACTER_ID,
-					(SELECT COUNT(ID) as total2do FROM " . VTM_TABLE_PREFIX . "EXTENDED_BACKGROUND WHERE VISIBLE = 'Y')
+					(SELECT COUNT(ID) as total2do FROM %i WHERE VISIBLE = 'Y')
 					as totalqs
 				WHERE 
 					players.ID = characters.PLAYER_ID
 					AND cgstatus.ID = characters.CHARGEN_STATUS_ID
 					AND characters.DELETED = 'N'
-					AND cgstatus.NAME = 'Approved'";
-		$sql .= $filterinfo[0];
-		$sql .= " GROUP BY characters.ID";
-		
-		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
-		else
-			$sql .= " ORDER BY PLAYERNAME, CHARACTERNAME";
-		
-		$this->_column_headers = array($columns, $hidden, $sortable);
-        $this->process_bulk_action();
-		
-		/* run query */
-		$data = $wpdb->get_results($wpdb->prepare("$sql",$filterinfo[1]));
+					AND cgstatus.NAME = 'Approved'
+				 GROUP BY characters.ID",
+						VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
+			VTM_TABLE_PREFIX . 'CHARACTER',
+			VTM_TABLE_PREFIX . 'BACKGROUND',
+			VTM_TABLE_PREFIX . 'CHARACTER_BACKGROUND',
+			VTM_TABLE_PREFIX . 'MERIT',
+			VTM_TABLE_PREFIX . 'CHARACTER_MERIT',
+			VTM_TABLE_PREFIX . 'CHARACTER_EXTENDED_BACKGROUND',
+			VTM_TABLE_PREFIX . 'EXTENDED_BACKGROUND',
+			VTM_TABLE_PREFIX . 'EXTENDED_BACKGROUND',
+			));
 		//print_r($data);
- 		
+ 		$data = $this->apply_filters($data);
+		
         $current_page = $this->get_pagenum();
         $total_items = count($data);
 
-        $this->items = $data;
-		
+		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
+			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+		else
+			$data = wp_list_sort($data, array("PLAYERNAME" => "ASC", "CHARACTERNAME" => "ASC"));
+
 		$this->lineheight = 10;
-		//$this->output_report("Signin Sheet " . Date('F Y'), 'P');
-		//$this->output_csv();
-        
-        $this->set_pagination_args( array(
-            'total_items' => $total_items,                  
-            'per_page'    => $total_items,                  
-            'total_pages' => 1
-        ) );
+
+		$total_items = count($data);
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
+        $currentPage = $this->get_pagenum();
+
+		$this->set_pagination_args(array(
+			'total_items' => $total_items,
+			'per_page' => $perPage
+		));
+		$data = array_slice($data,(($currentPage-1)*$perPage),$perPage);
+
+        $this->items = $data;
+
 	}
 }
 
@@ -763,13 +760,6 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
 		/* filters */
 		$this->load_filters();
 
-		$args = array(
-			VTM_TABLE_PREFIX . 'PLAYER',
-			VTM_TABLE_PREFIX . 'CHARACTER',
-			VTM_TABLE_PREFIX . 'SECT',
-			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
-		);
-
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
 		
@@ -792,11 +782,16 @@ class vtmclass_report_sect extends vtmclass_Report_ListTable {
 					AND sects.ID = characters.SECT_ID
 					AND cgstatus.ID = characters.CHARGEN_STATUS_ID
 					AND characters.DELETED = 'N'
-					AND cgstatus.NAME = 'Approved'",$args));
+					AND cgstatus.NAME = 'Approved'",
+			VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CHARACTER',
+			VTM_TABLE_PREFIX . 'SECT',
+			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
+					));
 
 		/* Sect */
 		if ( isset( $_REQUEST['selectsect'] )) {
-			$this->active_filter_selectsect = sanitize_key( $_REQUEST['selectsect'] );
+			$this->active_filter_selectsect = sanitize_key(wp_unslash($_REQUEST['selectsect']) );
 		} else {
 			$this->active_filter_selectsect = 'all';
 		}
@@ -867,12 +862,6 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 
 		/* filters */
 		$this->load_filters();
-
-		$args = array(
-			VTM_TABLE_PREFIX . 'PLAYER',
-			VTM_TABLE_PREFIX . 'CHARACTER',
-			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
-		);
 		
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
@@ -893,7 +882,11 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 				WHERE 
 					players.ID = characters.PLAYER_ID
 					AND cgstatus.ID = characters.CHARGEN_STATUS_ID
-					AND characters.DELETED = 'N'",$args));
+					AND characters.DELETED = 'N'",
+			VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CHARACTER',
+			VTM_TABLE_PREFIX . 'CHARGEN_STATUS',
+					));
 
 		$data = $this->apply_filters($data);
 
@@ -903,7 +896,7 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 			$data = wp_list_sort($data, "LAST_UPDATED", "DESC");
 
 		$total_items = count($data);
-		$perPage = $this::PER_PAGE;
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
         $currentPage = $this->get_pagenum();
 
 		$this->set_pagination_args(array(
@@ -917,14 +910,6 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 }
 
 class vtmclass_report_sector extends vtmclass_Report_ListTable {
-	protected $filter_player_status;
-	protected $filter_character_type;
-	protected $filter_character_status;
-	protected $active_filter_player_status;
-	protected $active_filter_character_type;
-	protected $active_filter_character_status;
-	protected $active_filter_character_visible;
-	protected $active_filter_background;
 
     function column_default($item, $column_name){
         switch($column_name){
@@ -995,68 +980,70 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
 
 		/* filters */
 		$this->load_filters();
-		if ( isset( $_REQUEST['bgfilter'] )) {
-			$this->active_filter_background = sanitize_key( $_REQUEST['bgfilter'] );
-		} else {
-			$this->active_filter_background = 'all';
-		}
-
-		$filterinfo = $this->get_filter_sql();
-		$args = array();
-		if (isset($this->active_filter_background) && $this->active_filter_background != 'all') {
-			$bgfilter = " AND cbg.BACKGROUND_ID = %s";
-			$args = array($this->active_filter_background);
-		} else {
-			$bgfilter = "";
-		}
-		$args = array_merge($args, $filterinfo[1]);
-		
-		$sql = "SELECT characters.NAME as CHARACTERNAME, players.NAME as PLAYERNAME,
-					bg.NAME as BACKGROUND, sectors.NAME as SECTOR,
-					cbg.COMMENT as COMMENT, cbg.LEVEL as LEVEL
-				FROM
-					" . VTM_TABLE_PREFIX . "CHARACTER characters,
-					" . VTM_TABLE_PREFIX . "PLAYER players,
-					" . VTM_TABLE_PREFIX . "CHARACTER_BACKGROUND cbg
-					LEFT JOIN (
-						SELECT ID, NAME
-						FROM " . VTM_TABLE_PREFIX . "SECTOR
-					) sectors
-					ON sectors.ID = cbg.SECTOR_ID
-					,
-					" . VTM_TABLE_PREFIX . "BACKGROUND bg
-				WHERE
-					characters.PLAYER_ID = players.ID
-					AND cbg.CHARACTER_ID = characters.ID
-					AND cbg.BACKGROUND_ID = bg.ID
-					$bgfilter ";
-					
-		$sql .= $filterinfo[0];
-		
-		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$sql .= " ORDER BY {$_REQUEST['orderby']} {$_REQUEST['order']}";
-		else
-			$sql .= " ORDER BY CHARACTERNAME ASC";
 
 		$this->_column_headers = array($columns, $hidden, $sortable);
         $this->process_bulk_action();
 		
 		/* run query */
-		$data = $wpdb->get_results($wpdb->prepare("$sql",$args));
+		$data = $wpdb->get_results($wpdb->prepare("SELECT characters.NAME as CHARACTERNAME, players.NAME as PLAYERNAME,
+					bg.NAME as BACKGROUND, sectors.NAME as SECTOR,
+					cbg.COMMENT as COMMENT, 
+					cbg.LEVEL as LEVEL,
+					players.PLAYER_STATUS_ID,
+					characters.CHARACTER_TYPE_ID,
+					characters.CHARACTER_STATUS_ID,
+					characters.VISIBLE,
+					cbg.BACKGROUND_ID
+				FROM
+					%i characters,
+					%i players,
+					%i cbg
+					LEFT JOIN (
+						SELECT ID, NAME
+						FROM %i
+					) sectors
+					ON sectors.ID = cbg.SECTOR_ID
+					,
+					%i bg
+				WHERE
+					characters.PLAYER_ID = players.ID
+					AND cbg.CHARACTER_ID = characters.ID
+					AND cbg.BACKGROUND_ID = bg.ID;",
+			VTM_TABLE_PREFIX . 'CHARACTER',
+			VTM_TABLE_PREFIX . 'PLAYER',
+			VTM_TABLE_PREFIX . 'CHARACTER_BACKGROUND',
+			VTM_TABLE_PREFIX . 'SECTOR',
+			VTM_TABLE_PREFIX . 'BACKGROUND',
+					));
+
+		$data = $this->apply_filters($data);
+
+		if ( isset( $_REQUEST['bgfilter'] )) {
+			$this->active_filter_background = sanitize_key(wp_unslash($_REQUEST['bgfilter']) );
+		} else {
+			$this->active_filter_background = 'all';
+		}
+		if (isset($this->active_filter_background) && $this->active_filter_background != 'all')
+			$data = wp_list_filter($data, array("BACKGROUND_ID" => $this->active_filter_background));
+
+		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
+			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+		else
+			$data = wp_list_sort($data, "CHARACTERNAME", "ASC");
+
  		
-        $current_page = $this->get_pagenum();
-        $total_items = count($data);
+		$total_items = count($data);
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
+        $currentPage = $this->get_pagenum();
+
+		$this->set_pagination_args(array(
+			'total_items' => $total_items,
+			'per_page' => $perPage
+		));
+		$data = array_slice($data,(($currentPage-1)*$perPage),$perPage);
 
         $this->items = $data;
-		
-		//$this->output_report("Sector and Background", 'P');
-		//$this->output_csv();
-        
-        $this->set_pagination_args( array(
-            'total_items' => $total_items,                  
-            'per_page'    => $total_items,                  
-            'total_pages' => 1
-        ) );
+
 	}
 }
 
@@ -1110,26 +1097,22 @@ class vtmclass_report_xp extends vtmclass_Report_ListTable {
         $hidden   = array();
         $sortable = $this->get_sortable_columns();
 
-		$orderby = $_REQUEST['orderby'] ?? "AWARDED";
-		$order = $_REQUEST['order'] ?? "ASC";
-		$orderby_sql = sanitize_sql_orderby("$orderby $order" );
-
 		/* filters */
 		$this->load_filters();
 
-		$args = array(
-			VTM_TABLE_PREFIX. "PLAYER",
-			VTM_TABLE_PREFIX. "CHARACTER",
-			VTM_TABLE_PREFIX. "CHARGEN_STATUS",
-			VTM_TABLE_PREFIX. "PLAYER_XP",
-			VTM_TABLE_PREFIX. "XP_REASON"
-		);
+		$this->_column_headers = array($columns, $hidden, $sortable);
+        $this->process_bulk_action();
 		
-		$sql = "SELECT players.NAME as PLAYERNAME,
+		/* run query */
+		$data = $wpdb->get_results($wpdb->prepare("SELECT players.NAME as PLAYERNAME,
 					IF(cgstatus.NAME = 'Approved', characters.NAME, CONCAT(characters.NAME, ' (being generated)')) as CHARACTERNAME,
 					xpreason.NAME as XP_REASON,
 					pxp.AWARDED as AWARDED,
-					pxp.AMOUNT as AMOUNT
+					pxp.AMOUNT as AMOUNT,
+					players.PLAYER_STATUS_ID,
+					characters.CHARACTER_TYPE_ID,
+					characters.CHARACTER_STATUS_ID,
+					characters.VISIBLE
 				FROM 
 					%i players, 
 					%i characters,
@@ -1142,34 +1125,33 @@ class vtmclass_report_xp extends vtmclass_Report_ListTable {
 					AND characters.DELETED = 'N' 
 					AND pxp.CHARACTER_ID = characters.ID
 					AND xpreason.ID = pxp.XP_REASON_ID
-					AND pxp.AWARDED >= DATE_SUB(NOW(),INTERVAL 1 YEAR)
-				";
-					
-		$filterinfo = $this->get_filter_sql();
-		$args = array_merge($args, $filterinfo[1]);
-		
-		$sql .= $filterinfo[0];
-		$sql .= " ORDER BY {$orderby_sql}";
-
-		$this->_column_headers = array($columns, $hidden, $sortable);
-        $this->process_bulk_action();
-		
-		/* run query */
-		$data = $wpdb->get_results($wpdb->prepare("$sql",$args));
+					AND pxp.AWARDED >= DATE_SUB(NOW(),INTERVAL 1 YEAR)",
+			VTM_TABLE_PREFIX. "PLAYER",
+			VTM_TABLE_PREFIX. "CHARACTER",
+			VTM_TABLE_PREFIX. "CHARGEN_STATUS",
+			VTM_TABLE_PREFIX. "PLAYER_XP",
+			VTM_TABLE_PREFIX. "XP_REASON"
+					));
  		
-        $current_page = $this->get_pagenum();
-        $total_items = count($data);
+		$data = $this->apply_filters($data);
+
+		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
+			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+		else
+			$data = wp_list_sort($data, "AWARDED", "ASC");
+
+		$total_items = count($data);
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
+        $currentPage = $this->get_pagenum();
+
+		$this->set_pagination_args(array(
+			'total_items' => $total_items,
+			'per_page' => $perPage
+		));
+		$data = array_slice($data,(($currentPage-1)*$perPage),$perPage);
 
         $this->items = $data;
-		
-		//$this->output_report("Character Activity", 'P');
-		//$this->output_csv();
-        
-        $this->set_pagination_args( array(
-            'total_items' => $total_items,                  
-            'per_page'    => $total_items,                  
-            'total_pages' => 1
-        ) );
+
 	}
 }
 
@@ -1246,11 +1228,6 @@ class vtmclass_report_consent extends vtmclass_Report_ListTable {
 
 		$this->load_filters();
 
-		$args = array(
-			VTM_TABLE_PREFIX . 'PLAYER_CONSENT',
-			VTM_TABLE_PREFIX . 'PLAYER',
-		);
-
 		$this->_column_headers = array($columns, $hidden, $sortable);
 		$this->process_bulk_action();
 		$data = $wpdb->get_results($wpdb->prepare("
@@ -1264,7 +1241,10 @@ class vtmclass_report_consent extends vtmclass_Report_ListTable {
 					consent.ORANGEFLAG,
 					players.PLAYER_STATUS_ID
 				FROM %i consent
-				INNER JOIN %i players ON players.ID = consent.PLAYER_ID", $args));
+				INNER JOIN %i players ON players.ID = consent.PLAYER_ID", 
+			VTM_TABLE_PREFIX . 'PLAYER_CONSENT',
+			VTM_TABLE_PREFIX . 'PLAYER',
+				));
 
 		if ($this->active_filter_player_status != 'all')
 			$data = wp_list_filter( $data, array("PLAYER_STATUS_ID" => $this->active_filter_player_status));
@@ -1275,7 +1255,7 @@ class vtmclass_report_consent extends vtmclass_Report_ListTable {
 			$data = wp_list_sort($data, "PLAYERNAME", "ASC");
 
 		$total_items = count($data);
-		$perPage = $this::PER_PAGE;
+		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
         $currentPage = $this->get_pagenum();
 
 		$this->set_pagination_args(array(

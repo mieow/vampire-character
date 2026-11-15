@@ -72,8 +72,8 @@ class vtmclass_character {
 		
 		$wpdb->show_errors();
 						
-		/* Basic Character Info */
-		$sql = "SELECT chara.name                      cname,
+		/* Basic Character Info */		
+		$result = $wpdb->get_results($wpdb->prepare("SELECT chara.name                      cname,
 					   chara.character_status_comment  cstat_comment,
 					   cstatus.name                    cstat,
 					   chara.wordpress_id              wpid,
@@ -117,11 +117,7 @@ class vtmclass_character {
 					  AND chara.ROAD_OR_PATH_ID = paths.ID
 					  AND chara.SECT_ID = sects.ID
 					  AND chara.CHARACTER_STATUS_ID = cstatus.ID
-                      AND chara.ID = '%s';";
-		$sql = $wpdb->prepare("$sql", $characterID);
-		//echo "<p>SQL: ($characterID) $sql</p>";
-		
-		$result = $wpdb->get_results("$sql");
+                      AND chara.ID = %s;", $characterID));
 		//print_r($result);
 		
 		if (count($result) > 0) {
@@ -184,11 +180,10 @@ class vtmclass_character {
         $this->display_name = isset($user->display_name) ? $user->display_name : 'No character selected';
 		
 		// Character Generation
-		$sql = "SELECT DATE_OF_APPROVAL FROM " . $wpdb->prefix . "vtm_CHARACTER_GENERATION WHERE CHARACTER_ID = '%s'";
-		$result = $wpdb->get_row($wpdb->prepare("$sql", $characterID));
+		$result = $wpdb->get_row($wpdb->prepare("SELECT DATE_OF_APPROVAL FROM %i WHERE CHARACTER_ID = %s", $wpdb->prefix . "vtm_CHARACTER_GENERATION", $characterID));
 		if (empty($result->DATE_OF_APPROVAL)) {
-			$sql = "SELECT AWARDED FROM " . $wpdb->prefix . "vtm_PLAYER_XP WHERE CHARACTER_ID = '%s' ORDER BY AWARDED";
-			$result = $wpdb->get_row($wpdb->prepare("$sql", $characterID));
+			$sql = "";
+			$result = $wpdb->get_row($wpdb->prepare("SELECT AWARDED FROM %i WHERE CHARACTER_ID = %s ORDER BY AWARDED", $wpdb->prefix . "vtm_PLAYER_XP", $characterID));
 			if ($result)
 				$this->date_of_approval = $result->AWARDED; 
 		}
@@ -197,12 +192,12 @@ class vtmclass_character {
 		
 		
 		// Profile
-		$sql = "SELECT QUOTE, PORTRAIT
+		$sql = "";
+		$result = $wpdb->get_row($wpdb->prepare("SELECT QUOTE, PORTRAIT
 				FROM 
-					" . $wpdb->prefix . "vtm_CHARACTER_PROFILE
+					%i
 				WHERE
-					CHARACTER_ID = %s";
-		$result = $wpdb->get_row($wpdb->prepare("$sql", $characterID));
+					CHARACTER_ID = %s", $wpdb->prefix . "vtm_CHARACTER_PROFILE", $characterID));
 		$this->quote    = isset($result->QUOTE) ? $result->QUOTE : '';
 		if (empty($result->PORTRAIT))
 			$this->portrait = $vtmglobal['config']->PLACEHOLDER_IMAGE;
@@ -260,7 +255,7 @@ class vtmclass_character {
 				WHERE
 					charstat.CHARACTER_ID = chara.ID
 					AND charstat.STAT_ID = stat.ID
-					AND chara.id = '%s'
+					AND chara.id = %s
 				ORDER BY stat.grouping, stat.ordering;";
 		$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID);
 		$result = $wpdb->get_results("$sql");
@@ -311,7 +306,7 @@ class vtmclass_character {
 					charskill.CHARACTER_ID = chara.ID
 					AND charskill.SKILL_ID = skill.ID
 					AND skilltype.ID = skill.SKILL_TYPE_ID
-					AND chara.id = '%s'
+					AND chara.id = %s
 				ORDER BY skill.name ASC;";
 		$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID);
 		$result = $wpdb->get_results("$sql");
@@ -411,7 +406,7 @@ class vtmclass_character {
 				WHERE
 					charbgnd.CHARACTER_ID = chara.ID
 					AND charbgnd.BACKGROUND_ID = bground.ID
-					AND chara.id = '%s'
+					AND chara.id = %s
 				ORDER BY bground.name ASC;";
 		$sql = $wpdb->prepare("$sql", $characterID, $characterID);
 		$result = $wpdb->get_results("$sql");
@@ -465,7 +460,7 @@ class vtmclass_character {
 				WHERE
 					chardisc.DISCIPLINE_ID = disciplines.ID
 					AND chardisc.CHARACTER_ID = chara.ID
-					AND chara.id = '%s'
+					AND chara.id = %s
 				ORDER BY disciplines.name ASC;";
 		$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID);
 		$result = $wpdb->get_results("$sql");
@@ -544,7 +539,7 @@ class vtmclass_character {
 					charpath.PATH_ID = paths.ID
 					AND paths.DISCIPLINE_ID = disciplines.ID
 					AND charpath.CHARACTER_ID = chara.ID
-					AND chara.id = '%s'
+					AND chara.id = %s
 				ORDER BY disciplines.name ASC, paths.NAME;";
 		$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID);
 		$result = $wpdb->get_results("$sql");
@@ -608,7 +603,7 @@ class vtmclass_character {
 				" . $wpdb->prefix . "vtm_CHARACTER_PRIMARY_PATH chpp,
 				" . $wpdb->prefix . "vtm_PATH path
 			WHERE
-				chpp.CHARACTER_ID = '%s'
+				chpp.CHARACTER_ID = %s
 				AND chpp.PATH_ID = path.ID
 				AND chpp.DISCIPLINE_ID = disc.ID";
 		$primary = $wpdb->get_results($wpdb->prepare("$sql", $characterID), OBJECT_K);
@@ -643,7 +638,7 @@ class vtmclass_character {
 				WHERE
 					charmerit.MERIT_ID = merits.ID
 					AND charmerit.CHARACTER_ID = chara.ID
-					AND chara.id = '%s'
+					AND chara.id = %s
 				ORDER BY merits.name ASC)
 				UNION
 				(SELECT merits.NAME			name,
@@ -701,7 +696,7 @@ class vtmclass_character {
 						xp.CHARTABLE_ID = charstat.ID,
 					" . $wpdb->prefix . "vtm_STAT stat
 				WHERE 
-					charstat.CHARACTER_ID = '%s' 
+					charstat.CHARACTER_ID = %s 
 					AND charstat.STAT_ID = stat.ID
 					AND stat.name = 'Willpower';";
 		$sql = $wpdb->prepare("$sql", $characterID, $characterID, $characterID);
@@ -714,7 +709,7 @@ class vtmclass_character {
         $sql = "SELECT SUM(char_temp_stat.amount) currentwp
                 FROM " . $wpdb->prefix . "vtm_CHARACTER_TEMPORARY_STAT char_temp_stat,
                      " . $wpdb->prefix . "vtm_TEMPORARY_STAT tstat
-                WHERE char_temp_stat.character_id = '%s'
+                WHERE char_temp_stat.character_id = %s
 					AND char_temp_stat.temporary_stat_id = tstat.id
 					AND tstat.name = 'Willpower';";
 		$sql = $wpdb->prepare("$sql", $characterID);
@@ -741,7 +736,7 @@ class vtmclass_character {
                     " . $wpdb->prefix . "vtm_CHARACTER_RITUAL char_rit,
                     " . $wpdb->prefix . "vtm_RITUAL rituals
 				WHERE
-					char_rit.CHARACTER_ID = '%s'
+					char_rit.CHARACTER_ID = %s
 					AND char_rit.RITUAL_ID = rituals.ID
 					AND rituals.DISCIPLINE_ID = disciplines.ID
 				ORDER BY disciplines.name, rituals.level, rituals.name)
@@ -779,7 +774,7 @@ class vtmclass_character {
 					" . $wpdb->prefix . "vtm_COMBO_DISCIPLINE combo
 				WHERE
 					charcombo.COMBO_DISCIPLINE_ID = combo.ID
-					AND charcombo.CHARACTER_ID = '%s'
+					AND charcombo.CHARACTER_ID = %s
 				ORDER BY combo.name)
 				UNION
 				(SELECT combo.name, 1 as pending
@@ -787,7 +782,7 @@ class vtmclass_character {
 					" . $wpdb->prefix . "vtm_PENDING_XP_SPEND xp,
 					" . $wpdb->prefix . "vtm_COMBO_DISCIPLINE combo
 				WHERE
-					xp.CHARACTER_ID = '%s'
+					xp.CHARACTER_ID = %s
 					AND xp.ITEMTABLE = 'COMBO_DISCIPLINE'
 					AND xp.ITEMTABLE_ID = combo.id
 				ORDER BY combo.name)";
@@ -816,7 +811,7 @@ class vtmclass_character {
 				WHERE	
 					charoffice.OFFICE_ID = offices.ID
 					AND charoffice.DOMAIN_ID = domains.ID
-					AND charoffice.CHARACTER_ID = '%s'
+					AND charoffice.CHARACTER_ID = %s
 				ORDER BY offices.ORDERING";
 		$sql = $wpdb->prepare("$sql", $characterID);
 		$this->offices = $wpdb->get_results("$sql");
@@ -1060,6 +1055,15 @@ class vtmclass_MultiPage_ListTable extends vtmclass_WP_List_Table {
 }
 
 class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
+	protected $filter_player_status;
+	protected $filter_character_type;
+	protected $filter_character_status;
+	protected $active_filter_player_status;
+	protected $active_filter_character_type;
+	protected $active_filter_character_status;
+	protected $active_filter_character_visible;
+	protected $active_filter_background;
+	protected $active_filter_clan;
 
 	var $pagewidth;
 	var $lineheight;
@@ -1104,33 +1108,33 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 		/* get defaults */
 		$default_character_visible = "Y";
 		
-		$default_player_status = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS WHERE NAME = %s",'Active'));
-		$default_character_type = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "CHARACTER_TYPE WHERE NAME = %s",'PC'));
-		$default_character_status = $wpdb->get_var($wpdb->prepare("SELECT ID FROM " . VTM_TABLE_PREFIX. "CHARACTER_STATUS WHERE NAME = %s",'Alive'));
+		$default_player_status = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "PLAYER_STATUS", 'Active'));
+		$default_character_type = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "CHARACTER_TYPE", 'PC'));
+		$default_character_status = $wpdb->get_var($wpdb->prepare("SELECT ID FROM %i WHERE NAME = %s",VTM_TABLE_PREFIX. "CHARACTER_STATUS", 'Alive'));
 		
 		/* get filter options */
-		$this->filter_player_status = vtm_make_filter($wpdb->get_results("SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "PLAYER_STATUS"));
-		$this->filter_character_type = vtm_make_filter($wpdb->get_results("SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "CHARACTER_TYPE"));
-		$this->filter_character_status = vtm_make_filter($wpdb->get_results("SELECT ID, NAME FROM " . VTM_TABLE_PREFIX. "CHARACTER_STATUS"));		
+		$this->filter_player_status = vtm_make_filter($wpdb->get_results($wpdb->prepare("SELECT ID, NAME FROM %i", VTM_TABLE_PREFIX. "PLAYER_STATUS")));
+		$this->filter_character_type = vtm_make_filter($wpdb->get_results($wpdb->prepare("SELECT ID, NAME FROM %i", VTM_TABLE_PREFIX. "CHARACTER_TYPE")));
+		$this->filter_character_status = vtm_make_filter($wpdb->get_results($wpdb->prepare("SELECT ID, NAME FROM %i", VTM_TABLE_PREFIX. "CHARACTER_STATUS")));		
 		
 		/* set active filters */
 		if ( isset( $_REQUEST['player_status'] ) && array_key_exists( $_REQUEST['player_status'], $this->filter_player_status ) ) {
-			$this->active_filter_player_status = sanitize_key( $_REQUEST['player_status'] );
+			$this->active_filter_player_status = sanitize_key(wp_unslash($_REQUEST['player_status']) );
 		} else {
 			$this->active_filter_player_status = $default_player_status;
 		}
 		if ( isset( $_REQUEST['character_type'] ) && array_key_exists( $_REQUEST['character_type'], $this->filter_character_type ) ) {
-			$this->active_filter_character_type = sanitize_key( $_REQUEST['character_type'] );
+			$this->active_filter_character_type = sanitize_key(wp_unslash($_REQUEST['character_type']) );
 		} else {
 			$this->active_filter_character_type = $default_character_type;
 		}
 		if ( isset( $_REQUEST['character_status'] ) && array_key_exists( $_REQUEST['character_status'], $this->filter_character_status ) ) {
-			$this->active_filter_character_status = sanitize_key( $_REQUEST['character_status'] );
+			$this->active_filter_character_status = sanitize_key(wp_unslash($_REQUEST['character_status']) );
 		} else {
 			$this->active_filter_character_status = $default_character_status;
 		}
 		if ( isset( $_REQUEST['character_visible'] )) {
-			$this->active_filter_character_visible = strtoupper(sanitize_key( $_REQUEST['character_visible'] ));
+			$this->active_filter_character_visible = strtoupper(sanitize_key(wp_unslash($_REQUEST['character_visible']) ));
 		} else {
 			$this->active_filter_character_visible = $default_character_visible;
 		}
@@ -1509,7 +1513,7 @@ class vtmclass_Report_ListTable extends vtmclass_WP_List_Table {
 			$values = array_map(function ($value) {
 				return '"' . str_replace('"', '""', (string) $value) . '"';
 			}, $values);
-			echo implode(',', $values) . "\r\n";
+			echo esc_html(implode(',', $values) . "\r\n");
 		};
 		$write_csv_row(array_values($columns));
 		
