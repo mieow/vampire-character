@@ -171,7 +171,7 @@ class vtmclass_report_flaws extends vtmclass_Report_ListTable {
 					
 		$data = $this->apply_filters($data);
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 
 		$total_items = count($data);
 		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
@@ -291,7 +291,7 @@ class vtmclass_report_quotes extends vtmclass_Report_ListTable {
  		
  		$data = $this->apply_filters($data);
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 
 		$total_items = count($data);
 		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
@@ -469,7 +469,7 @@ class vtmclass_report_prestige extends vtmclass_Report_ListTable {
 
  		$data = $this->apply_filters($data);
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
       
 		$total_items = count($data);
 		$perPage = isset($_REQUEST["format"]) ? $total_items: $this::PER_PAGE;
@@ -665,7 +665,7 @@ class vtmclass_report_signin extends vtmclass_Report_ListTable {
         $total_items = count($data);
 
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 		else
 			$data = wp_list_sort($data, array("PLAYERNAME" => "ASC", "CHARACTERNAME" => "ASC"));
 
@@ -891,7 +891,7 @@ class vtmclass_report_activity extends vtmclass_Report_ListTable {
 		$data = $this->apply_filters($data);
 
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 		else
 			$data = wp_list_sort($data, "LAST_UPDATED", "DESC");
 
@@ -1027,7 +1027,7 @@ class vtmclass_report_sector extends vtmclass_Report_ListTable {
 			$data = wp_list_filter($data, array("BACKGROUND_ID" => $this->active_filter_background));
 
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 		else
 			$data = wp_list_sort($data, "CHARACTERNAME", "ASC");
 
@@ -1136,7 +1136,7 @@ class vtmclass_report_xp extends vtmclass_Report_ListTable {
 		$data = $this->apply_filters($data);
 
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 		else
 			$data = wp_list_sort($data, "AWARDED", "ASC");
 
@@ -1250,7 +1250,7 @@ class vtmclass_report_consent extends vtmclass_Report_ListTable {
 			$data = wp_list_filter( $data, array("PLAYER_STATUS_ID" => $this->active_filter_player_status));
 
 		if (!empty($_REQUEST['orderby']) && !empty($_REQUEST['order']))
-			$data = wp_list_sort($data, $_REQUEST['orderby'], $_REQUEST['order']);
+			$data = wp_list_sort($data, wp_unslash($_REQUEST['orderby']), wp_unslash($_REQUEST['order']));
 		else
 			$data = wp_list_sort($data, "PLAYERNAME", "ASC");
 
